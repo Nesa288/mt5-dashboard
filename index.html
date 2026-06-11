@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MT5 Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080e14;font-family:'SF Mono',Consolas,monospace;color:#c8dff0;overflow-x:hidden;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#080e14}
+::-webkit-scrollbar-thumb{background:#1e2d3d;border-radius:2px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fadein{animation:fadein 0.2s ease}
+
+/* Layout */
+.header{background:linear-gradient(135deg,#0d1820,#0a1520);border-bottom:1px solid #1e2d3d;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-title{font-size:13px;font-weight:700;color:#c8dff0;letter-spacing:.05em}
+.header-sub{font-size:10px;color:#3a5a7a;margin-top:2px}
+.header-time{font-size:10px;color:#3a5a7a;flex-shrink:0}
+
+.bot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+.bot-card{border-radius:12px;padding:12px 10px;text-align:left;border:2px solid #1e2d3d;background:#0f1923;overflow:hidden;min-width:0;transition:all .15s}
+.bot-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#080e14;flex-shrink:0}
+.bot-balance{font-size:14px;font-weight:700;color:#e8f4fd;margin-bottom:2px}
+.bot-profit{font-size:9px;color:#4ade80;margin-bottom:8px}
+.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 8px}
+.status-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+.divider{display:flex;align-items:center;gap:10px;padding:0 12px 8px}
+.divider-bar{width:3px;height:20px;border-radius:2px}
+.divider-name{font-size:12px;font-weight:700;letter-spacing:.05em}
+.divider-line{flex:1;height:1px;background:#1e2d3d}
+
+.tab-bar{display:flex;gap:4px;padding:10px 12px;border-bottom:1px solid #1e2d3d;flex-wrap:wrap}
+.tab-btn{border-radius:8px;padding:6px 14px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border:1px solid transparent;background:transparent;color:#3a5a7a}
+.tab-btn.active{background:var(--ac22);border-color:var(--ac55)}
+
+.content{padding:14px 12px}
+
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.metric-card{background:#0f1923;border:1px solid #1e2d3d;border-radius:12px;padding:14px 12px;overflow:hidden}
+.metric-label{color:#5a7a99;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.metric-value{font-weight:700;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.metric-sub{color:#3a5a7a;font-size:9px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.card{background:#0f1923;border:1px solid #1e2d3d;border-radius:12px;padding:16px;margin-bottom:12px}
+.card-title{font-size:11px;color:#5a7a99;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+
+.winbar{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px}
+.winbar-win{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(90deg,#166534,#4ade80)}
+.winbar-loss{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(90deg,#7f1d1d,#f87171)}
+
+.trade-row{background:#0f1923;border-radius:10px;overflow:hidden;margin-bottom:8px}
+.trade-inner{padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.dir-badge{border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700}
+.trade-entry{font-size:11px;color:#c8dff0}
+.trade-meta{font-size:9px;color:#3a5a7a;margin-top:2px}
+.trade-pnl{font-size:13px;font-weight:700;text-align:right}
+.chart-btn{font-size:9px;border-radius:10px;padding:2px 7px;background:transparent;border:1px solid;margin-top:4px;display:block;margin-left:auto}
+
+.chart-wrap{padding:0 12px 14px}
+
+/* TradingView container */
+.tv-container{border-radius:10px;overflow:hidden;border:1px solid #1e2d3d;background:#080e14}
+.tv-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;flex-wrap:wrap;gap:6px}
+.tv-live{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 6px #4ade80;animation:pulse 1.5s infinite;flex-shrink:0}
+.tf-bar{display:flex;gap:4px}
+.tf-btn{border-radius:6px;padding:3px 7px;font-size:10px;font-weight:600;border:1px solid #1e2d3d;background:transparent;color:#3a5a7a}
+.tf-btn.active{background:var(--ac33);border-color:var(--ac66)}
+.tv-frame{width:100%;height:320px;display:block;border:none}
+.trade-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px}
+.level-card{background:#0f1923;border:1px solid #1e2d3d;border-radius:8px;padding:7px 6px;text-align:center}
+.level-label{font-size:8px;color:#3a5a7a;margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
+.level-value{font-size:12px;font-weight:700}
+
+.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.market-card{background:#0f1923;border:1px solid #1e2d3d;border-radius:12px;padding:14px}
+
+.row-item{background:#0f1923;border:1px solid #1e2d3d;border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+.setup-card{border-radius:12px;padding:18px;margin-bottom:10px}
+.condition-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.cond-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:2px}
+.risk-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1e2d3d22;font-size:11px}
+
+.footer{text-align:center;padding:12px;font-size:10px;color:#1e2d3d}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const BOTS = [
+  {
+    id:"bot1", name:"XAUUSD SMC BOT", short:"Au",
+    ac:"#f0b429", grad:"linear-gradient(135deg,#b8860b,#f0b429)",
+    instrument:"XAUUSD", tvSymbol:"OANDA:XAUUSD",
+    capital:1000, balance:1110.70, profit:110.70, profitPct:11.07,
+    startDate:"2026-05-15", lastTrade:"2026-05-27",
+    riskProfile:"SAFE", riskPct:0.5,
+    winRate:68, totalTrades:22, wins:15, losses:7, avgRR:2.0, maxDrawdown:-2.3,
+    status:"WAITING", marketBias:"BEARISH", spread:15.0, atr:504.6, session:"ACTIVE",
+    setupDir:"SELL", setupLevel:4504.5,
+    setupConditions:[
+      {label:"Sweep High",desc:"Cena treba da ide iznad 4504.5",done:false},
+      {label:"Rejection",desc:"Zatvori se ispod 4504.5",done:false},
+      {label:"Bearish Confirm",desc:"Bearish confirmation svećica",done:false},
+    ],
+    riskPlan:[
+      ["Direction","SELL","#f87171"],["Entry Est.","4504.5","#c8dff0"],
+      ["Stop Loss","4505.0","#f87171"],["Take Profit","4503.5","#4ade80"],
+      ["Risk/Reward","1:2.0","#f0b429"],["Lot Size","1.11","#c8dff0"],
+      ["Risk Money","-$5.55","#f87171"],["Est. Profit","+$11.11","#4ade80"],
+    ],
+    mgmtRules:["Na 1.0R → zatvori 50% pozicije","Nakon partial close → pomeri SL na break-even","Ostatak drži do 2.0R ili structure exit"],
+    equity:[1000,1082,1037,997,958,1033,1114,1068,1025,1111,1193,1111],
+    equityDays:["May 15","May 16","May 17","May 18","May 20","May 21","May 22","May 23","May 24","May 25","May 26","May 27"],
+    trades:[
+      {id:1,dir:"SELL",entry:4471.17,sl:4471.7,tp:4470.17,profit:82.02,rr:2.0,date:"2026-05-15"},
+      {id:2,dir:"SELL",entry:4467.11,sl:4467.61,tp:4466.11,profit:-44.99,rr:2.0,date:"2026-05-16"},
+      {id:3,dir:"SELL",entry:4479.00,sl:4479.5,tp:4478.00,profit:-39.31,rr:2.0,date:"2026-05-17"},
+      {id:4,dir:"BUY",entry:4485.76,sl:4485.26,tp:4486.76,profit:-38.81,rr:2.0,date:"2026-05-18"},
+      {id:5,dir:"BUY",entry:4486.45,sl:4485.95,tp:4487.45,profit:74.52,rr:2.0,date:"2026-05-20"},
+      {id:6,dir:"BUY",entry:4481.91,sl:4481.41,tp:4482.91,profit:81.06,rr:2.0,date:"2026-05-21"},
+      {id:7,dir:"SELL",entry:4498.00,sl:4498.5,tp:4497.00,profit:-46.17,rr:2.0,date:"2026-05-22"},
+      {id:8,dir:"SELL",entry:4518.26,sl:4518.76,tp:4517.26,profit:-42.47,rr:2.0,date:"2026-05-23"},
+      {id:9,dir:"BUY",entry:4511.01,sl:4510.51,tp:4512.01,profit:85.74,rr:2.0,date:"2026-05-25"},
+      {id:10,dir:"BUY",entry:4480.03,sl:4479.53,tp:4481.03,profit:82.21,rr:2.0,date:"2026-05-26"},
+      {id:11,dir:"SELL",entry:4476.21,sl:4476.71,tp:4475.21,profit:110.70,rr:2.0,date:"2026-05-27"},
+    ],
+  },
+  {
+    id:"bot2", name:"EURUSD SCALPER BOT", short:"€$",
+    ac:"#60a5fa", grad:"linear-gradient(135deg,#1d4ed8,#60a5fa)",
+    instrument:"EURUSD", tvSymbol:"OANDA:EURUSD",
+    capital:10000, balance:10843.20, profit:843.20, profitPct:8.43,
+    startDate:"2026-04-01", lastTrade:"2026-06-10",
+    riskProfile:"MODERATE", riskPct:1.0,
+    winRate:72, totalTrades:58, wins:42, losses:16, avgRR:1.8, maxDrawdown:-3.7,
+    status:"IN_TRADE", marketBias:"BULLISH", spread:0.8, atr:42.3, session:"ACTIVE",
+    setupDir:"BUY", setupLevel:1.0872,
+    setupConditions:[
+      {label:"EMA 9 > EMA 21",desc:"Kratkoročni trend bullish potvrđen",done:true},
+      {label:"RSI > 50",desc:"RSI na 1H = 58.4, momentum pozitivan",done:true},
+      {label:"Entry na pullback",desc:"Cena se vratila na EMA 21 zona",done:true},
+    ],
+    riskPlan:[
+      ["Direction","BUY","#4ade80"],["Entry","1.08720","#c8dff0"],
+      ["Stop Loss","1.08650","#f87171"],["Take Profit","1.08846","#4ade80"],
+      ["Risk/Reward","1:1.8","#f0b429"],["Lot Size","1.43","#c8dff0"],
+      ["Risk Money","-$100.10","#f87171"],["Est. Profit","+$180.18","#4ade80"],
+    ],
+    mgmtRules:["Na 1.0R → pomeri SL na break-even","Na 1.5R → zatvori 30% pozicije","Ostatak drži do 1.8R ili EMA cross exit"],
+    equity:[10000,10180,10095,10340,10520,10410,10690,10580,10750,10920,10780,10843],
+    equityDays:["Apr 01","Apr 07","Apr 14","Apr 21","Apr 28","May 05","May 12","May 19","May 26","Jun 02","Jun 09","Jun 10"],
+    trades:[
+      {id:1,dir:"BUY",entry:1.0812,sl:1.0800,tp:1.0834,profit:220.40,rr:1.8,date:"2026-04-02"},
+      {id:2,dir:"SELL",entry:1.0865,sl:1.0878,tp:1.0842,profit:-130.00,rr:1.8,date:"2026-04-05"},
+      {id:3,dir:"BUY",entry:1.0798,sl:1.0786,tp:1.0820,profit:198.60,rr:1.8,date:"2026-04-09"},
+      {id:4,dir:"BUY",entry:1.0834,sl:1.0822,tp:1.0856,profit:215.80,rr:1.8,date:"2026-04-14"},
+      {id:5,dir:"SELL",entry:1.0878,sl:1.0891,tp:1.0855,profit:-115.50,rr:1.8,date:"2026-04-18"},
+      {id:6,dir:"BUY",entry:1.0821,sl:1.0809,tp:1.0843,profit:205.20,rr:1.8,date:"2026-04-23"},
+      {id:7,dir:"SELL",entry:1.0901,sl:1.0914,tp:1.0878,profit:189.40,rr:1.8,date:"2026-04-28"},
+      {id:8,dir:"BUY",entry:1.0845,sl:1.0833,tp:1.0867,profit:-98.30,rr:1.8,date:"2026-05-03"},
+      {id:9,dir:"BUY",entry:1.0867,sl:1.0855,tp:1.0889,profit:231.00,rr:1.8,date:"2026-05-08"},
+      {id:10,dir:"SELL",entry:1.0912,sl:1.0925,tp:1.0889,profit:178.60,rr:1.8,date:"2026-05-14"},
+      {id:11,dir:"BUY",entry:1.0856,sl:1.0844,tp:1.0878,profit:-112.40,rr:1.8,date:"2026-05-20"},
+      {id:12,dir:"BUY",entry:1.0878,sl:1.0866,tp:1.0900,profit:242.80,rr:1.8,date:"2026-05-27"},
+      {id:13,dir:"SELL",entry:1.0934,sl:1.0947,tp:1.0911,profit:167.20,rr:1.8,date:"2026-06-03"},
+      {id:14,dir:"BUY",entry:1.0867,sl:1.0855,tp:1.0889,profit:0,rr:1.8,date:"2026-06-10",open:true},
+    ],
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let activeBot = "bot1";
+let activeTab = "overview";
+let expandedTrade = null;
+let tradeChartTf = {};  // tradeId -> timeframe
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function fmt(n,d=2){return n.toLocaleString("en",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function hex22(c){return c+"22";}
+function hex55(c){return c+"55";}
+function hex33(c){return c+"33";}
+function hex66(c){return c+"66";}
+
+function sparklineSVG(vals, color) {
+  const min=Math.min(...vals), max=Math.max(...vals), w=300, h=55;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*w},${h-((v-min)/(max-min||1))*h}`).join(" ");
+  const id="g"+color.replace("#","");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <polygon points="0,${h} ${pts} ${w},${h}" fill="url(#${id})"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+const TF_OPTIONS = ["5m","15m","1h","4h","1D"];
+const TF_MAP = {"5m":"5","15m":"15","1h":"60","4h":"240","1D":"D"};
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  const bot = BOTS.find(b=>b.id===activeBot);
+  const totalProfit = BOTS.reduce((s,b)=>s+b.profit,0);
+  const totalBalance = BOTS.reduce((s,b)=>s+b.balance,0);
+  const ac = bot.ac;
+
+  document.getElementById("app").innerHTML = `
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <div class="header-title">MT5 PORTFOLIO</div>
+        <div class="header-sub">
+          Profit: <span style="color:#4ade80">+$${fmt(totalProfit)}</span>
+          &nbsp;&nbsp;Balans: <span style="color:#c8dff0">$${fmt(totalBalance)}</span>
+        </div>
+      </div>
+      <div class="header-time" id="clock">${new Date().toLocaleTimeString("sr-RS")}</div>
+    </div>
+
+    <!-- BOT CARDS -->
+    <div class="bot-grid">
+      ${BOTS.map(b=>`
+        <button class="bot-card" onclick="selectBot('${b.id}')"
+          style="${activeBot===b.id?`background:${hex22(b.ac)};border-color:${hex66(b.ac)}`:''}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div class="bot-icon" style="background:${b.grad}">${b.short}</div>
+            <div style="min-width:0;overflow:hidden">
+              <div style="font-size:9px;font-weight:700;color:${activeBot===b.id?b.ac:'#c8dff0'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.name}</div>
+              <div style="font-size:8px;color:#3a5a7a">${b.instrument}</div>
+            </div>
+          </div>
+          <div class="bot-balance">$${fmt(b.balance)}</div>
+          <div class="bot-profit">+$${fmt(b.profit)} (${b.profitPct}%)</div>
+          <div class="status-pill" style="background:${hex22(b.ac)};border:1px solid ${hex33(b.ac)}">
+            <span class="status-dot" style="background:${b.ac};box-shadow:0 0 4px ${b.ac};${b.status==='IN_TRADE'?'animation:pulse 1.2s infinite':''}"></span>
+            <span style="font-size:9px;font-weight:600;color:${b.ac};white-space:nowrap">${b.status==='WAITING'?'Čekam Setup':b.status==='IN_TRADE'?'U Tredu':'Skenira'}</span>
+          </div>
+        </button>
+      `).join("")}
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider">
+      <div class="divider-bar" style="background:${ac}"></div>
+      <div class="divider-name" style="color:${ac}">${bot.name}</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      ${["overview","trades","market","setup"].map(t=>`
+        <button class="tab-btn ${activeTab===t?'active':''}"
+          style="${activeTab===t?`--ac22:${hex22(ac)};--ac55:${hex55(ac)};color:${ac}`:''}"
+          onclick="selectTab('${t}')">${t}</button>
+      `).join("")}
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content fadein" id="tab-content">
+      ${renderTab(bot)}
+    </div>
+
+    <div class="footer">MT5 Dashboard • TradingView Live Charts</div>
+  `;
+
+  // Clock
+  setInterval(()=>{
+    const el=document.getElementById("clock");
+    if(el) el.textContent=new Date().toLocaleTimeString("sr-RS");
+  },1000);
+
+  // Init TradingView charts if any
+  initTVCharts();
+}
+
+function renderTab(bot) {
+  if(activeTab==="overview") return renderOverview(bot);
+  if(activeTab==="trades")   return renderTrades(bot);
+  if(activeTab==="market")   return renderMarket(bot);
+  if(activeTab==="setup")    return renderSetup(bot);
+}
+
+// ── OVERVIEW ─────────────────────────────────────────
+function renderOverview(bot) {
+  const ac=bot.ac;
+  const pc=bot.profit>=0?"#4ade80":"#f87171";
+  return `
+    <div class="metrics-grid">
+      ${metricCard("Balans","$"+fmt(bot.balance),"Start: $"+fmt(bot.capital,0),"#e8f4fd",true)}
+      ${metricCard("Profit","+$"+fmt(bot.profit),"+"+bot.profitPct+"%",pc,true)}
+      ${metricCard("Win Rate",bot.winRate+"%",bot.wins+"W / "+bot.losses+"L",ac)}
+      ${metricCard("Max DD",bot.maxDrawdown+"%","","#f87171")}
+      ${metricCard("Ukupno",bot.totalTrades,"trejdova","#c8dff0")}
+      ${metricCard("Avg RR","1:"+bot.avgRR,"","#60a5fa")}
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div class="card-title" style="margin-bottom:2px">Equity Kriva</div>
+          <div style="font-size:10px;color:#3a5a7a">${bot.startDate} → ${bot.lastTrade}</div>
+        </div>
+        <div style="font-size:18px;font-weight:700;color:${pc}">+${bot.profitPct}%</div>
+      </div>
+      ${sparklineSVG(bot.equity, ac)}
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:9px;color:#3a5a7a">${bot.equityDays[0]}</span>
+        <span style="font-size:9px;color:#3a5a7a">${bot.equityDays[bot.equityDays.length-1]}</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Win / Loss Distribucija</div>
+      <div class="winbar">
+        <div class="winbar-win" style="flex:${bot.wins}">${bot.wins} WIN</div>
+        <div class="winbar-loss" style="flex:${bot.losses}">${bot.losses} LOSS</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:#3a5a7a">
+        <span>Win rate: <span style="color:#4ade80">${bot.winRate}%</span></span>
+        <span>Profitability: <span style="color:${ac}">Pozitivan ✓</span></span>
+      </div>
+    </div>
+  `;
+}
+
+function metricCard(label,value,sub,accent,big=false){
+  return `<div class="metric-card">
+    <div class="metric-label">${label}</div>
+    <div class="metric-value" style="font-size:${big?20:17}px;color:${accent}">${value}</div>
+    ${sub?`<div class="metric-sub">${sub}</div>`:""}
+  </div>`;
+}
+
+// ── TRADES ───────────────────────────────────────────
+function renderTrades(bot) {
+  const ac=bot.ac;
+  const rows=[...bot.trades].reverse().map(tr=>{
+    const bc=tr.open?ac:(tr.profit>=0?"#4ade80":"#f87171");
+    const isExp=expandedTrade===tr.id;
+    const tf=tradeChartTf[tr.id]||"1h";
+    return `
+      <div class="trade-row" style="border-left:3px solid ${bc};border:1px solid ${bc}33;border-left:3px solid ${bc}">
+        <div class="trade-inner" onclick="${tr.open?`toggleChart(${tr.id})`:''}">
+          <span class="dir-badge" style="background:${tr.dir==='BUY'?'#166534':'#7f1d1d'};color:${tr.dir==='BUY'?'#4ade80':'#f87171'}">${tr.dir}</span>
+          <div>
+            <div class="trade-entry">Entry: <b>${tr.entry}</b> | SL: ${tr.sl} | TP: ${tr.tp}</div>
+            <div class="trade-meta">${tr.date} • RR 1:${tr.rr}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="trade-pnl" style="color:${tr.open?ac:(tr.profit>=0?'#4ade80':'#f87171')}">${tr.open?"OPEN":(tr.profit>=0?"+":"")+fmt(tr.profit)+"$"}</div>
+            ${tr.open?`<button class="chart-btn" style="color:${ac};border-color:${ac}44" onclick="event.stopPropagation();toggleChart(${tr.id})">${isExp?"▲ Zatvori":"▼ Chart"}</button>`:""}
+          </div>
+        </div>
+        ${tr.open&&isExp?`
+          <div class="chart-wrap">
+            <div class="tv-container">
+              <div class="tv-header">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="tv-live"></div>
+                  <span style="font-size:11px;font-weight:700;color:${ac}">${bot.instrument}</span>
+                  <span style="font-size:9px;color:#3a5a7a">• TradingView Live</span>
+                </div>
+                <div class="tf-bar">
+                  ${TF_OPTIONS.map(t=>`<button class="tf-btn ${tf===t?'active':''}"
+                    style="${tf===t?`--ac33:${hex33(ac)};--ac66:${hex66(ac)};color:${ac}`:''}"
+                    onclick="setTf(${tr.id},'${t}')">${t}</button>`).join("")}
+                </div>
+              </div>
+              <iframe id="tv-frame-${tr.id}" class="tv-frame"
+                src="https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(bot.tvSymbol)}&interval=${TF_MAP[tf]}&theme=dark&style=1&locale=en&toolbar_bg=%230f1923&hide_top_toolbar=0&hide_legend=1&save_image=0&backgroundColor=rgba(8%2C14%2C20%2C1)"
+                allowtransparency="true" frameborder="0" scrolling="no">
+              </iframe>
+              <div class="trade-levels">
+                <div class="level-card"><div class="level-label">Entry</div><div class="level-value" style="color:${ac}">${tr.entry}</div></div>
+                <div class="level-card"><div class="level-label">SL</div><div class="level-value" style="color:#f87171">${tr.sl}</div></div>
+                <div class="level-card"><div class="level-label">TP</div><div class="level-value" style="color:#4ade80">${tr.tp}</div></div>
+              </div>
+            </div>
+          </div>
+        `:""}
+      </div>
+    `;
+  }).join("");
+  return `<div style="font-size:12px;color:#5a7a99;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Istorija Trejdova</div>${rows}`;
+}
+
+// ── MARKET ───────────────────────────────────────────
+function renderMarket(bot) {
+  const ac=bot.ac;
+  return `
+    <div class="market-grid">
+      <div class="market-card">
+        <div style="font-size:9px;color:#5a7a99;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Market Status</div>
+        <div style="font-size:15px;font-weight:700;color:${bot.marketBias==='BEARISH'?'#f87171':'#4ade80'}">${bot.marketBias} TREND</div>
+        <div style="font-size:10px;color:#3a5a7a;margin-top:4px">Sesija: ${bot.session}</div>
+      </div>
+      <div class="market-card">
+        <div style="font-size:9px;color:#5a7a99;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Risk Profile</div>
+        <div style="font-size:15px;font-weight:700;color:${ac}">${bot.riskProfile}</div>
+        <div style="font-size:10px;color:#3a5a7a;margin-top:4px">Risk: ${bot.riskPct}%</div>
+      </div>
+    </div>
+    ${[
+      {label:"Spread",value:bot.spread+" pts",color:bot.spread<20?"#4ade80":"#f87171",note:"< 20 = OK"},
+      {label:"ATR",value:bot.atr+" pts",color:ac,note:"Volatilnost normalna"},
+      {label:"Instrument",value:bot.instrument,color:ac,note:bot.tvSymbol},
+    ].map(item=>`
+      <div class="row-item">
+        <div><div style="font-size:11px;color:#5a7a99;font-weight:600">${item.label}</div><div style="font-size:10px;color:#3a5a7a;margin-top:2px">${item.note}</div></div>
+        <div style="font-size:16px;font-weight:700;color:${item.color}">${item.value}</div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ── SETUP ────────────────────────────────────────────
+function renderSetup(bot) {
+  const ac=bot.ac;
+  return `
+    <div class="setup-card" style="background:#0f1923;border:1px solid ${ac}33">
+      <div style="font-size:11px;color:${ac};font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px">
+        ${bot.status==="IN_TRADE"?"🔥 Aktivan Trejd":"⏳"} ${bot.setupDir} Setup @ ${bot.setupLevel}
+      </div>
+      ${bot.setupConditions.map((c,i)=>`
+        <div class="condition-row">
+          <div class="cond-dot" style="background:${c.done?"#166534":"#1e2d3d"};border:2px solid ${c.done?"#4ade80":ac+"55"};color:${c.done?"#4ade80":ac}">${c.done?"✓":i+1}</div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#c8dff0">${c.label}</div>
+            <div style="font-size:10px;color:#3a5a7a;margin-top:2px">${c.desc}</div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+    <div class="card">
+      <div class="card-title">Pre-Trade Risk Plan</div>
+      ${bot.riskPlan.map(([k,v,c])=>`<div class="risk-row"><span style="color:#5a7a99">${k}</span><span style="font-weight:700;color:${c}">${v}</span></div>`).join("")}
+    </div>
+    <div class="card">
+      <div class="card-title">Management Rules</div>
+      ${bot.mgmtRules.map((r,i)=>`
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start">
+          <span style="color:${ac};font-weight:700;flex-shrink:0">${i+1}.</span>
+          <span style="font-size:11px;color:#c8dff0;line-height:1.5">${r}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+function selectBot(id) { activeBot=id; activeTab="overview"; expandedTrade=null; render(); }
+function selectTab(t)  { activeTab=t; expandedTrade=null; render(); }
+function toggleChart(id){ expandedTrade=(expandedTrade===id?null:id); render(); }
+function setTf(id,tf)  { tradeChartTf[id]=tf; render(); }
+
+function initTVCharts() {
+  // TradingView iframes load themselves — nothing needed
+}
+
+// ─── BOOT ────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
