@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MT5 Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" onerror="this.remove()"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060c14;
+  --glass:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.08);
+  --glass-hover:rgba(255,255,255,0.07);
+  --text:#e2eeff;
+  --muted:#4a6a8a;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);overflow-x:hidden;min-height:100vh}
+button{cursor:pointer;font-family:var(--sans)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+
+/* ── ANIMATED BACKGROUND ── */
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app-wrap{position:relative;z-index:1}
+
+/* ── GLASSMORPHISM BASE ── */
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+}
+.glass-strong{
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:16px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 8px var(--glow-c)}50%{box-shadow:0 0 20px var(--glow-c),0 0 40px var(--glow-c)}}
+@keyframes slide-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes slide-in-left{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes count-glow{0%{text-shadow:none}50%{text-shadow:0 0 20px currentColor}100%{text-shadow:none}}
+@keyframes border-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.anim-slide-up{animation:slide-up .4s cubic-bezier(.16,1,.3,1) both}
+.anim-slide-up-1{animation:slide-up .4s .05s cubic-bezier(.16,1,.3,1) both}
+.anim-slide-up-2{animation:slide-up .4s .10s cubic-bezier(.16,1,.3,1) both}
+.anim-slide-up-3{animation:slide-up .4s .15s cubic-bezier(.16,1,.3,1) both}
+.anim-slide-up-4{animation:slide-up .4s .20s cubic-bezier(.16,1,.3,1) both}
+.anim-fade{animation:fade-in .3s ease both}
+
+/* ── HEADER ── */
+.header{
+  background:rgba(6,12,20,0.7);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--glass-border);
+  padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-logo{display:flex;align-items:center;gap:10px}
+.header-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#f0b429,#ff6b35);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#000;box-shadow:0 0 16px rgba(240,180,41,0.4)}
+.header-title{font-size:14px;font-weight:700;letter-spacing:.04em}
+.header-sub{font-size:10px;color:var(--muted);margin-top:1px;font-family:var(--mono)}
+.header-time{font-size:11px;color:var(--muted);font-family:var(--mono);background:var(--glass);border:1px solid var(--glass-border);padding:4px 10px;border-radius:20px}
+
+/* ── BOT CARDS ── */
+.bot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 12px}
+.bot-card{
+  border-radius:16px;padding:14px 12px;text-align:left;
+  background:var(--glass);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  overflow:hidden;min-width:0;
+  transition:all .25s cubic-bezier(.16,1,.3,1);
+  position:relative;
+}
+.bot-card::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(135deg,transparent 0%,rgba(255,255,255,0.03) 100%);
+  pointer-events:none;
+}
+.bot-card.active{border-color:var(--bot-ac);background:rgba(255,255,255,0.07);box-shadow:0 0 24px var(--bot-glow),inset 0 0 24px rgba(255,255,255,0.02)}
+.bot-card:hover{transform:translateY(-3px) scale(1.01);background:var(--glass-hover);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.bot-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0}
+.bot-name{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bot-balance{font-size:15px;font-weight:700;color:#e8f4fd;margin-bottom:1px;font-family:var(--mono)}
+.bot-profit{font-size:9px;color:#4ade80;margin-bottom:8px;font-family:var(--mono)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 9px;font-size:9px;font-weight:600}
+.status-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:10px;padding:4px 12px 10px}
+.divider-bar{width:3px;height:20px;border-radius:2px}
+.divider-name{font-size:12px;font-weight:700;letter-spacing:.04em}
+.divider-line{flex:1;height:1px;background:var(--glass-border)}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:4px;padding:0 12px 12px;flex-wrap:wrap}
+.tab-btn{
+  border-radius:10px;padding:7px 16px;font-size:11px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid transparent;background:transparent;color:var(--muted);
+  transition:all .2s;
+}
+.tab-btn:hover{color:var(--text);background:var(--glass)}
+.tab-btn.active{background:var(--tab-bg);border-color:var(--tab-border);color:var(--tab-color);box-shadow:0 0 12px var(--tab-glow)}
+
+/* ── CONTENT ── */
+.content{padding:0 12px 14px}
+
+/* ── METRIC CARDS ── */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric-card{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);border-radius:14px;padding:14px 12px;
+  overflow:hidden;position:relative;
+  transition:transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease, border-color .3s ease;
+  transform-style:preserve-3d;
+  will-change:transform;
+  cursor:default;
+  transition:box-shadow .3s, border-color .3s;
+}
+/* Rotating border glow sweep */
+.metric-card::before{
+  content:'';position:absolute;inset:-1px;border-radius:15px;
+  background:conic-gradient(from var(--angle,0deg), transparent 0%, var(--mc,#f0b429) 10%, transparent 20%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  padding:1px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:0;
+}
+/* Inner cursor shine */
+.metric-card::after{
+  content:'';position:absolute;inset:0;border-radius:14px;
+  background:radial-gradient(circle 80px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.07) 0%, transparent 70%);
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:1;
+}
+.metric-card:hover::after{opacity:1}
+.metric-card:hover::before{opacity:1}
+.metric-card .metric-label,.metric-card .metric-value,.metric-card .metric-sub{position:relative;z-index:2}
+.metric-label{color:var(--muted);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.metric-value{font-weight:700;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
+.metric-sub{color:var(--muted);font-size:9px;margin-top:4px;font-family:var(--mono)}
+
+/* ── GENERIC CARD ── */
+.card{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);border-radius:14px;padding:16px;margin-bottom:10px;
+  position:relative;overflow:hidden;
+  transform-style:preserve-3d;
+  transition:box-shadow .3s, border-color .3s;
+  will-change:transform;
+}
+.card::after{
+  content:'';position:absolute;inset:0;border-radius:14px;
+  background:radial-gradient(circle 120px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.05) 0%, transparent 70%);
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:1;
+}
+.card:hover::after{opacity:1}
+.card:hover{border-color:rgba(255,255,255,0.14);box-shadow:0 8px 40px rgba(0,0,0,.25)}
+.card>*{position:relative;z-index:2}
+.card-title{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+
+/* ── EQUITY SPARKLINE ── */
+.sparkline-wrap{margin-bottom:6px;border-radius:8px;overflow:hidden}
+
+/* ── WIN BAR ── */
+.winbar{display:flex;height:24px;border-radius:8px;overflow:hidden;gap:2px}
+.winbar-win{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(90deg,#14532d,#4ade80)}
+.winbar-loss{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(90deg,#450a0a,#f87171)}
+
+/* ── TRADES ── */
+.trade-row{
+  background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-radius:12px;overflow:hidden;margin-bottom:8px;
+  border:1px solid var(--glass-border);
+  position:relative;
+  transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s, border-color .25s, background .2s;
+  will-change:transform;
+}
+.trade-row::after{
+  content:'';position:absolute;inset:0;border-radius:12px;
+  background:radial-gradient(circle 100px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06) 0%, transparent 70%);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.trade-row:hover{background:var(--glass-hover);transform:translateX(3px);border-color:rgba(255,255,255,0.12);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.trade-row:hover::after{opacity:1}
+.trade-inner{padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.dir-badge{border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.trade-entry{font-size:11px;color:var(--text);font-family:var(--mono)}
+.trade-meta{font-size:9px;color:var(--muted);margin-top:2px}
+.trade-pnl{font-size:13px;font-weight:700;text-align:right;font-family:var(--mono)}
+.chart-btn{font-size:9px;border-radius:10px;padding:3px 8px;background:transparent;border:1px solid;margin-top:4px;display:block;margin-left:auto;transition:all .2s}
+.chart-btn:hover{background:rgba(255,255,255,0.05)}
+
+/* ── TV CHART ── */
+.tv-container{border-radius:12px;overflow:hidden;border:1px solid var(--glass-border);background:#080e14;margin-top:2px}
+.tv-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;flex-wrap:wrap;gap:6px;background:rgba(0,0,0,0.3)}
+.tv-live{width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:pulse 1.5s infinite;flex-shrink:0}
+.tf-bar{display:flex;gap:3px}
+.tf-btn{border-radius:6px;padding:3px 8px;font-size:10px;font-weight:600;border:1px solid var(--glass-border);background:transparent;color:var(--muted);transition:all .2s;font-family:var(--mono)}
+.tf-btn.active{background:var(--tf-bg);border-color:var(--tf-border);color:var(--tf-color)}
+.tv-frame{width:100%;height:320px;display:block;border:none}
+.trade-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;background:rgba(0,0,0,0.2)}
+.level-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:8px;padding:8px 6px;text-align:center}
+.level-label{font-size:8px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+.level-value{font-size:12px;font-weight:700;font-family:var(--mono)}
+
+/* ── MARKET ── */
+.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.row-item{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+/* ── SETUP ── */
+.setup-card{border-radius:14px;padding:18px;margin-bottom:10px}
+.condition-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.cond-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:2px;transition:all .3s}
+.risk-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;font-family:var(--mono)}
+
+.footer{text-align:center;padding:16px;font-size:10px;color:rgba(255,255,255,0.15);font-family:var(--mono)}
+
+/* ── GLOW LINES ── */
+.glow-line{height:1px;background:linear-gradient(90deg,transparent,var(--line-c),transparent);margin:0 12px 10px;opacity:0.4}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="app-wrap" id="app"></div>
+
+<script>
+// ─── PARTICLES ───────────────────────────────────────────────────────────────
+(function(){
+  const canvas=document.getElementById("bg-canvas");
+  const ctx=canvas.getContext("2d");
+  let W,H,particles=[];
+
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize",resize);
+
+  // Gradient orbs
+  const orbs=[
+    {x:.15,y:.2,r:.35,c:"rgba(240,180,41,0.06)"},
+    {x:.85,y:.7,r:.4,c:"rgba(96,165,250,0.06)"},
+    {x:.5,y:.5,r:.5,c:"rgba(74,222,128,0.03)"},
+  ];
+
+  // Floating particles
+  for(let i=0;i<55;i++){
+    particles.push({
+      x:Math.random()*1,y:Math.random()*1,
+      vx:(Math.random()-.5)*.0003,vy:(Math.random()-.5)*.0003,
+      r:Math.random()*1.5+.5,
+      opacity:Math.random()*.4+.1,
+      c:["#f0b429","#60a5fa","#4ade80","#a78bfa"][Math.floor(Math.random()*4)],
+    });
+  }
+
+  // Connection lines between nearby particles
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // Orbs
+    orbs.forEach(o=>{
+      const grd=ctx.createRadialGradient(o.x*W,o.y*H,0,o.x*W,o.y*H,o.r*Math.max(W,H));
+      grd.addColorStop(0,o.c);
+      grd.addColorStop(1,"transparent");
+      ctx.fillStyle=grd;
+      ctx.fillRect(0,0,W,H);
+    });
+
+    // Particles
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=1; if(p.x>1)p.x=0;
+      if(p.y<0)p.y=1; if(p.y>1)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.c;
+      ctx.globalAlpha=p.opacity;
+      ctx.fill();
+    });
+
+    // Connection lines
+    ctx.globalAlpha=1;
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=(particles[i].x-particles[j].x)*W;
+        const dy=(particles[i].y-particles[j].y)*H;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<120){
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x*W,particles[i].y*H);
+          ctx.lineTo(particles[j].x*W,particles[j].y*H);
+          ctx.strokeStyle="rgba(255,255,255,"+(0.06*(1-dist/120))+")";
+          ctx.lineWidth=.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const BOTS=[
+  {
+    id:"bot1",name:"XAUUSD SMC BOT",short:"Au",
+    ac:"#f0b429",glow:"rgba(240,180,41,0.25)",grad:"linear-gradient(135deg,#b8860b,#f0b429)",
+    instrument:"XAUUSD",tvSymbol:"OANDA:XAUUSD",
+    capital:1000,balance:1110.70,profit:110.70,profitPct:11.07,
+    startDate:"2026-05-15",lastTrade:"2026-05-27",
+    riskProfile:"SAFE",riskPct:.5,winRate:68,totalTrades:22,wins:15,losses:7,avgRR:2.0,maxDrawdown:-2.3,
+    status:"WAITING",marketBias:"BEARISH",spread:15.0,atr:504.6,session:"ACTIVE",
+    setupDir:"SELL",setupLevel:4504.5,
+    setupConditions:[
+      {label:"Sweep High",desc:"Cena treba da ide iznad 4504.5",done:false},
+      {label:"Rejection",desc:"Zatvori se ispod 4504.5",done:false},
+      {label:"Bearish Confirm",desc:"Bearish confirmation svećica",done:false},
+    ],
+    riskPlan:[["Direction","SELL","#f87171"],["Entry Est.","4504.5","#c8dff0"],["Stop Loss","4505.0","#f87171"],["Take Profit","4503.5","#4ade80"],["Risk/Reward","1:2.0","#f0b429"],["Lot Size","1.11","#c8dff0"],["Risk Money","-$5.55","#f87171"],["Est. Profit","+$11.11","#4ade80"]],
+    mgmtRules:["Na 1.0R → zatvori 50% pozicije","Nakon partial close → pomeri SL na break-even","Ostatak drži do 2.0R ili structure exit"],
+    equity:[1000,1082,1037,997,958,1033,1114,1068,1025,1111,1193,1111],
+    equityDays:["May 15","May 27"],
+    trades:[
+      {id:1,dir:"SELL",entry:4471.17,sl:4471.7,tp:4470.17,profit:82.02,rr:2.0,date:"2026-05-15"},
+      {id:2,dir:"SELL",entry:4467.11,sl:4467.61,tp:4466.11,profit:-44.99,rr:2.0,date:"2026-05-16"},
+      {id:3,dir:"SELL",entry:4479.00,sl:4479.5,tp:4478.00,profit:-39.31,rr:2.0,date:"2026-05-17"},
+      {id:4,dir:"BUY",entry:4485.76,sl:4485.26,tp:4486.76,profit:-38.81,rr:2.0,date:"2026-05-18"},
+      {id:5,dir:"BUY",entry:4486.45,sl:4485.95,tp:4487.45,profit:74.52,rr:2.0,date:"2026-05-20"},
+      {id:6,dir:"BUY",entry:4481.91,sl:4481.41,tp:4482.91,profit:81.06,rr:2.0,date:"2026-05-21"},
+      {id:7,dir:"SELL",entry:4498.00,sl:4498.5,tp:4497.00,profit:-46.17,rr:2.0,date:"2026-05-22"},
+      {id:8,dir:"SELL",entry:4518.26,sl:4518.76,tp:4517.26,profit:-42.47,rr:2.0,date:"2026-05-23"},
+      {id:9,dir:"BUY",entry:4511.01,sl:4510.51,tp:4512.01,profit:85.74,rr:2.0,date:"2026-05-25"},
+      {id:10,dir:"BUY",entry:4480.03,sl:4479.53,tp:4481.03,profit:82.21,rr:2.0,date:"2026-05-26"},
+      {id:11,dir:"SELL",entry:4476.21,sl:4476.71,tp:4475.21,profit:110.70,rr:2.0,date:"2026-05-27"},
+    ],
+  },
+  {
+    id:"bot2",name:"EURUSD SCALPER BOT",short:"€$",
+    ac:"#60a5fa",glow:"rgba(96,165,250,0.25)",grad:"linear-gradient(135deg,#1d4ed8,#60a5fa)",
+    instrument:"EURUSD",tvSymbol:"OANDA:EURUSD",
+    capital:10000,balance:10843.20,profit:843.20,profitPct:8.43,
+    startDate:"2026-04-01",lastTrade:"2026-06-10",
+    riskProfile:"MODERATE",riskPct:1.0,winRate:72,totalTrades:58,wins:42,losses:16,avgRR:1.8,maxDrawdown:-3.7,
+    status:"IN_TRADE",marketBias:"BULLISH",spread:.8,atr:42.3,session:"ACTIVE",
+    setupDir:"BUY",setupLevel:1.0872,
+    setupConditions:[
+      {label:"EMA 9 > EMA 21",desc:"Kratkoročni trend bullish potvrđen",done:true},
+      {label:"RSI > 50",desc:"RSI na 1H = 58.4, momentum pozitivan",done:true},
+      {label:"Entry na pullback",desc:"Cena se vratila na EMA 21 zona",done:true},
+    ],
+    riskPlan:[["Direction","BUY","#4ade80"],["Entry","1.08720","#c8dff0"],["Stop Loss","1.08650","#f87171"],["Take Profit","1.08846","#4ade80"],["Risk/Reward","1:1.8","#f0b429"],["Lot Size","1.43","#c8dff0"],["Risk Money","-$100.10","#f87171"],["Est. Profit","+$180.18","#4ade80"]],
+    mgmtRules:["Na 1.0R → pomeri SL na break-even","Na 1.5R → zatvori 30% pozicije","Ostatak drži do 1.8R ili EMA cross exit"],
+    equity:[10000,10180,10095,10340,10520,10410,10690,10580,10750,10920,10780,10843],
+    equityDays:["Apr 01","Jun 10"],
+    trades:[
+      {id:1,dir:"BUY",entry:1.0812,sl:1.0800,tp:1.0834,profit:220.40,rr:1.8,date:"2026-04-02"},
+      {id:2,dir:"SELL",entry:1.0865,sl:1.0878,tp:1.0842,profit:-130.00,rr:1.8,date:"2026-04-05"},
+      {id:3,dir:"BUY",entry:1.0798,sl:1.0786,tp:1.0820,profit:198.60,rr:1.8,date:"2026-04-09"},
+      {id:4,dir:"BUY",entry:1.0834,sl:1.0822,tp:1.0856,profit:215.80,rr:1.8,date:"2026-04-14"},
+      {id:5,dir:"SELL",entry:1.0878,sl:1.0891,tp:1.0855,profit:-115.50,rr:1.8,date:"2026-04-18"},
+      {id:6,dir:"BUY",entry:1.0821,sl:1.0809,tp:1.0843,profit:205.20,rr:1.8,date:"2026-04-23"},
+      {id:7,dir:"SELL",entry:1.0901,sl:1.0914,tp:1.0878,profit:189.40,rr:1.8,date:"2026-04-28"},
+      {id:8,dir:"BUY",entry:1.0845,sl:1.0833,tp:1.0867,profit:-98.30,rr:1.8,date:"2026-05-03"},
+      {id:9,dir:"BUY",entry:1.0867,sl:1.0855,tp:1.0889,profit:231.00,rr:1.8,date:"2026-05-08"},
+      {id:10,dir:"SELL",entry:1.0912,sl:1.0925,tp:1.0889,profit:178.60,rr:1.8,date:"2026-05-14"},
+      {id:11,dir:"BUY",entry:1.0856,sl:1.0844,tp:1.0878,profit:-112.40,rr:1.8,date:"2026-05-20"},
+      {id:12,dir:"BUY",entry:1.0878,sl:1.0866,tp:1.0900,profit:242.80,rr:1.8,date:"2026-05-27"},
+      {id:13,dir:"SELL",entry:1.0934,sl:1.0947,tp:1.0911,profit:167.20,rr:1.8,date:"2026-06-03"},
+      {id:14,dir:"BUY",entry:1.0867,sl:1.0855,tp:1.0889,profit:0,rr:1.8,date:"2026-06-10",open:true},
+    ],
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let activeBot="bot1",activeTab="overview",expandedTrade=null,tradeChartTf={};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function fmt(n,d=2){return Number(n).toLocaleString("en",{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+function sparklineSVG(vals,color){
+  const min=Math.min(...vals),max=Math.max(...vals),w=300,h=52;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1))*w},${h-((v-min)/(max-min||1))*h}`).join(" ");
+  const id="sg"+color.replace(/[^a-z0-9]/gi,"");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block">
+    <defs>
+      <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="0,${h} ${pts} ${w},${h}" fill="url(#${id})"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${vals.map((v,i)=>(i/(vals.length-1))*w).pop()}" cy="${h-((vals[vals.length-1]-min)/(max-min||1))*h}" r="3" fill="${color}" style="filter:drop-shadow(0 0 4px ${color})"/>
+  </svg>`;
+}
+
+// Count-up animation
+function countUp(el,target,decimals=2,prefix="",suffix=""){
+  const start=performance.now();
+  const duration=800;
+  function step(now){
+    const p=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-p,4);
+    const val=target*ease;
+    el.textContent=prefix+fmt(val,decimals)+suffix;
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=prefix+fmt(target,decimals)+suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+const TF_OPTIONS=["5m","15m","1h","4h","1D"];
+const TF_MAP={"5m":"5","15m":"15","1h":"60","4h":"240","1D":"D"};
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render(){
+  const bot=BOTS.find(b=>b.id===activeBot);
+  const ac=bot.ac;
+  const totalProfit=BOTS.reduce((s,b)=>s+b.profit,0);
+  const totalBalance=BOTS.reduce((s,b)=>s+b.balance,0);
+
+  document.getElementById("app").innerHTML=`
+    <div class="header anim-slide-up">
+      <div class="header-logo">
+        <div class="header-icon">₿</div>
+        <div>
+          <div class="header-title">MT5 PORTFOLIO</div>
+          <div class="header-sub" style="font-family:var(--mono)">
+            <span style="color:#4ade80">+$${fmt(totalProfit)}</span>
+            <span style="color:rgba(255,255,255,.2)"> · </span>
+            <span style="color:#e2eeff">$${fmt(totalBalance)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-time" id="clock">${new Date().toLocaleTimeString("sr-RS")}</div>
+    </div>
+
+    <div class="bot-grid">
+      ${BOTS.map((b,i)=>`
+        <button class="bot-card anim-slide-up-${i+1} ${activeBot===b.id?"active":""}"
+          style="--bot-ac:${b.ac};--bot-glow:${b.glow}"
+          onclick="selectBot('${b.id}')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div class="bot-icon" style="background:${b.grad};box-shadow:0 0 12px ${b.glow}">${b.short}</div>
+            <div style="min-width:0;overflow:hidden">
+              <div class="bot-name" style="color:${activeBot===b.id?b.ac:"#c8dff0"}">${b.name}</div>
+              <div style="font-size:8px;color:var(--muted);font-family:var(--mono)">${b.instrument}</div>
+            </div>
+          </div>
+          <div class="bot-balance" id="bal-${b.id}">$${fmt(b.balance)}</div>
+          <div class="bot-profit">+$${fmt(b.profit)} (${b.profitPct}%)</div>
+          <div class="status-pill" style="background:${b.ac}18;border:1px solid ${b.ac}33">
+            <span class="status-dot" style="background:${b.ac};box-shadow:0 0 5px ${b.ac};${b.status==="IN_TRADE"?"animation:pulse 1.2s infinite":""}"></span>
+            <span style="color:${b.ac}">${b.status==="WAITING"?"Čekam Setup":b.status==="IN_TRADE"?"U Tredu":"Skenira"}</span>
+          </div>
+        </button>
+      `).join("")}
+    </div>
+
+    <div class="glow-line" style="--line-c:${ac}"></div>
+
+    <div class="divider anim-slide-up-3">
+      <div class="divider-bar" style="background:${ac};box-shadow:0 0 8px ${ac}"></div>
+      <div class="divider-name" style="color:${ac}">${bot.name}</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="tab-bar anim-slide-up-3">
+      ${["overview","trades","market","setup"].map(t=>`
+        <button class="tab-btn ${activeTab===t?"active":""}"
+          style="${activeTab===t?`--tab-bg:${ac}18;--tab-border:${ac}55;--tab-color:${ac};--tab-glow:${bot.glow}`:""}"
+          onclick="selectTab('${t}')">${t}</button>
+      `).join("")}
+    </div>
+
+    <div class="content" id="tab-content">
+      ${renderTab(bot)}
+    </div>
+
+    <div class="footer">MT5 Dashboard · TradingView Live · Glassmorphism UI</div>
+  `;
+
+  // Clock
+  setInterval(()=>{const e=document.getElementById("clock");if(e)e.textContent=new Date().toLocaleTimeString("sr-RS");},1000);
+
+  // Count-up on balance cards
+  setTimeout(()=>{
+    BOTS.forEach(b=>{
+      const el=document.getElementById("bal-"+b.id);
+      if(el) countUp(el,b.balance,2,"$");
+    });
+    // Also metric values
+    document.querySelectorAll("[data-countup]").forEach(el=>{
+      const target=parseFloat(el.dataset.countup);
+      const pre=el.dataset.pre||"";
+      const suf=el.dataset.suf||"";
+      const dec=parseInt(el.dataset.dec||"2");
+      countUp(el,target,dec,pre,suf);
+    });
+  },100);
+}
+
+function renderTab(bot){
+  if(activeTab==="overview") return renderOverview(bot);
+  if(activeTab==="trades")   return renderTrades(bot);
+  if(activeTab==="market")   return renderMarket(bot);
+  if(activeTab==="setup")    return renderSetup(bot);
+  return "";
+}
+
+// ── OVERVIEW ─────────────────────────────────────────
+function renderOverview(bot){
+  const ac=bot.ac,pc=bot.profit>=0?"#4ade80":"#f87171";
+  return `
+    <div class="metrics-grid">
+      <div class="metric-card anim-slide-up-1">
+        <div class="metric-label">Balans</div>
+        <div class="metric-value" style="font-size:19px;color:#e8f4fd" data-countup="${bot.balance}" data-pre="$" data-dec="2">$${fmt(bot.balance)}</div>
+        <div class="metric-sub">Start: $${fmt(bot.capital,0)}</div>
+      </div>
+      <div class="metric-card anim-slide-up-1">
+        <div class="metric-label">Profit</div>
+        <div class="metric-value" style="font-size:19px;color:${pc};text-shadow:0 0 16px ${pc}66" data-countup="${bot.profit}" data-pre="+$" data-dec="2">+$${fmt(bot.profit)}</div>
+        <div class="metric-sub" style="color:${pc}">+${bot.profitPct}%</div>
+      </div>
+      <div class="metric-card anim-slide-up-2">
+        <div class="metric-label">Win Rate</div>
+        <div class="metric-value" style="font-size:17px;color:${ac}">${bot.winRate}%</div>
+        <div class="metric-sub">${bot.wins}W / ${bot.losses}L</div>
+      </div>
+      <div class="metric-card anim-slide-up-2">
+        <div class="metric-label">Max Drawdown</div>
+        <div class="metric-value" style="font-size:17px;color:#f87171">${bot.maxDrawdown}%</div>
+        <div class="metric-sub">Peak to trough</div>
+      </div>
+      <div class="metric-card anim-slide-up-3">
+        <div class="metric-label">Ukupno</div>
+        <div class="metric-value" style="font-size:17px;color:#c8dff0">${bot.totalTrades}</div>
+        <div class="metric-sub">trejdova</div>
+      </div>
+      <div class="metric-card anim-slide-up-3">
+        <div class="metric-label">Avg RR</div>
+        <div class="metric-value" style="font-size:17px;color:#60a5fa">1:${bot.avgRR}</div>
+        <div class="metric-sub">Risk / Reward</div>
+      </div>
+    </div>
+
+    <div class="card anim-slide-up-4">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+        <div>
+          <div class="card-title" style="margin-bottom:3px">Equity Kriva</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${bot.startDate} → ${bot.lastTrade}</div>
+        </div>
+        <div style="font-size:20px;font-weight:700;color:${pc};text-shadow:0 0 20px ${pc}55;font-family:var(--mono)">+${bot.profitPct}%</div>
+      </div>
+      <div class="sparkline-wrap">${sparklineSVG(bot.equity,ac)}</div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:9px;color:var(--muted);font-family:var(--mono)">${bot.equityDays[0]}</span>
+        <span style="font-size:9px;color:var(--muted);font-family:var(--mono)">${bot.equityDays[1]}</span>
+      </div>
+    </div>
+
+    <div class="card anim-slide-up-4">
+      <div class="card-title">Win / Loss Distribucija</div>
+      <div class="winbar" style="box-shadow:inset 0 1px 0 rgba(255,255,255,.1)">
+        <div class="winbar-win" style="flex:${bot.wins};box-shadow:0 0 12px rgba(74,222,128,.3)">${bot.wins} WIN</div>
+        <div class="winbar-loss" style="flex:${bot.losses};box-shadow:0 0 12px rgba(248,113,113,.3)">${bot.losses} LOSS</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:10px;color:var(--muted)">
+        <span>Win rate: <span style="color:#4ade80;font-weight:600">${bot.winRate}%</span></span>
+        <span>Status: <span style="color:${ac};font-weight:600">Pozitivan ✓</span></span>
+      </div>
+    </div>
+  `;
+}
+
+// ── TRADES ───────────────────────────────────────────
+function renderTrades(bot){
+  const ac=bot.ac;
+  const rows=[...bot.trades].reverse().map((tr,idx)=>{
+    const bc=tr.open?ac:(tr.profit>=0?"#4ade80":"#f87171");
+    const isExp=expandedTrade===tr.id;
+    const tf=tradeChartTf[tr.id]||"1h";
+    return `
+      <div class="trade-row anim-slide-up" style="border-left:3px solid ${bc};border-color:${bc}33;animation-delay:${idx*.04}s">
+        <div class="trade-inner" style="cursor:${tr.open?"pointer":"default"}" onclick="${tr.open?`toggleChart(${tr.id})`:""}">
+          <span class="dir-badge" style="background:${tr.dir==="BUY"?"rgba(20,83,45,0.8)":"rgba(69,10,10,0.8)"};color:${tr.dir==="BUY"?"#4ade80":"#f87171"};border:1px solid ${tr.dir==="BUY"?"#4ade8033":"#f8717133"}">${tr.dir}</span>
+          <div>
+            <div class="trade-entry">Entry: <b>${tr.entry}</b> · SL: ${tr.sl} · TP: ${tr.tp}</div>
+            <div class="trade-meta">${tr.date} · RR 1:${tr.rr}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="trade-pnl" style="color:${tr.open?ac:(tr.profit>=0?"#4ade80":"#f87171")};${tr.profit>0?"text-shadow:0 0 12px "+bc+"66":""}">${tr.open?"OPEN":(tr.profit>=0?"+":"")+fmt(tr.profit)+"$"}</div>
+            ${tr.open?`<button class="chart-btn" style="color:${ac};border-color:${ac}44" onclick="event.stopPropagation();toggleChart(${tr.id})">${isExp?"▲ Zatvori":"▼ Chart"}</button>`:""}
+          </div>
+        </div>
+        ${tr.open&&isExp?`
+          <div style="padding:0 12px 14px" class="anim-fade">
+            <div class="tv-container">
+              <div class="tv-header">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="tv-live"></div>
+                  <span style="font-size:11px;font-weight:700;color:${ac}">${bot.instrument}</span>
+                  <span style="font-size:9px;color:var(--muted)">· TradingView Live</span>
+                </div>
+                <div class="tf-bar">
+                  ${TF_OPTIONS.map(t=>`<button class="tf-btn ${tf===t?"active":""}"
+                    style="${tf===t?`--tf-bg:${ac}22;--tf-border:${ac}55;--tf-color:${ac}`:""}"
+                    onclick="setTf(${tr.id},'${t}')">${t}</button>`).join("")}
+                </div>
+              </div>
+              <iframe class="tv-frame"
+                src="https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(bot.tvSymbol)}&interval=${TF_MAP[tf]}&theme=dark&style=1&locale=en&toolbar_bg=%230a1020&hide_top_toolbar=0&hide_legend=1&save_image=0&backgroundColor=rgba(6%2C12%2C20%2C1)"
+                allowtransparency="true" frameborder="0" scrolling="no">
+              </iframe>
+              <div class="trade-levels">
+                <div class="level-card"><div class="level-label">Entry</div><div class="level-value" style="color:${ac}">${tr.entry}</div></div>
+                <div class="level-card"><div class="level-label">SL</div><div class="level-value" style="color:#f87171">${tr.sl}</div></div>
+                <div class="level-card"><div class="level-label">TP</div><div class="level-value" style="color:#4ade80">${tr.tp}</div></div>
+              </div>
+            </div>
+          </div>
+        `:""}
+      </div>
+    `;
+  }).join("");
+  return `
+    <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;font-family:var(--mono)">
+      Istorija Trejdova <span style="color:${bot.ac};margin-left:6px">${bot.trades.length}</span>
+    </div>
+    ${rows}
+  `;
+}
+
+// ── MARKET ───────────────────────────────────────────
+function renderMarket(bot){
+  const ac=bot.ac;
+  return `
+    <div class="market-grid">
+      <div class="card anim-slide-up-1" style="padding:14px">
+        <div style="font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Market Trend</div>
+        <div style="font-size:16px;font-weight:700;color:${bot.marketBias==="BEARISH"?"#f87171":"#4ade80"};text-shadow:0 0 16px ${bot.marketBias==="BEARISH"?"#f8717144":"#4ade8044"}">${bot.marketBias}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Sesija: ${bot.session}</div>
+      </div>
+      <div class="card anim-slide-up-1" style="padding:14px">
+        <div style="font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Risk Profile</div>
+        <div style="font-size:16px;font-weight:700;color:${ac};text-shadow:0 0 16px ${ac}44">${bot.riskProfile}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Per trade: ${bot.riskPct}%</div>
+      </div>
+    </div>
+    ${[
+      {label:"Spread",value:bot.spread+" pts",color:bot.spread<20?"#4ade80":"#f87171",note:"< 20 = OK",delay:2},
+      {label:"ATR (Volatility)",value:bot.atr+" pts",color:ac,note:"Normalna volatilnost",delay:3},
+      {label:"Instrument",value:bot.instrument,color:ac,note:bot.tvSymbol,delay:4},
+    ].map(item=>`
+      <div class="row-item anim-slide-up-${item.delay}" style="transition:border-color .3s;border-color:var(--glass-border)">
+        <div>
+          <div style="font-size:11px;color:var(--text);font-weight:600">${item.label}</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:2px;font-family:var(--mono)">${item.note}</div>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:${item.color};text-shadow:0 0 12px ${item.color}44;font-family:var(--mono)">${item.value}</div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ── SETUP ────────────────────────────────────────────
+function renderSetup(bot){
+  const ac=bot.ac;
+  return `
+    <div class="setup-card anim-slide-up-1" style="background:${ac}0d;border:1px solid ${ac}33">
+      <div style="font-size:11px;color:${ac};font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;text-shadow:0 0 12px ${ac}55">
+        ${bot.status==="IN_TRADE"?"🔥 Aktivan Trejd":"⏳ Čekam"} · ${bot.setupDir} Setup @ <span style="font-family:var(--mono)">${bot.setupLevel}</span>
+      </div>
+      ${bot.setupConditions.map((c,i)=>`
+        <div class="condition-row">
+          <div class="cond-dot" style="background:${c.done?"rgba(20,83,45,.9)":"rgba(255,255,255,.04)"};border:2px solid ${c.done?"#4ade80":ac+"44"};color:${c.done?"#4ade80":ac};${c.done?"box-shadow:0 0 10px #4ade8044":""}">${c.done?"✓":i+1}</div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:${c.done?"#e2eeff":"#8aaabb"}">${c.label}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${c.desc}</div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="card anim-slide-up-2">
+      <div class="card-title">Pre-Trade Risk Plan</div>
+      ${bot.riskPlan.map(([k,v,c])=>`
+        <div class="risk-row">
+          <span style="color:var(--muted)">${k}</span>
+          <span style="font-weight:600;color:${c}">${v}</span>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="card anim-slide-up-3">
+      <div class="card-title">Management Rules</div>
+      ${bot.mgmtRules.map((r,i)=>`
+        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-start">
+          <span style="color:${ac};font-weight:700;flex-shrink:0;font-size:13px;text-shadow:0 0 8px ${ac}66">${i+1}</span>
+          <span style="font-size:11px;color:#b0c8d8;line-height:1.6">${r}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+function selectBot(id){activeBot=id;activeTab="overview";expandedTrade=null;render();setTimeout(initCardEffects,80);}
+function selectTab(t){activeTab=t;expandedTrade=null;render();setTimeout(initCardEffects,80);}
+function toggleChart(id){expandedTrade=(expandedTrade===id?null:id);render();setTimeout(initCardEffects,80);}
+function setTf(id,tf){tradeChartTf[id]=tf;render();setTimeout(initCardEffects,80);}
+
+
+// ─── CARD HOVER EFFECTS (event delegation — works after every render) ────────
+function initCardEffects(){
+  const bot = BOTS.find(b=>b.id===activeBot);
+  const acColor = bot ? bot.ac : '#f0b429';
+
+  document.querySelectorAll('.metric-card,.card,.bot-card,.trade-row').forEach(card=>{
+    // Avoid double-binding
+    if(card._tiltBound) return;
+    card._tiltBound = true;
+
+    card.style.setProperty('--mc', acColor);
+
+    // ── Border sweep animation
+    let angle = 0, sweepRaf = null, hovered = false;
+
+    function animSweep(){
+      if(!hovered) return;
+      angle = (angle + 2.5) % 360;
+      card.style.setProperty('--angle', angle+'deg');
+      sweepRaf = requestAnimationFrame(animSweep);
+    }
+
+    // ── Smooth lerp tilt
+    let tRotX=0, tRotY=0, cRotX=0, cRotY=0, tiltRaf=null;
+    const isBotCard   = card.classList.contains('bot-card');
+    const isTradeRow  = card.classList.contains('trade-row');
+    const strength    = isBotCard ? 5 : isTradeRow ? 3 : 12;
+    const tz          = isBotCard ? 3 : isTradeRow ? 2 : 8;
+
+    function lerpStep(){
+      cRotX += (tRotX - cRotX) * 0.10;
+      cRotY += (tRotY - cRotY) * 0.10;
+      if(isTradeRow){
+        card.style.transform = `perspective(800px) rotateX(${cRotX}deg) rotateY(${cRotY}deg)`;
+      } else {
+        card.style.transform = `perspective(700px) rotateX(${cRotX}deg) rotateY(${cRotY}deg) translateZ(${tz}px)`;
+      }
+      if(Math.abs(tRotX-cRotX)>.02 || Math.abs(tRotY-cRotY)>.02){
+        tiltRaf = requestAnimationFrame(lerpStep);
+      }
+    }
+
+    function lerpReset(){
+      tRotX=0; tRotY=0;
+      function step(){
+        cRotX += (0-cRotX)*0.09;
+        cRotY += (0-cRotY)*0.09;
+        card.style.transform = `perspective(700px) rotateX(${cRotX}deg) rotateY(${cRotY}deg) translateZ(0px)`;
+        if(Math.abs(cRotX)>.02 || Math.abs(cRotY)>.02) requestAnimationFrame(step);
+        else card.style.transform = '';
+      }
+      step();
+    }
+
+    card.addEventListener('mouseenter', ()=>{
+      hovered = true;
+      animSweep();
+    });
+
+    card.addEventListener('mouseleave', ()=>{
+      hovered = false;
+      cancelAnimationFrame(sweepRaf);
+      card.style.setProperty('--angle','0deg');
+      lerpReset();
+    });
+
+    card.addEventListener('mousemove', e=>{
+      const r = card.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      const cx = r.width  / 2;
+      const cy = r.height / 2;
+
+      // Tilt based on cursor position relative to center
+      tRotX = ((y - cy) / cy) * -strength;
+      tRotY = ((x - cx) / cx) *  strength;
+
+      cancelAnimationFrame(tiltRaf);
+      lerpStep();
+
+      // Shine spotlight
+      card.style.setProperty('--mx', (x/r.width*100)+'%');
+      card.style.setProperty('--my', (y/r.height*100)+'%');
+    });
+  });
+}
+
+// ─── BOOT ────────────────────────────────────────────────────────────────────
+render();
+setTimeout(initCardEffects, 80);
+</script>
+</body>
+</html>
