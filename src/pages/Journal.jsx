@@ -1,8 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { journalStats, journalTrades } from '../data/mockData'
 import { IcoArrowUp, IcoArrowDown, IcoCheck, IcoX, IcoInfo } from '../components/Icons'
 import ScrollableTabs from '../components/ScrollableTabs'
+
+function WinRateArc({ value }) {
+  const [animated, setAnimated] = useState(false)
+  useEffect(() => {
+    const id = setTimeout(() => setAnimated(true), 100)
+    return () => clearTimeout(id)
+  }, [])
+  const r = 48, circ = 2 * Math.PI * r
+  const targetDash = (value / 100) * circ
+  return (
+    <svg width="120" height="120" viewBox="0 0 120 120" style={{ overflow: 'visible' }}>
+      <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+      <circle cx="60" cy="60" r={r} fill="none" stroke="var(--green)" strokeWidth="10"
+        strokeDasharray={animated ? `${targetDash} ${circ - targetDash}` : `0.001 ${circ}`}
+        strokeDashoffset={circ / 4}
+        strokeLinecap="round"
+        style={{ filter: 'drop-shadow(0 0 8px var(--green))', transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)' }}
+      />
+      <text x="60" y="55" textAnchor="middle" fill="var(--green)" fontSize="22" fontWeight="800" fontFamily="Orbitron, monospace">{value}%</text>
+      <text x="60" y="74" textAnchor="middle" fill="var(--text-3)" fontSize="10">Win Rate</text>
+    </svg>
+  )
+}
 
 export default function Journal() {
   const { t } = useLanguage()
@@ -193,17 +216,7 @@ export default function Journal() {
             <div className="section-label mb-4">Performance Overview</div>
             <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
-                <svg width="120" height="120" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
-                  <circle cx="60" cy="60" r="48" fill="none" stroke="var(--green)" strokeWidth="10"
-                    strokeDasharray={`${journalStats.winRate / 100 * 2 * Math.PI * 48} ${2 * Math.PI * 48}`}
-                    strokeDashoffset={2 * Math.PI * 48 / 4}
-                    strokeLinecap="round"
-                    style={{ filter: 'drop-shadow(0 0 8px var(--green))' }}
-                  />
-                  <text x="60" y="55" textAnchor="middle" fill="var(--green)" fontSize="22" fontWeight="800" fontFamily="Orbitron, monospace">{journalStats.winRate}%</text>
-                  <text x="60" y="74" textAnchor="middle" fill="var(--text-3)" fontSize="10">Win Rate</text>
-                </svg>
+                <WinRateArc value={journalStats.winRate} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {[
