@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
-window.__SEVORA_VERSION__ = '1.0.4'
+window.__SEVORA_VERSION__ = '1.0.5'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
