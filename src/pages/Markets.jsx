@@ -28,10 +28,20 @@ function HeatCell({ inst }) {
 export default function Markets() {
   const { t } = useLanguage()
   const [filter, setFilter] = useState('all')
+  const [favs, setFavs] = useState(() => new Set(instruments.filter(i => i.isFav).map(i => i.symbol)))
+
+  const toggleFav = (symbol, e) => {
+    e.stopPropagation()
+    setFavs(prev => {
+      const next = new Set(prev)
+      next.has(symbol) ? next.delete(symbol) : next.add(symbol)
+      return next
+    })
+  }
 
   const filtered = instruments.filter(i => {
     if (filter === 'all') return true
-    if (filter === 'favorites') return i.isFav
+    if (filter === 'favorites') return favs.has(i.symbol)
     return i.category === filter
   })
 
@@ -70,8 +80,8 @@ export default function Markets() {
               const isPos = inst.changePct >= 0
               return (
                 <tr key={inst.symbol} style={{ cursor: 'pointer' }}>
-                  <td style={{ width: 36 }}>
-                    <IcoStar size={14} color={inst.isFav ? 'var(--gold)' : 'var(--text-4)'} fill={inst.isFav ? 'var(--gold)' : 'none'} />
+                  <td style={{ width: 36, cursor: 'pointer' }} onClick={e => toggleFav(inst.symbol, e)}>
+                    <IcoStar size={14} color={favs.has(inst.symbol) ? 'var(--gold)' : 'var(--text-4)'} fill={favs.has(inst.symbol) ? 'var(--gold)' : 'none'} />
                   </td>
                   <td>
                     <span style={{ fontFamily: 'Orbitron, monospace', fontSize: 13, fontWeight: 700, color: 'var(--gold)' }}>{inst.symbol}</span>
