@@ -1312,5 +1312,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   .col-cal-hide { display: none; }
   .col-cal-show { display: flex !important; }
 
+  /* Journal trades: hide extra columns on mobile, tap row to expand */
+  .col-jr-hide { display: none; }
+
 
 }
