@@ -79,13 +79,13 @@ export default function Calendar() {
           <thead>
             <tr>
               <th>{t('calendar.time')}</th>
-              <th>{t('calendar.currency')}</th>
+              <th className="col-cal-hide">{t('calendar.currency')}</th>
               <th>{t('calendar.event')}</th>
               <th style={{ textAlign: 'center' }}>{t('calendar.impact')}</th>
-              <th style={{ textAlign: 'right' }}>{t('calendar.actual')}</th>
-              <th style={{ textAlign: 'right' }}>{t('calendar.forecast')}</th>
-              <th style={{ textAlign: 'right' }}>{t('calendar.previous')}</th>
-              <th style={{ textAlign: 'center' }}>Action</th>
+              <th className="col-cal-hide" style={{ textAlign: 'right' }}>{t('calendar.actual')}</th>
+              <th className="col-cal-hide" style={{ textAlign: 'right' }}>{t('calendar.forecast')}</th>
+              <th className="col-cal-hide" style={{ textAlign: 'right' }}>{t('calendar.previous')}</th>
+              <th className="col-cal-hide" style={{ textAlign: 'center' }}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -95,7 +95,7 @@ export default function Calendar() {
                   <td>
                     <span style={{ fontFamily: 'Orbitron, monospace', fontSize: 12, color: 'var(--gold)' }}>{ev.time}</span>
                   </td>
-                  <td>
+                  <td className="col-cal-hide">
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       padding: '2px 8px', borderRadius: 5,
@@ -106,25 +106,45 @@ export default function Calendar() {
                       {ev.currency}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 500 }}>{ev.event}</td>
+                  <td style={{ fontWeight: 500 }}>
+                    {ev.event}
+                    <div className="col-cal-show" style={{ marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{ev.currency}</span>
+                      <RecommendationBadge rec={ev.recommendation} />
+                    </div>
+                  </td>
                   <td style={{ textAlign: 'center' }}><ImpactBadge impact={ev.impact} /></td>
-                  <td style={{ textAlign: 'right', color: ev.actual ? 'var(--green)' : 'var(--text-3)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>
+                  <td className="col-cal-hide" style={{ textAlign: 'right', color: ev.actual ? 'var(--green)' : 'var(--text-3)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>
                     {ev.actual || '—'}
                   </td>
-                  <td style={{ textAlign: 'right', color: 'var(--text-2)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{ev.forecast || '—'}</td>
-                  <td style={{ textAlign: 'right', color: 'var(--text-3)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{ev.previous || '—'}</td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td className="col-cal-hide" style={{ textAlign: 'right', color: 'var(--text-2)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{ev.forecast || '—'}</td>
+                  <td className="col-cal-hide" style={{ textAlign: 'right', color: 'var(--text-3)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{ev.previous || '—'}</td>
+                  <td className="col-cal-hide" style={{ textAlign: 'center' }}>
                     <RecommendationBadge rec={ev.recommendation} />
                   </td>
                 </tr>
                 {expandedId === ev.id && (
                   <tr key={`${ev.id}-detail`}>
                     <td colSpan={8} style={{ background: 'rgba(59,130,246,0.06)', padding: '14px 18px' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                        <span style={{ fontSize: 18 }}>🤖</span>
-                        <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)', marginBottom: 4 }}>AI INTERPRETATION</div>
-                          <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>{ev.aiNote}</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                          {[
+                            { label: t('calendar.actual'), val: ev.actual || '—', color: ev.actual ? 'var(--green)' : 'var(--text-3)' },
+                            { label: t('calendar.forecast'), val: ev.forecast || '—', color: 'var(--text-2)' },
+                            { label: t('calendar.previous'), val: ev.previous || '—', color: 'var(--text-3)' },
+                          ].map(({ label, val, color }) => (
+                            <div key={label}>
+                              <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>
+                              <div style={{ fontFamily: 'Orbitron, monospace', fontSize: 13, fontWeight: 700, color }}>{val}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                          <span style={{ fontSize: 18 }}>🤖</span>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)', marginBottom: 4 }}>AI INTERPRETATION</div>
+                            <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>{ev.aiNote}</p>
+                          </div>
                         </div>
                       </div>
                     </td>

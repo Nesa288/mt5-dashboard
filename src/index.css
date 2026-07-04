@@ -1087,6 +1087,9 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 /* Markets table sub-name: visible only on mobile (overridden inside the media query below) */
 .col-name-sub { display: none; }
 
+/* Calendar inline sub-row: visible only on mobile */
+.col-cal-show { display: none; }
+
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
 
@@ -1304,4 +1307,9 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
     text-overflow: ellipsis;
     max-width: 72px;
   }
+
+  /* Calendar table: hide extra columns on mobile, show inline sub-row */
+  .col-cal-hide { display: none; }
+  .col-cal-show { display: flex !important; }
+
 }
