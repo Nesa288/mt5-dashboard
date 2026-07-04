@@ -1,19 +1,30 @@
+import { useState, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { scenarios } from '../data/mockData'
 import { IcoArrowUp, IcoArrowDown, IcoTarget, IcoShield, IcoAlert } from '../components/Icons'
 
 function ScenarioProbabilityArc({ value, color }) {
+  const [animated, setAnimated] = useState(false)
+  useEffect(() => {
+    const id = setTimeout(() => setAnimated(true), 100)
+    return () => clearTimeout(id)
+  }, [])
+
   const radius = 36
   const circ = 2 * Math.PI * radius
-  const dash = (value / 100) * circ
+  const targetDash = (value / 100) * circ
+
   return (
-    <svg width="88" height="88" viewBox="0 0 88 88">
+    <svg width="88" height="88" viewBox="0 0 88 88" style={{ overflow: 'visible' }}>
       <circle cx="44" cy="44" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
       <circle cx="44" cy="44" r={radius} fill="none" stroke={color} strokeWidth="7"
-        strokeDasharray={`${dash} ${circ - dash}`}
+        strokeDasharray={animated ? `${targetDash} ${circ - targetDash}` : `0.001 ${circ}`}
         strokeDashoffset={circ / 4}
         strokeLinecap="round"
-        style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+        style={{
+          filter: `drop-shadow(0 0 8px ${color})`,
+          transition: 'stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
       />
       <text x="44" y="48" textAnchor="middle" fill={color} fontSize="16" fontWeight="800" fontFamily="Orbitron, monospace">{value}%</text>
     </svg>
