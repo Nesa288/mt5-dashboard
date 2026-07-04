@@ -1,19 +1,27 @@
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-0: #070b11;
-  --bg-1: #0a0e17;
-  --bg-2: #0d1420;
-  --bg-3: #111928;
+  --bg-0: #06060c;
+  --bg-1: #09090f;
+  --bg-2: #0c0c16;
+  --bg-3: #0f0f1e;
   --card: rgba(255, 255, 255, 0.04);
   --card-hover: rgba(255, 255, 255, 0.07);
   --card-active: rgba(255, 255, 255, 0.10);
 
-  --gold: #FFD700;
-  --gold-2: #D4AF37;
-  --gold-3: #F5A623;
-  --gold-glow: rgba(255, 215, 0, 0.18);
-  --gold-border: rgba(255, 215, 0, 0.28);
+  --gold: #8B5CF6;
+  --gold-2: #6D28D9;
+  --gold-3: #A78BFA;
+  --gold-glow: rgba(139, 92, 246, 0.18);
+  --gold-border: rgba(139, 92, 246, 0.28);
 
   --green: #00D4A0;
   --green-2: #10B981;
@@ -29,11 +37,12 @@
 
   --purple: #8B5CF6;
   --amber: #F59E0B;
+  --price: #F5A623;
 
-  --text-1: #F0F4FF;
-  --text-2: #8892A4;
-  --text-3: #4A5568;
-  --text-4: #2D3748;
+  --text-1: #FFFFFF;
+  --text-2: #94A3B8;
+  --text-3: #4B5563;
+  --text-4: #1F2937;
 
   --border: rgba(255, 255, 255, 0.07);
   --border-2: rgba(255, 255, 255, 0.12);
@@ -46,8 +55,8 @@
   --trans: 0.22s ease;
   --trans-slow: 0.4s ease;
 
-  --shadow: 0 4px 28px rgba(0, 0, 0, 0.5);
-  --shadow-gold: 0 0 24px rgba(255, 215, 0, 0.15);
+  --shadow: 0 4px 28px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 0 24px rgba(139, 92, 246, 0.18);
   --shadow-green: 0 0 24px rgba(0, 212, 160, 0.15);
 }
 
@@ -64,6 +73,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Geist', 'Inter', sans-serif;
+}
+h1 { font-weight: 700; }
+h2 { font-weight: 600; }
 
 /* ─── SCROLLBAR ─────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -136,8 +151,8 @@ body {
 
 .glass:hover {
   background: var(--card-hover);
-  border-color: rgba(255, 215, 0, 0.15);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border-color: rgba(139, 92, 246, 0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   transform: translateY(-1px);
 }
 
@@ -156,7 +171,7 @@ body {
 }
 
 .glass-gold {
-  background: rgba(255,215,0,0.06);
+  background: rgba(139,92,246,0.07);
   border: 1px solid var(--gold-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-gold);
@@ -177,7 +192,7 @@ body {
 
 /* ─── TYPOGRAPHY ─────────────────────────────── */
 .page-title {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Geist', 'Inter', sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--text-1);
@@ -212,8 +227,8 @@ body {
   font-size: 32px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: var(--gold);
-  text-shadow: 0 0 28px rgba(255,215,0,0.4);
+  color: var(--price);
+  text-shadow: 0 0 28px rgba(245,166,35,0.35);
 }
 
 .price-md {
@@ -263,7 +278,7 @@ body {
 .badge-bull { background: rgba(0,212,160,0.13); color: var(--green); border: 1px solid rgba(0,212,160,0.3); }
 .badge-bear { background: rgba(239,68,68,0.13); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
 .badge-neutral { background: rgba(148,163,184,0.12); color: var(--text-2); border: 1px solid rgba(148,163,184,0.25); }
-.badge-gold { background: rgba(255,215,0,0.13); color: var(--gold); border: 1px solid var(--gold-border); }
+.badge-gold { background: rgba(139,92,246,0.13); color: var(--gold); border: 1px solid var(--gold-border); }
 .badge-demo { background: rgba(59,130,246,0.13); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
 .badge-warn { background: rgba(245,158,11,0.13); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
 .badge-open { background: rgba(0,212,160,0.13); color: var(--green); border: 1px solid rgba(0,212,160,0.3); }
@@ -290,14 +305,13 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, #c9980a, #FFD700);
-  color: #0a0a0f;
-  box-shadow: 0 4px 18px rgba(255,215,0,0.28);
+  background: linear-gradient(135deg, #6D28D9, #8B5CF6);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.3);
 }
 .btn-gold:hover {
-  box-shadow: 0 6px 28px rgba(255,215,0,0.45);
+  box-shadow: 0 6px 28px rgba(139,92,246,0.5);
   transform: translateY(-1px);
-  brightness: 1.05;
 }
 
 .btn-ghost {
@@ -306,7 +320,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   color: var(--text-2);
 }
 .btn-ghost:hover {
-  border-color: var(--gold-border);
+  border-color: rgba(139,92,246,0.3);
   color: var(--text-1);
   background: var(--card);
 }
@@ -403,7 +417,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 
 .pill-tab.active {
   background: var(--gold);
-  color: #0a0a0f;
+  color: #ffffff;
 }
 
 .scroll-tabs-wrap {
@@ -456,8 +470,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   pointer-events: none;
   width: 26px; height: 26px;
   border-radius: 50%;
-  background: rgba(212,175,55,0.14);
-  border: 1px solid rgba(212,175,55,0.32);
+  background: rgba(139,92,246,0.14);
+  border: 1px solid rgba(139,92,246,0.32);
   color: var(--gold);
   cursor: pointer;
   display: flex;
@@ -469,8 +483,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .tab-fade.visible .tab-arrow-btn { pointer-events: auto; }
 .tab-arrow-btn:active {
   transform: scale(0.86);
-  background: rgba(212,175,55,0.28);
-  border-color: rgba(212,175,55,0.6);
+  background: rgba(139,92,246,0.28);
+  border-color: rgba(139,92,246,0.6);
 }
 
 /* ─── MARKETPLACE HERO ───────────────────────── */
@@ -689,8 +703,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 
 @keyframes pulseGold {
-  0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.25); }
-  50% { box-shadow: 0 0 24px rgba(255,215,0,0.55); }
+  0%, 100% { box-shadow: 0 0 8px rgba(139,92,246,0.25); }
+  50% { box-shadow: 0 0 24px rgba(139,92,246,0.55); }
 }
 
 @keyframes pulseGreen {
@@ -726,10 +740,10 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 
 .sidebar-logo-text {
-  font-family: 'Orbitron', monospace;
+  font-family: 'Geist', 'Orbitron', monospace;
   font-size: 18px;
   font-weight: 900;
-  background: linear-gradient(135deg, #D4AF37, #FFD700, #F5A623);
+  background: linear-gradient(135deg, #6D28D9, #8B5CF6, #A78BFA);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -781,8 +795,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 
 .nav-item.active {
   color: var(--gold);
-  background: rgba(255,215,0,0.07);
-  border-color: rgba(255,215,0,0.18);
+  background: rgba(139,92,246,0.09);
+  border-color: rgba(139,92,246,0.2);
 }
 
 .nav-item.active::before {
@@ -795,7 +809,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   height: 20px;
   background: var(--gold);
   border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 8px rgba(255,215,0,0.5);
+  box-shadow: 0 0 8px rgba(139,92,246,0.5);
 }
 
 .nav-icon {
