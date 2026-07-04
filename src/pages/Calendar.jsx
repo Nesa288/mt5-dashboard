@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { calendarEvents } from '../data/mockData'
-import { EconomicCalendarWidget } from '../components/TradingViewWidget'
+
 import { IcoAlert, IcoInfo, IcoCheck } from '../components/Icons'
 import ScrollableTabs from '../components/ScrollableTabs'
 
@@ -159,12 +159,21 @@ export default function Calendar() {
         )}
       </div>
 
-      {/* TradingView Economic Calendar */}
-      <div className="glass" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
-          <div className="section-label" style={{ marginBottom: 0 }}>Economic Calendar — TradingView (Live)</div>
+      {/* Live Calendar Link */}
+      <div className="glass p-5" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <div className="section-label" style={{ marginBottom: 4 }}>Live Economic Calendar</div>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>Full real-time economic events on TradingView</p>
         </div>
-        <EconomicCalendarWidget height={480} />
+        <a
+          href="https://www.tradingview.com/economic-calendar/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-gold"
+          style={{ flexShrink: 0, textDecoration: 'none' }}
+        >
+          Open Calendar ↗
+        </a>
       </div>
     </div>
   )
