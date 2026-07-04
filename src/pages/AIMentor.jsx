@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
-import { goldData } from '../data/mockData'
 import ScrollableTabs from '../components/ScrollableTabs'
 
 const MOCK_RESPONSES = {
@@ -205,32 +204,6 @@ export default function AIMentor() {
             </div>
           </div>
 
-          {/* Context Panel */}
-          <div className="glass p-4">
-            <div className="section-label mb-3">Live Context</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-3)' }}>XAUUSD</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold)', fontFamily: 'Orbitron, monospace' }}>${goldData.price.toFixed(2)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Trend</span>
-                <span className="badge badge-bull" style={{ fontSize: 9 }}>{goldData.trendStatus}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-3)' }}>AI Outlook</span>
-                <span className="badge badge-gold" style={{ fontSize: 9 }}>{goldData.aiOutlook}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Support</span>
-                <span style={{ fontSize: 12, color: 'var(--green)', fontFamily: 'Orbitron, monospace' }}>${goldData.support.toLocaleString()}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Resistance</span>
-                <span style={{ fontSize: 12, color: 'var(--red)', fontFamily: 'Orbitron, monospace' }}>${goldData.resistance.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
