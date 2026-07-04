@@ -21,7 +21,7 @@ export default function Premium() {
       {/* Billing Toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <span style={{ fontSize: 13, color: billing === 'monthly' ? 'var(--text-1)' : 'var(--text-3)', fontWeight: billing === 'monthly' ? 700 : 500 }}>{t('premium.monthly')}</span>
-        <label className="toggle" style={{ width: 48, height: 26 }}>
+        <label className="toggle">
           <input type="checkbox" checked={billing === 'yearly'} onChange={e => setBilling(e.target.checked ? 'yearly' : 'monthly')} />
           <span className="toggle-slider" />
         </label>

@@ -90,7 +90,7 @@ export default function Affiliate() {
             </button>
           </div>
 
-          <div className="section-label mt-5 mb-3">💡 {t('affiliate.howItWorks')}</div>
+          <div className="section-label mb-3" style={{ marginTop: 28 }}>💡 {t('affiliate.howItWorks')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               { step: '1', text: t('affiliate.step1'), icon: '🔗' },
