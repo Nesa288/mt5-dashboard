@@ -245,16 +245,19 @@ export default function Journal() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
                     <div>
                       <div style={{ fontSize: 10, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Losing</div>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--red)', fontFamily: 'Orbitron, monospace' }}>{losses}/{total}</div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--red)', fontFamily: 'Orbitron, monospace' }}>{losses}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 10, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Winning</div>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--green)', fontFamily: 'Orbitron, monospace' }}>{wins}/{total}</div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', fontFamily: 'Orbitron, monospace' }}>{wins}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', height: 10, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
                     <div style={{ width: `${(losses / total) * 100}%`, background: 'var(--red)', boxShadow: '0 0 10px rgba(239,68,68,0.5)', borderRadius: '6px 0 0 6px' }} />
                     <div style={{ width: `${(wins / total) * 100}%`, background: 'var(--green)', boxShadow: '0 0 10px rgba(0,212,160,0.5)', borderRadius: '0 6px 6px 0' }} />
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 600, letterSpacing: '0.06em' }}>{total} trades</span>
                   </div>
                 </div>
               )
