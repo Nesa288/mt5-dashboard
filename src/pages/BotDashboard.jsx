@@ -135,51 +135,46 @@ export default function BotDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {groups.map(g => (
             <div key={g.id} style={{
-              display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+              display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px',
               background: 'rgba(255,255,255,0.03)', borderRadius: 10,
               border: `1px solid ${g.enabled ? `${g.color}30` : 'var(--border)'}`,
               opacity: g.status === 'upcoming' ? 0.5 : 1,
             }}>
-              {/* Status dot */}
-              <div style={{
-                width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
-                background: g.status === 'running' ? g.color : g.status === 'upcoming' ? 'var(--text-4)' : 'rgba(255,255,255,0.15)',
-                boxShadow: g.status === 'running' ? `0 0 8px ${g.color}` : 'none',
-                animation: g.status === 'running' ? 'dotPulse 1.5s ease infinite' : 'none',
-              }} />
-
-              {/* Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {g.name}
-                  {g.status === 'upcoming' && <span className="badge badge-demo" style={{ marginLeft: 6, fontSize: 9 }}>COMING SOON</span>}
+              {/* Top row: dot + name + toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+                  background: g.status === 'running' ? g.color : g.status === 'upcoming' ? 'var(--text-4)' : 'rgba(255,255,255,0.15)',
+                  boxShadow: g.status === 'running' ? `0 0 8px ${g.color}` : 'none',
+                  animation: g.status === 'running' ? 'dotPulse 1.5s ease infinite' : 'none',
+                }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{g.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>{g.desc}</div>
                 </div>
+                {g.status === 'upcoming'
+                  ? <span className="badge badge-demo" style={{ fontSize: 9 }}>COMING SOON</span>
+                  : <label className="toggle">
+                      <input type="checkbox" checked={g.enabled} onChange={() => toggleGroup(g.id)} />
+                      <span className="toggle-slider" />
+                    </label>
+                }
               </div>
 
-              {/* Risk */}
+              {/* Bottom row: stats */}
               {g.status !== 'upcoming' && (
-                <>
-                  <div style={{ textAlign: 'center', flexShrink: 0, width: 38 }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{t('botDashboard.riskPct')}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--amber)' }}>{g.risk}%</div>
-                  </div>
-                  <div style={{ textAlign: 'center', flexShrink: 0, width: 38 }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{t('botDashboard.maxTradesLabel')}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{g.maxTrades}</div>
-                  </div>
-                  <div style={{ textAlign: 'center', flexShrink: 0, width: 44 }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>PnL</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: g.pnl.startsWith('+') ? 'var(--green)' : g.pnl === '$0' ? 'var(--text-3)' : 'var(--red)' }}>{g.pnl}</div>
-                  </div>
-                </>
-              )}
-
-              {/* Toggle */}
-              {g.status !== 'upcoming' && (
-                <label className="toggle">
-                  <input type="checkbox" checked={g.enabled} onChange={() => toggleGroup(g.id)} />
-                  <span className="toggle-slider" />
-                </label>
+                <div style={{ display: 'flex', gap: 0, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+                  {[
+                    { label: t('botDashboard.riskPct'), value: `${g.risk}%`, color: 'var(--amber)' },
+                    { label: t('botDashboard.maxTradesLabel'), value: g.maxTrades, color: 'var(--text-2)' },
+                    { label: 'PnL', value: g.pnl, color: g.pnl.startsWith('+') ? 'var(--green)' : g.pnl === '$0' ? 'var(--text-3)' : 'var(--red)' },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{label}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color, fontFamily: 'Orbitron, monospace' }}>{value}</div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           ))}
