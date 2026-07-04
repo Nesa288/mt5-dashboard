@@ -1312,7 +1312,5 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   .col-cal-hide { display: none; }
   .col-cal-show { display: flex !important; }
 
-  /* Journal trades table: hide extra columns on mobile */
-  .col-jr-hide { display: none; }
 
 }

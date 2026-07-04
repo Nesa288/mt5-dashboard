@@ -31,7 +31,6 @@ export default function Journal() {
   const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState('overview')
   const [showForm, setShowForm] = useState(false)
-  const [expandedTrade, setExpandedTrade] = useState(null)
   const [calYear, setCalYear] = useState(2026)
   const [calMonth, setCalMonth] = useState(6) // 0-indexed, 6 = July
   const [form, setForm] = useState({
@@ -164,71 +163,47 @@ export default function Journal() {
 
       {/* Trades Tab */}
       {activeTab === 'trades' && (
-        <div className="glass" style={{ overflow: 'hidden' }}>
-          <table className="data-table">
+        <div className="glass" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <table className="data-table" style={{ minWidth: 700 }}>
             <thead>
               <tr>
+                <th>Date</th>
                 <th>Instrument</th>
                 <th>Dir</th>
-                <th className="col-jr-hide">Entry</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>SL</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>TP</th>
+                <th style={{ textAlign: 'right' }}>Entry</th>
+                <th style={{ textAlign: 'right' }}>SL</th>
+                <th style={{ textAlign: 'right' }}>TP</th>
                 <th style={{ textAlign: 'right' }}>Result</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>R:R</th>
-                <th className="col-jr-hide">Reason</th>
-                <th className="col-jr-hide">Emotion</th>
+                <th style={{ textAlign: 'right' }}>R:R</th>
+                <th>Reason</th>
+                <th>Emotion</th>
               </tr>
             </thead>
             <tbody>
               {journalTrades.map(tr => (
-                <>
-                  <tr key={tr.id} style={{ cursor: 'pointer' }} onClick={() => setExpandedTrade(expandedTrade === tr.id ? null : tr.id)}>
-                    <td>
-                      <span style={{ fontFamily: 'Orbitron, monospace', fontSize: 12, fontWeight: 700, color: 'var(--gold)' }}>{tr.instrument}</span>
-                      <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>{tr.date}</div>
-                    </td>
-                    <td>
-                      <span className={tr.direction === 'Buy' ? 'badge-bull badge' : 'badge-bear badge'} style={{ fontSize: 9 }}>
-                        {tr.direction === 'Buy' ? <IcoArrowUp size={9} /> : <IcoArrowDown size={9} />}
-                        {tr.direction}
-                      </span>
-                    </td>
-                    <td className="col-jr-hide" style={{ fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{tr.entry.toLocaleString()}</td>
-                    <td className="col-jr-hide" style={{ textAlign: 'right', color: 'var(--red)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{tr.sl.toLocaleString()}</td>
-                    <td className="col-jr-hide" style={{ textAlign: 'right', color: 'var(--green)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{tr.tp.toLocaleString()}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <span style={{ color: tr.status === 'win' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>{tr.result}</span>
-                    </td>
-                    <td className="col-jr-hide" style={{ textAlign: 'right', color: 'var(--text-2)', fontWeight: 600 }}>{tr.rr}</td>
-                    <td className="col-jr-hide" style={{ fontSize: 11, color: 'var(--text-2)', maxWidth: 160 }}>{tr.reason.substring(0, 40)}...</td>
-                    <td className="col-jr-hide">
-                      <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-2)' }}>
-                        {tr.emotions}
-                      </span>
-                    </td>
-                  </tr>
-                  {expandedTrade === tr.id && (
-                    <tr key={`${tr.id}-exp`}>
-                      <td colSpan={9} style={{ background: 'rgba(255,215,0,0.04)', padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
-                          {[
-                            { label: 'Entry', val: tr.entry.toLocaleString(), color: 'var(--text-1)' },
-                            { label: 'SL', val: tr.sl.toLocaleString(), color: 'var(--red)' },
-                            { label: 'TP', val: tr.tp.toLocaleString(), color: 'var(--green)' },
-                            { label: 'R:R', val: tr.rr, color: 'var(--text-2)' },
-                            { label: 'Emotion', val: tr.emotions, color: 'var(--text-2)' },
-                          ].map(({ label, val, color }) => (
-                            <div key={label}>
-                              <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>
-                              <div style={{ fontFamily: 'Orbitron, monospace', fontSize: 12, fontWeight: 700, color }}>{val}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5 }}>{tr.reason}</div>
-                      </td>
-                    </tr>
-                  )}
-                </>
+                <tr key={tr.id}>
+                  <td style={{ color: 'var(--text-3)', fontSize: 11 }}>{tr.date}</td>
+                  <td><span style={{ fontFamily: 'Orbitron, monospace', fontSize: 12, fontWeight: 700, color: 'var(--gold)' }}>{tr.instrument}</span></td>
+                  <td>
+                    <span className={tr.direction === 'Buy' ? 'badge-bull badge' : 'badge-bear badge'} style={{ fontSize: 9 }}>
+                      {tr.direction === 'Buy' ? <IcoArrowUp size={9} /> : <IcoArrowDown size={9} />}
+                      {tr.direction}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'right', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{tr.entry.toLocaleString()}</td>
+                  <td style={{ textAlign: 'right', color: 'var(--red)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{tr.sl.toLocaleString()}</td>
+                  <td style={{ textAlign: 'right', color: 'var(--green)', fontFamily: 'Orbitron, monospace', fontSize: 12 }}>{tr.tp.toLocaleString()}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    <span style={{ color: tr.status === 'win' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>{tr.result}</span>
+                  </td>
+                  <td style={{ textAlign: 'right', color: 'var(--text-2)', fontWeight: 600 }}>{tr.rr}</td>
+                  <td style={{ fontSize: 11, color: 'var(--text-2)', maxWidth: 160 }}>{tr.reason.substring(0, 40)}...</td>
+                  <td>
+                    <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: 'var(--text-2)' }}>
+                      {tr.emotions}
+                    </span>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
