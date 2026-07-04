@@ -111,22 +111,22 @@ export default function Academy() {
       </div>
 
       {/* Start Here Banner */}
-      <div className="glass-gold p-5" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div style={{ fontSize: 40 }}>🎓</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--gold)', marginBottom: 4 }}>
-            {t('academy.startHere')}
+      <div className="glass-gold p-5" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 32 }}>🎓</span>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--gold)' }}>{t('academy.startHere')}</div>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-2)' }}>
-            We recommend starting with "How Financial Markets Work" then progressing through Risk Management before trading live.
-          </p>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--gold)', fontFamily: 'Orbitron, monospace', lineHeight: 1 }}>{totalProgress}%</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>{completedCount}/{academyCourses.length} completed</div>
+          </div>
         </div>
-        <div style={{ textAlign: 'center', flexShrink: 0 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--gold)', fontFamily: 'Orbitron, monospace' }}>{totalProgress}%</div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{completedCount}/{academyCourses.length} completed</div>
-          <div className="progress-track mt-2" style={{ width: 100 }}>
-            <div className="progress-fill" style={{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, var(--gold-2), var(--gold))' }} />
-          </div>
+        <p style={{ fontSize: 13, color: 'var(--text-2)', margin: 0 }}>
+          We recommend starting with "How Financial Markets Work" then progressing through Risk Management before trading live.
+        </p>
+        <div className="progress-track" style={{ marginTop: 2 }}>
+          <div className="progress-fill" style={{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, var(--gold-2), var(--gold))' }} />
         </div>
       </div>
 
