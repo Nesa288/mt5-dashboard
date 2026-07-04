@@ -1084,6 +1084,9 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   .g-3 { grid-template-columns: 1fr 1fr; }
 }
 
+/* Markets table sub-name: visible only on mobile (overridden inside the media query below) */
+.col-name-sub { display: none; }
+
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
 
@@ -1287,5 +1290,18 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   .news-sidebar-panel .will-reveal {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /* Markets table: hide columns that don't fit on mobile */
+  .col-trend, .col-signal, .col-name { display: none; }
+  .col-name-sub {
+    display: block;
+    font-size: 10px;
+    color: var(--text-3);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 72px;
   }
 }

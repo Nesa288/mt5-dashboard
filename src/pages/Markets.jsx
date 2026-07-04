@@ -58,11 +58,11 @@ export default function Markets() {
             <tr>
               <th></th>
               <th>{t('markets.symbol')}</th>
-              <th>{t('markets.name')}</th>
+              <th className="col-name">{t('markets.name')}</th>
               <th style={{ textAlign: 'right' }}>{t('markets.price')}</th>
               <th style={{ textAlign: 'right' }}>{t('markets.change')}</th>
-              <th style={{ textAlign: 'center' }}>{t('markets.trend')}</th>
-              <th style={{ textAlign: 'center' }}>{t('markets.signal')}</th>
+              <th className="col-trend" style={{ textAlign: 'center' }}>{t('markets.trend')}</th>
+              <th className="col-signal" style={{ textAlign: 'center' }}>{t('markets.signal')}</th>
             </tr>
           </thead>
           <tbody>
@@ -75,8 +75,9 @@ export default function Markets() {
                   </td>
                   <td>
                     <span style={{ fontFamily: 'Orbitron, monospace', fontSize: 13, fontWeight: 700, color: 'var(--gold)' }}>{inst.symbol}</span>
+                    <div className="col-name-sub">{inst.name}</div>
                   </td>
-                  <td style={{ color: 'var(--text-2)', fontSize: 13 }}>{inst.name}</td>
+                  <td className="col-name" style={{ color: 'var(--text-2)', fontSize: 13 }}>{inst.name}</td>
                   <td style={{ textAlign: 'right' }}>
                     <span style={{ fontFamily: 'Orbitron, monospace', fontSize: 14, fontWeight: 700 }}>
                       {typeof inst.price === 'number' && inst.price > 100 ? inst.price.toLocaleString() : inst.price.toFixed(4)}
@@ -92,12 +93,12 @@ export default function Markets() {
                       {isPos ? '+' : ''}{inst.changePct.toFixed(2)}%
                     </span>
                   </td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td className="col-trend" style={{ textAlign: 'center' }}>
                     <span className={`badge ${inst.trend === 'Bullish' ? 'badge-bull' : inst.trend === 'Bearish' ? 'badge-bear' : 'badge-neutral'}`}>
                       {inst.trend}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td className="col-signal" style={{ textAlign: 'center' }}>
                     <span className={`badge ${inst.signal === 'Bullish' ? 'badge-bull' : inst.signal === 'Bearish' ? 'badge-bear' : 'badge-neutral'}`}>
                       {inst.signal}
                     </span>
