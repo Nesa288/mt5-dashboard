@@ -229,7 +229,7 @@ export default {
     allowedSessions: 'Dozvoljene sesije',
     botGroups: 'Bot grupe',
     enable: 'Uključi', disable: 'Isključi',
-    riskPct: 'Rizik %', maxTradesLabel: 'Maks. trejdova', status: 'Status',
+    riskPct: 'Rizik %', maxTradesLabel: 'Maks.', status: 'Status',
     startBot: 'Pokreni bota', stopBot: 'Zaustavi bota',
     emergency: '⚠️ Hitno zatvori sve',
     openTrades: 'Otvoreni trejdovi', dailyPnl: 'Dnevni PnL',

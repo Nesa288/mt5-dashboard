@@ -161,15 +161,15 @@ export default function BotDashboard() {
               {g.status !== 'upcoming' && (
                 <>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('botDashboard.riskPct')}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{t('botDashboard.riskPct')}</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--amber)' }}>{g.risk}%</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('botDashboard.maxTradesLabel')}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{t('botDashboard.maxTradesLabel')}</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{g.maxTrades}</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>PnL</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>PnL</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: g.pnl.startsWith('+') ? 'var(--green)' : g.pnl === '$0' ? 'var(--text-3)' : 'var(--red)' }}>{g.pnl}</div>
                   </div>
                 </>
