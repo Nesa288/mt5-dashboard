@@ -236,26 +236,32 @@ export default function Journal() {
           {/* Trade Distribution */}
           <div className="glass p-5">
             <div className="section-label mb-4">Trade Distribution</div>
-            <div>
-              {[
-                { label: 'Winning Trades', value: Math.round(journalStats.totalTrades * journalStats.winRate / 100), total: journalStats.totalTrades, color: 'var(--green)' },
-                { label: 'Losing Trades', value: Math.round(journalStats.totalTrades * (100 - journalStats.winRate) / 100), total: journalStats.totalTrades, color: 'var(--red)' },
-              ].map(({ label, value, total, color }) => (
-                <div key={label} style={{ marginBottom: 16 }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{label}</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color, fontFamily: 'Orbitron, monospace' }}>{value}/{total}</span>
+            {(() => {
+              const wins = Math.round(journalStats.totalTrades * journalStats.winRate / 100)
+              const losses = journalStats.totalTrades - wins
+              const total = journalStats.totalTrades
+              return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Losing</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--red)', fontFamily: 'Orbitron, monospace' }}>{losses}/{total}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 10, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Winning</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--green)', fontFamily: 'Orbitron, monospace' }}>{wins}/{total}</div>
+                    </div>
                   </div>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: `${(value / total) * 100}%`, background: color, boxShadow: `0 0 8px ${color}40` }} />
+                  <div style={{ display: 'flex', height: 10, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
+                    <div style={{ width: `${(losses / total) * 100}%`, background: 'var(--red)', boxShadow: '0 0 10px rgba(239,68,68,0.5)', borderRadius: '6px 0 0 6px' }} />
+                    <div style={{ width: `${(wins / total) * 100}%`, background: 'var(--green)', boxShadow: '0 0 10px rgba(0,212,160,0.5)', borderRadius: '0 6px 6px 0' }} />
                   </div>
                 </div>
-              ))}
-
-              <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(255,215,0,0.06)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
-                <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>MOST COMMON MISTAKE</div>
-                <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{journalStats.commonMistake}</div>
-              </div>
+              )
+            })()}
+            <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(255,215,0,0.06)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
+              <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>MOST COMMON MISTAKE</div>
+              <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{journalStats.commonMistake}</div>
             </div>
           </div>
         </div>
