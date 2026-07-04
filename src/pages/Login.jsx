@@ -27,24 +27,8 @@ export default function Login() {
       <div style={{ position: 'absolute', top: '20%', left: '30%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,215,0,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '20%', right: '25%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,212,160,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-      {/* Back button */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          position: 'absolute', top: 24, left: 24,
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-          background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.25)',
-          color: 'var(--gold)', cursor: 'pointer', fontFamily: 'inherit',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.15)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.4)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.25)' }}
-      >
-        ← {t('common.back')}
-      </button>
 
-      {/* Language switcher */}
+{/* Language switcher */}
       <div style={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 8 }}>
         {[['en', '🇬🇧', 'EN'], ['sr', '🇷🇸', 'SR']].map(([code, flag, label]) => (
           <button
