@@ -33,12 +33,15 @@ export default function Login() {
         style={{
           position: 'absolute', top: 24, left: 24,
           display: 'flex', alignItems: 'center', gap: 6,
-          padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-          color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit',
+          padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600,
+          background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.25)',
+          color: 'var(--gold)', cursor: 'pointer', fontFamily: 'inherit',
+          transition: 'all 0.2s ease',
         }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.15)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.4)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.25)' }}
       >
-        ← Back
+        ← {t('common.back')}
       </button>
 
       {/* Language switcher */}
