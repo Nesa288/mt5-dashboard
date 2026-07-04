@@ -309,10 +309,7 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="section-label" style={{ marginBottom: 0 }}>{t('dashboard.scenarios.title')}</div>
-          <span className="badge badge-demo">
-            <IcoInfo size={10} />
-            {t('dashboard.scenarios.demoNote')}
-          </span>
+          <span className="badge badge-demo" style={{ fontSize: 9 }}>{t('common.demo')}</span>
         </div>
         <div className="g-2">
           {/* Bullish */}
