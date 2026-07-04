@@ -168,7 +168,7 @@ export default function Gold() {
         <div className="flex items-center gap-2 mb-3">
           <IcoBolt size={16} color="var(--gold)" />
           <div className="section-label" style={{ marginBottom: 0 }}>{t('gold.aiDailyPlan')}</div>
-          <span className="badge badge-demo" style={{ fontSize: 9, marginLeft: 'auto' }}>{t('gold.demoNote').substring(0, 20)}...</span>
+          <span className="badge badge-demo mob-hide" style={{ fontSize: 9, marginLeft: 'auto' }}>{t('gold.demoNote').substring(0, 20)}...</span>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8 }}>{goldData.aiDailyPlan}</p>
       </div>
