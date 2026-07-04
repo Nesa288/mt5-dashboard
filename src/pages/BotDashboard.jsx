@@ -135,7 +135,7 @@ export default function BotDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {groups.map(g => (
             <div key={g.id} style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '14px 16px',
+              display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
               background: 'rgba(255,255,255,0.03)', borderRadius: 10,
               border: `1px solid ${g.enabled ? `${g.color}30` : 'var(--border)'}`,
               opacity: g.status === 'upcoming' ? 0.5 : 1,
@@ -149,27 +149,26 @@ export default function BotDashboard() {
               }} />
 
               {/* Info */}
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {g.name}
-                  {g.status === 'upcoming' && <span className="badge badge-demo" style={{ marginLeft: 8, fontSize: 9 }}>COMING SOON</span>}
+                  {g.status === 'upcoming' && <span className="badge badge-demo" style={{ marginLeft: 6, fontSize: 9 }}>COMING SOON</span>}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{g.desc}</div>
               </div>
 
               {/* Risk */}
               {g.status !== 'upcoming' && (
                 <>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{t('botDashboard.riskPct')}</div>
+                  <div style={{ textAlign: 'center', flexShrink: 0, width: 38 }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{t('botDashboard.riskPct')}</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--amber)' }}>{g.risk}%</div>
                   </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{t('botDashboard.maxTradesLabel')}</div>
+                  <div style={{ textAlign: 'center', flexShrink: 0, width: 38 }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{t('botDashboard.maxTradesLabel')}</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{g.maxTrades}</div>
                   </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>PnL</div>
+                  <div style={{ textAlign: 'center', flexShrink: 0, width: 44 }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>PnL</div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: g.pnl.startsWith('+') ? 'var(--green)' : g.pnl === '$0' ? 'var(--text-3)' : 'var(--red)' }}>{g.pnl}</div>
                   </div>
                 </>

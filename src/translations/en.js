@@ -233,7 +233,7 @@ export default {
     allowedSessions: 'Allowed Sessions',
     botGroups: 'Bot Groups',
     enable: 'Enable', disable: 'Disable',
-    riskPct: 'Risk %', maxTradesLabel: 'Max Trades', status: 'Status',
+    riskPct: 'Risk %', maxTradesLabel: 'Max', status: 'Status',
     startBot: 'Start Bot', stopBot: 'Stop Bot',
     emergency: '⚠️ Emergency Close All',
     openTrades: 'Open Trades', dailyPnl: 'Daily PnL',
