@@ -110,12 +110,7 @@ export default function Login() {
 
           {/* Password */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <div className="flex items-center justify-between mb-1">
-              <label className="form-label" style={{ marginBottom: 0 }}>{t('login.password')}</label>
-              <button type="button" style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                {t('login.forgot')}
-              </button>
-            </div>
+            <label className="form-label">{t('login.password')}</label>
             <div style={{ position: 'relative' }}>
               <input
                 className="form-input"
@@ -135,6 +130,11 @@ export default function Login() {
                 }}
               >
                 {showPw ? '🙈' : '👁'}
+              </button>
+            </div>
+            <div style={{ textAlign: 'right', marginTop: 6 }}>
+              <button type="button" style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                {t('login.forgot')}
               </button>
             </div>
           </div>
