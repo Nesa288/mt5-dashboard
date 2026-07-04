@@ -31,6 +31,8 @@ export default function Journal() {
   const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState('overview')
   const [showForm, setShowForm] = useState(false)
+  const [calYear, setCalYear] = useState(2026)
+  const [calMonth, setCalMonth] = useState(6) // 0-indexed, 6 = July
   const [form, setForm] = useState({
     instrument: 'XAUUSD', direction: 'buy', entry: '', sl: '', tp: '', result: '', reason: '', emotions: '', mistake: '',
   })
@@ -271,40 +273,57 @@ export default function Journal() {
       )}
 
       {/* Calendar Tab */}
-      {activeTab === 'calendar' && (
-        <div className="glass p-5">
-          <div className="section-label mb-4">Trading Calendar — June 2026</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-              <div key={d} style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-3)', fontWeight: 700, padding: '6px 0' }}>{d}</div>
-            ))}
-            {Array.from({ length: 30 }, (_, i) => {
-              const day = i + 1
-              const hasWin = journalTrades.some(t => parseInt(t.date.split('-')[2]) === day && t.status === 'win')
-              const hasLoss = journalTrades.some(t => parseInt(t.date.split('-')[2]) === day && t.status === 'loss')
-              const isToday = day === 30
-              return (
-                <div key={day} style={{
-                  aspectRatio: '1',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: 8,
-                  fontSize: 12, fontWeight: isToday ? 700 : 500,
-                  background: hasWin ? 'rgba(0,212,160,0.15)' : hasLoss ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${isToday ? 'var(--gold-border)' : hasWin ? 'rgba(0,212,160,0.3)' : hasLoss ? 'rgba(239,68,68,0.25)' : 'var(--border)'}`,
-                  color: hasWin ? 'var(--green)' : hasLoss ? 'var(--red)' : isToday ? 'var(--gold)' : 'var(--text-3)',
-                  cursor: (hasWin || hasLoss) ? 'pointer' : 'default',
-                }}>
-                  {day}
-                </div>
-              )
-            })}
+      {activeTab === 'calendar' && (() => {
+        const today = new Date(2026, 6, 4) // July 4 2026
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate()
+        const firstDow = (new Date(calYear, calMonth, 1).getDay() + 6) % 7 // Mon=0
+        const monthName = new Date(calYear, calMonth).toLocaleString('en', { month: 'long' })
+        const prevMonth = () => { if (calMonth === 0) { setCalYear(y => y - 1); setCalMonth(11) } else setCalMonth(m => m - 1) }
+        const nextMonth = () => { if (calMonth === 11) { setCalYear(y => y + 1); setCalMonth(0) } else setCalMonth(m => m + 1) }
+        const cells = [...Array(firstDow).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
+
+        return (
+          <div className="glass p-5">
+            {/* Header with navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <button onClick={prevMonth} className="btn btn-ghost btn-xs">‹</button>
+              <div className="section-label" style={{ marginBottom: 0 }}>{monthName} {calYear}</div>
+              <button onClick={nextMonth} className="btn btn-ghost btn-xs">›</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+                <div key={d} style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-3)', fontWeight: 700, padding: '4px 0' }}>{d}</div>
+              ))}
+              {cells.map((day, i) => {
+                if (!day) return <div key={`e${i}`} />
+                const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const hasWin = journalTrades.some(t => t.date === dateStr && t.status === 'win')
+                const hasLoss = journalTrades.some(t => t.date === dateStr && t.status === 'loss')
+                const isToday = calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate()
+                return (
+                  <div key={day} style={{
+                    aspectRatio: '1',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 8, fontSize: 12, fontWeight: isToday ? 700 : 500,
+                    background: hasWin ? 'rgba(0,212,160,0.15)' : hasLoss ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isToday ? 'var(--gold-border)' : hasWin ? 'rgba(0,212,160,0.3)' : hasLoss ? 'rgba(239,68,68,0.25)' : 'var(--border)'}`,
+                    color: hasWin ? 'var(--green)' : hasLoss ? 'var(--red)' : isToday ? 'var(--gold)' : 'var(--text-3)',
+                    cursor: (hasWin || hasLoss) ? 'pointer' : 'default',
+                  }}>
+                    {day}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div style={{ display: 'flex', gap: 20, marginTop: 14, fontSize: 11, color: 'var(--text-3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(0,212,160,0.4)' }} />Win day</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.35)' }} />Loss day</div>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 20, marginTop: 16, fontSize: 11, color: 'var(--text-3)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(0,212,160,0.4)' }} />Win day</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.35)' }} />Loss day</div>
-          </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
