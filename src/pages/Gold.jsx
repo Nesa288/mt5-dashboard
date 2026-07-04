@@ -64,7 +64,7 @@ export default function Gold() {
                 +${goldData.change.toFixed(2)} ({goldData.changePercent}%)
               </span>
               <span className="badge badge-bull">BULLISH</span>
-              <span className="badge badge-demo" style={{ marginLeft: 'auto' }}>{t('gold.demoNote').substring(0, 15)}...</span>
+              <span className="badge badge-demo mob-hide" style={{ marginLeft: 'auto' }}>{t('gold.demoNote').substring(0, 15)}...</span>
             </div>
           </div>
           <GoldChart height={500} interval="H4" />
