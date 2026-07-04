@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { news } from '../data/mockData'
 import { NewsTimelineWidget } from '../components/TradingViewWidget'
@@ -79,6 +79,11 @@ export default function News() {
   const [category, setCategory] = useState('all')
   const [aiFilter, setAiFilter] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    document.body.style.overscrollBehaviorY = sidebarOpen ? 'none' : ''
+    return () => { document.body.style.overscrollBehaviorY = '' }
+  }, [sidebarOpen])
 
   let filtered = news.filter(n => category === 'all' || n.category === category)
   if (aiFilter === 'bullish') filtered = filtered.filter(n => n.sentiment === 'bullish')
