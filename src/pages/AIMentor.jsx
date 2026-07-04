@@ -128,7 +128,7 @@ export default function AIMentor() {
                 Online • Trading Intelligence
               </div>
             </div>
-            <div style={{ marginLeft: 'auto' }}>
+            <div style={{ marginLeft: 'auto' }} className="mob-hide">
               <span className="badge badge-demo">AI Response is DEMO</span>
             </div>
           </div>
