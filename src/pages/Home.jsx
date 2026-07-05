@@ -310,8 +310,38 @@ export default function Home() {
         <div style={{ position: 'absolute', top: -180, right: -100, width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(109,40,217,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: -80, left: '25%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Left: text */}
-        <div className="home-hero-left">
+        {/* Left: full-bleed bull image */}
+        <div style={{
+          flex: '0 0 45%',
+          alignSelf: 'stretch',
+          position: 'relative',
+          overflow: 'hidden',
+          margin: '-28px 0 -24px -40px',
+          zIndex: 0,
+        }}>
+          <img
+            src={`${import.meta.env.BASE_URL}bull.png`}
+            alt="Bull trader"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+              display: 'block',
+              mixBlendMode: 'multiply',
+              filter: 'brightness(1.25) contrast(1.1) saturate(1.2)',
+            }}
+          />
+          {/* right-side fade so image blends into page */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to right, transparent 60%, var(--bg) 100%)',
+            pointerEvents: 'none',
+          }} />
+        </div>
+
+        {/* Right: text */}
+        <div className="home-hero-left" style={{ zIndex: 1 }}>
 
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 9, marginBottom: 28,
@@ -355,28 +385,6 @@ export default function Home() {
                 <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 5, letterSpacing: '0.06em' }}>{s.label}</div>
               </div>
             ))}
-          </div>
-        </div>
-
-        <div className="home-hero-right">
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 6%, black 90%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 6%, black 90%, transparent 100%)',
-            maskComposite: 'intersect',
-            WebkitMaskComposite: 'source-in',
-          }}>
-            <img
-              src={`${import.meta.env.BASE_URL}bull2.png`}
-              alt="Bull trader"
-              style={{
-                width: '100%',
-                display: 'block',
-                mixBlendMode: 'screen',
-                filter: 'brightness(1.2) contrast(1.05) saturate(1.1)',
-              }}
-            />
           </div>
         </div>
       </section>
