@@ -318,6 +318,10 @@ export default function Home() {
           overflow: 'hidden',
           margin: '-28px 0 -24px -40px',
           zIndex: 0,
+          maskImage: 'linear-gradient(to right, black 55%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 12%, black 82%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, black 55%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 12%, black 82%, transparent 100%)',
+          maskComposite: 'intersect',
+          WebkitMaskComposite: 'source-in',
         }}>
           <img
             src={`${import.meta.env.BASE_URL}bull.png`}
@@ -329,15 +333,9 @@ export default function Home() {
               objectPosition: 'center top',
               display: 'block',
               mixBlendMode: 'multiply',
-              filter: 'brightness(1.25) contrast(1.1) saturate(1.2)',
+              filter: 'brightness(1.3) contrast(1.15) saturate(1.3)',
             }}
           />
-          {/* right-side fade so image blends into page */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(to right, transparent 60%, var(--bg) 100%)',
-            pointerEvents: 'none',
-          }} />
         </div>
 
         {/* Right: text */}
