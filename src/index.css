@@ -1023,14 +1023,13 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   .home-root > section:last-child { margin: 0 20px 8px; padding: 28px 28px; }
 
   .home-hero-image {
-    order: 2 !important;
     flex: none !important;
     width: calc(100% + 40px) !important;
     height: 260px !important;
     align-self: auto !important;
-    margin: 0 -20px -28px -20px !important;
-    mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 100%) !important;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 100%) !important;
+    margin: -32px -20px 0 -20px !important;
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%) !important;
     mask-composite: unset !important;
     -webkit-mask-composite: source-over !important;
   }
