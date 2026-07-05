@@ -50,8 +50,8 @@ export default function Topbar({ onMenuOpen }) {
 
       {/* Logo text — mobile only */}
       <span className="mob-logo-text" style={{
-        display: 'none', fontFamily: 'Orbitron, monospace', fontWeight: 800,
-        fontSize: 15, color: 'var(--gold)', letterSpacing: '0.08em',
+        display: 'none', fontFamily: "'Geist', 'Inter', sans-serif", fontWeight: 800,
+        fontSize: 15, color: 'var(--gold)', letterSpacing: '0.04em',
       }}>SEVORA</span>
 
       {/* Clock — hidden on mobile */}
@@ -145,11 +145,11 @@ export default function Topbar({ onMenuOpen }) {
       {/* User avatar */}
       <div onClick={() => navigate('/login')} style={{
         width: 32, height: 32, borderRadius: '50%',
-        background: 'linear-gradient(135deg, #D4AF37, #FFD700)',
+        background: 'linear-gradient(135deg, #6D28D9, #8B5CF6)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer', flexShrink: 0,
       }}>
-        <IcoUser size={16} color="#0a0a0f" />
+        <IcoUser size={16} color="#ffffff" />
       </div>
     </header>
   )

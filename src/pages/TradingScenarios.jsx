@@ -79,7 +79,7 @@ export default function TradingScenarios() {
             <div style={{ padding: '6px 16px', background: 'rgba(0,212,160,0.15)', border: '1px solid rgba(0,212,160,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--green)' }}>
               🟢 Target Zone: $3,265 – $3,285
             </div>
-            <div style={{ padding: '6px 16px', background: 'rgba(255,215,0,0.1)', border: '1px solid var(--gold-border)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--gold)' }}>
+            <div style={{ padding: '6px 16px', background: 'rgba(139,92,246,0.1)', border: '1px solid var(--gold-border)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--gold)' }}>
               🟡 Entry Zone: $3,235 – $3,248
             </div>
             <div style={{ padding: '6px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--red)' }}>

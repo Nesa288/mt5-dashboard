@@ -9,7 +9,7 @@ export default function Premium() {
 
   const PLAN_ICONS = { free: '🌱', pro: '⚡', elite: '👑' }
   const PLAN_COLORS = { free: 'var(--text-2)', pro: 'var(--blue)', elite: 'var(--gold)' }
-  const PLAN_GLOW = { free: 'transparent', pro: 'rgba(59,130,246,0.15)', elite: 'rgba(255,215,0,0.15)' }
+  const PLAN_GLOW = { free: 'transparent', pro: 'rgba(59,130,246,0.15)', elite: 'rgba(139,92,246,0.15)' }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

@@ -26,7 +26,7 @@ function ProductCard({ product }) {
         <div style={{
           position: 'absolute', top: 12, right: 12,
           padding: '2px 10px', borderRadius: 20, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
-          background: product.badge === 'FREE' ? 'rgba(0,212,160,0.2)' : product.badge === 'BESTSELLER' ? 'rgba(255,215,0,0.2)' : 'rgba(59,130,246,0.2)',
+          background: product.badge === 'FREE' ? 'rgba(0,212,160,0.2)' : product.badge === 'BESTSELLER' ? 'rgba(139,92,246,0.2)' : 'rgba(59,130,246,0.2)',
           color: product.badge === 'FREE' ? 'var(--green)' : product.badge === 'BESTSELLER' ? 'var(--gold)' : 'var(--blue)',
           border: `1px solid ${product.badge === 'FREE' ? 'rgba(0,212,160,0.4)' : product.badge === 'BESTSELLER' ? 'var(--gold-border)' : 'rgba(59,130,246,0.4)'}`,
         }}>

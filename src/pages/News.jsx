@@ -52,7 +52,7 @@ function NewsCard({ item, large }) {
       <div style={{
         display: 'flex', gap: 8, alignItems: 'flex-start',
         padding: '8px 10px', borderRadius: 8,
-        background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.12)',
+        background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.12)',
         marginTop: 8,
       }}>
         <span style={{ fontSize: 14, flexShrink: 0 }}>🤖</span>
@@ -157,7 +157,7 @@ export default function News() {
                 }}>
                   <span style={{
                     width: 24, height: 24, borderRadius: 6,
-                    background: 'rgba(255,215,0,0.15)', border: '1px solid var(--gold-border)',
+                    background: 'rgba(139,92,246,0.15)', border: '1px solid var(--gold-border)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 11, fontWeight: 700, color: 'var(--gold)',
                     flexShrink: 0,
@@ -207,7 +207,7 @@ export default function News() {
                 }}>
                   <span style={{
                     width: 24, height: 24, borderRadius: 6,
-                    background: 'rgba(255,215,0,0.15)', border: '1px solid var(--gold-border)',
+                    background: 'rgba(139,92,246,0.15)', border: '1px solid var(--gold-border)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 11, fontWeight: 700, color: 'var(--gold)',
                     flexShrink: 0,

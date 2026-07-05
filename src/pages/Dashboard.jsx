@@ -89,7 +89,7 @@ export default function Dashboard() {
           <div style={{
             position: 'absolute', top: -60, right: -60,
             width: 200, height: 200, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)',
             pointerEvents: 'none',
           }} />
 

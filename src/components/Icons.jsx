@@ -18,6 +18,7 @@ export const IcoAffiliate = (p) => <Icon {...p} d={<><path d="M17 21v-2a4 4 0 00
 export const IcoMarketplace = (p) => <Icon {...p} d={<><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></>} />
 export const IcoPremium = (p) => <Icon {...p} d="M2 4l3 12h14l3-12-6 7-4-7-4 7z" />
 export const IcoLogin = (p) => <Icon {...p} d={<><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></>} />
+export const IcoHome = (p) => <Icon {...p} d={<><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></>} />
 export const IcoChevronDown = (p) => <Icon {...p} d="M6 9l6 6 6-6" />
 export const IcoChevronRight = (p) => <Icon {...p} d="M9 6l6 6-6 6" />
 export const IcoArrowUp = (p) => <Icon {...p} d="M12 19V5M5 12l7-7 7 7" />

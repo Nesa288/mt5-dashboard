@@ -4,11 +4,11 @@ import { useMarketStatus } from '../hooks/useMarketStatus'
 import {
   IcoDashboard, IcoGold, IcoMarkets, IcoCalendar, IcoNews,
   IcoScenarios, IcoJournal, IcoAcademy, IcoAIMentor, IcoBotDashboard,
-  IcoAffiliate, IcoMarketplace, IcoPremium, IcoLogin,
+  IcoAffiliate, IcoMarketplace, IcoPremium, IcoLogin, IcoHome,
 } from './Icons'
 
 const NAV_ITEMS = [
-  { path: '/', key: 'dashboard', Icon: IcoDashboard },
+  { path: '/dashboard', key: 'dashboard', Icon: IcoDashboard },
   { path: '/gold', key: 'gold', Icon: IcoGold },
   { path: '/markets', key: 'markets', Icon: IcoMarkets },
   { path: '/calendar', key: 'calendar', Icon: IcoCalendar },
@@ -43,18 +43,18 @@ export default function Sidebar({ mobile, drawerOpen, onClose }) {
           borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>
-          <div>
+          <NavLink to="/" end onClick={onClose} style={{ textDecoration: 'none' }}>
             <div style={{
-              fontFamily: 'Orbitron, monospace', fontSize: 18, fontWeight: 900,
-              background: 'linear-gradient(135deg, #D4AF37, #FFD700, #F5A623)',
+              fontFamily: "'Geist', 'Inter', sans-serif", fontSize: 18, fontWeight: 800,
+              background: 'linear-gradient(135deg, #6D28D9, #8B5CF6, #A78BFA)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text', letterSpacing: '0.08em',
+              backgroundClip: 'text', letterSpacing: '0.04em',
             }}>SEVORA</div>
             <div style={{
               fontSize: 9, fontWeight: 600, letterSpacing: '0.2em',
               textTransform: 'uppercase', color: 'var(--text-3)', marginTop: 2,
             }}>AI Trading Platform</div>
-          </div>
+          </NavLink>
           <button onClick={onClose} style={{
             background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
             borderRadius: 8, width: 30, height: 30, flexShrink: 0,
@@ -63,19 +63,31 @@ export default function Sidebar({ mobile, drawerOpen, onClose }) {
           }}>×</button>
         </div>
       ) : (
-        <div className="sidebar-logo">
+        <NavLink to="/" end className="sidebar-logo" style={{ textDecoration: 'none', display: 'block' }}>
           <div className="sidebar-logo-text">SEVORA</div>
           <div className="sidebar-logo-sub">AI Trading Platform</div>
-        </div>
+        </NavLink>
       )}
 
       {/* Navigation */}
       <nav className="sidebar-nav">
+        {mobile && (
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            style={{ justifyContent: 'flex-start', padding: '10px 14px' }}
+            onClick={onClose}
+          >
+            <IcoHome className="nav-icon" size={17} />
+            <span style={{ display: 'block' }}>Home</span>
+          </NavLink>
+        )}
         {NAV_ITEMS.map(({ path, key, Icon }) => (
           <NavLink
             key={path}
             to={path}
-            end={path === '/'}
+            end={path === '/dashboard'}
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             style={mobile ? { justifyContent: 'flex-start', padding: '10px 14px' } : undefined}
             onClick={mobile ? onClose : undefined}
@@ -96,8 +108,8 @@ export default function Sidebar({ mobile, drawerOpen, onClose }) {
               <button key={code} onClick={() => switchLang(code)} style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 padding: '8px 0', borderRadius: 7,
-                border: `1px solid ${lang === code ? 'rgba(212,175,55,0.45)' : 'var(--border)'}`,
-                background: lang === code ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${lang === code ? 'rgba(139,92,246,0.45)' : 'var(--border)'}`,
+                background: lang === code ? 'rgba(139,92,246,0.1)' : 'rgba(255,255,255,0.03)',
                 cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
               }}>
                 <span style={{ fontSize: 20 }}>{FLAGS[code]}</span>

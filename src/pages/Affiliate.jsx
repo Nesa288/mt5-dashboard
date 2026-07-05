@@ -24,12 +24,12 @@ export default function Affiliate() {
       <div style={{
         padding: '36px 40px',
         borderRadius: 18,
-        background: 'linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(0,212,160,0.08) 100%)',
+        background: 'linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(0,212,160,0.08) 100%)',
         border: '1px solid var(--gold-border)',
         textAlign: 'center',
         position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ fontSize: 42, marginBottom: 12 }}>🤝</div>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--gold)', marginBottom: 8 }}>
           {t('affiliate.subtitle')}
@@ -101,7 +101,7 @@ export default function Affiliate() {
               <div key={step} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <div style={{
                   width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(255,215,0,0.15)', border: '1px solid var(--gold-border)',
+                  background: 'rgba(139,92,246,0.15)', border: '1px solid var(--gold-border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16,
                 }}>{icon}</div>
@@ -128,12 +128,12 @@ export default function Affiliate() {
             </thead>
             <tbody>
               {affiliateData.leaderboard.map(row => (
-                <tr key={row.rank} style={row.isCurrentUser ? { background: 'rgba(255,215,0,0.06)' } : {}}>
+                <tr key={row.rank} style={row.isCurrentUser ? { background: 'rgba(139,92,246,0.06)' } : {}}>
                   <td>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       width: 26, height: 26, borderRadius: '50%',
-                      background: row.rank <= 3 ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)',
+                      background: row.rank <= 3 ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.05)',
                       border: `1px solid ${row.rank <= 3 ? 'var(--gold-border)' : 'var(--border)'}`,
                       fontSize: 12, fontWeight: 700,
                       color: row.rank === 1 ? '#FFD700' : row.rank === 2 ? '#C0C0C0' : row.rank === 3 ? '#CD7F32' : 'var(--text-3)',

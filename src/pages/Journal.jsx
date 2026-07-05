@@ -209,7 +209,7 @@ export default function Journal() {
                   </tr>
                   {expandedTrade === tr.id && (
                     <tr key={`${tr.id}-exp`}>
-                      <td colSpan={9} style={{ background: 'rgba(255,215,0,0.04)', padding: '12px 16px' }}>
+                      <td colSpan={9} style={{ background: 'rgba(139,92,246,0.04)', padding: '12px 16px' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
                           {[
                             { label: 'Entry', val: tr.entry.toLocaleString(), color: 'var(--text-1)' },
@@ -289,7 +289,7 @@ export default function Journal() {
                 </div>
               )
             })()}
-            <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(255,215,0,0.06)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
+            <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(139,92,246,0.06)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
               <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>MOST COMMON MISTAKE</div>
               <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{journalStats.commonMistake}</div>
             </div>

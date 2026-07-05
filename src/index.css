@@ -1,19 +1,29 @@
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/Geist-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-0: #070b11;
-  --bg-1: #0a0e17;
-  --bg-2: #0d1420;
-  --bg-3: #111928;
+  --bg-0: #08080f;
+  --bg-1: #0d0d1a;
+  --bg-2: #111120;
+  --bg-3: #171728;
   --card: rgba(255, 255, 255, 0.04);
   --card-hover: rgba(255, 255, 255, 0.07);
   --card-active: rgba(255, 255, 255, 0.10);
 
-  --gold: #FFD700;
-  --gold-2: #D4AF37;
-  --gold-3: #F5A623;
-  --gold-glow: rgba(255, 215, 0, 0.18);
-  --gold-border: rgba(255, 215, 0, 0.28);
+  --gold: #8B5CF6;
+  --gold-2: #6D28D9;
+  --gold-3: #A78BFA;
+  --gold-glow: rgba(139, 92, 246, 0.18);
+  --gold-border: rgba(139, 92, 246, 0.28);
+
+  --price: #F5A623;
 
   --green: #00D4A0;
   --green-2: #10B981;
@@ -47,7 +57,7 @@
   --trans-slow: 0.4s ease;
 
   --shadow: 0 4px 28px rgba(0, 0, 0, 0.5);
-  --shadow-gold: 0 0 24px rgba(255, 215, 0, 0.15);
+  --shadow-gold: 0 0 24px rgba(139, 92, 246, 0.15);
   --shadow-green: 0 0 24px rgba(0, 212, 160, 0.15);
 }
 
@@ -63,6 +73,10 @@ body {
   color: var(--text-1);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+  font-family: 'Geist', 'Inter', sans-serif;
 }
 
 /* ─── SCROLLBAR ─────────────────────────────── */
@@ -85,7 +99,7 @@ body {
   grid-column: 1;
   grid-row: 1 / 3;
   height: 100vh;
-  background: linear-gradient(180deg, rgba(10,14,23,0.98) 0%, rgba(7,11,17,0.98) 100%);
+  background: linear-gradient(180deg, rgba(8,8,16,0.99) 0%, rgba(6,6,12,0.99) 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -98,7 +112,7 @@ body {
   grid-column: 2;
   grid-row: 1;
   height: var(--topbar-h);
-  background: rgba(10,14,23,0.96);
+  background: rgba(8,8,15,0.96);
   backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -136,7 +150,7 @@ body {
 
 .glass:hover {
   background: var(--card-hover);
-  border-color: rgba(255, 215, 0, 0.15);
+  border-color: rgba(139, 92, 246, 0.15);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   transform: translateY(-1px);
 }
@@ -156,7 +170,7 @@ body {
 }
 
 .glass-gold {
-  background: rgba(255,215,0,0.06);
+  background: rgba(139,92,246,0.06);
   border: 1px solid var(--gold-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-gold);
@@ -177,7 +191,7 @@ body {
 
 /* ─── TYPOGRAPHY ─────────────────────────────── */
 .page-title {
-  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-family: 'Geist', 'Inter', sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: var(--text-1);
@@ -212,8 +226,8 @@ body {
   font-size: 32px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: var(--gold);
-  text-shadow: 0 0 28px rgba(255,215,0,0.4);
+  color: var(--price);
+  text-shadow: 0 0 28px rgba(245,166,35,0.4);
 }
 
 .price-md {
@@ -263,7 +277,7 @@ body {
 .badge-bull { background: rgba(0,212,160,0.13); color: var(--green); border: 1px solid rgba(0,212,160,0.3); }
 .badge-bear { background: rgba(239,68,68,0.13); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
 .badge-neutral { background: rgba(148,163,184,0.12); color: var(--text-2); border: 1px solid rgba(148,163,184,0.25); }
-.badge-gold { background: rgba(255,215,0,0.13); color: var(--gold); border: 1px solid var(--gold-border); }
+.badge-gold { background: rgba(139,92,246,0.13); color: var(--gold); border: 1px solid var(--gold-border); }
 .badge-demo { background: rgba(59,130,246,0.13); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
 .badge-warn { background: rgba(245,158,11,0.13); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
 .badge-open { background: rgba(0,212,160,0.13); color: var(--green); border: 1px solid rgba(0,212,160,0.3); }
@@ -290,14 +304,14 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, #c9980a, #FFD700);
-  color: #0a0a0f;
-  box-shadow: 0 4px 18px rgba(255,215,0,0.28);
+  background: linear-gradient(135deg, #5B21B6, #8B5CF6);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(139,92,246,0.35);
 }
 .btn-gold:hover {
-  box-shadow: 0 6px 28px rgba(255,215,0,0.45);
+  box-shadow: 0 6px 28px rgba(139,92,246,0.55);
   transform: translateY(-1px);
-  brightness: 1.05;
+  filter: brightness(1.08);
 }
 
 .btn-ghost {
@@ -403,7 +417,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 
 .pill-tab.active {
   background: var(--gold);
-  color: #0a0a0f;
+  color: #ffffff;
 }
 
 .scroll-tabs-wrap {
@@ -456,8 +470,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   pointer-events: none;
   width: 26px; height: 26px;
   border-radius: 50%;
-  background: rgba(212,175,55,0.14);
-  border: 1px solid rgba(212,175,55,0.32);
+  background: rgba(139,92,246,0.14);
+  border: 1px solid rgba(139,92,246,0.32);
   color: var(--gold);
   cursor: pointer;
   display: flex;
@@ -469,8 +483,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .tab-fade.visible .tab-arrow-btn { pointer-events: auto; }
 .tab-arrow-btn:active {
   transform: scale(0.86);
-  background: rgba(212,175,55,0.28);
-  border-color: rgba(212,175,55,0.6);
+  background: rgba(139,92,246,0.28);
+  border-color: rgba(139,92,246,0.6);
 }
 
 /* ─── MARKETPLACE HERO ───────────────────────── */
@@ -689,8 +703,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 
 @keyframes pulseGold {
-  0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.25); }
-  50% { box-shadow: 0 0 24px rgba(255,215,0,0.55); }
+  0%, 100% { box-shadow: 0 0 8px rgba(139,92,246,0.25); }
+  50% { box-shadow: 0 0 24px rgba(139,92,246,0.55); }
 }
 
 @keyframes pulseGreen {
@@ -723,17 +737,22 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   padding: 18px 16px 14px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.sidebar-logo:hover {
+  opacity: 0.8;
 }
 
 .sidebar-logo-text {
-  font-family: 'Orbitron', monospace;
+  font-family: 'Geist', 'Inter', sans-serif;
   font-size: 18px;
-  font-weight: 900;
-  background: linear-gradient(135deg, #D4AF37, #FFD700, #F5A623);
+  font-weight: 800;
+  background: linear-gradient(135deg, #6D28D9, #8B5CF6, #A78BFA);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .sidebar-logo-sub {
@@ -781,8 +800,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 
 .nav-item.active {
   color: var(--gold);
-  background: rgba(255,215,0,0.07);
-  border-color: rgba(255,215,0,0.18);
+  background: rgba(139,92,246,0.08);
+  border-color: rgba(139,92,246,0.2);
 }
 
 .nav-item.active::before {
@@ -795,7 +814,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   height: 20px;
   background: var(--gold);
   border-radius: 0 2px 2px 0;
-  box-shadow: 0 0 8px rgba(255,215,0,0.5);
+  box-shadow: 0 0 8px rgba(139,92,246,0.5);
 }
 
 .nav-icon {
@@ -935,6 +954,73 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .lang-option:hover { background: var(--card); color: var(--text-1); }
 .lang-option.selected { color: var(--gold); }
 
+/* ─── HOME PAGE ──────────────────────────────── */
+.home-root {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: -24px;
+  padding: 0;
+  min-height: calc(100% + 48px);
+}
+
+.home-hero {
+  position: relative;
+  padding: 28px 40px 24px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  overflow: hidden;
+}
+
+.home-hero-left {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+}
+
+.home-hero-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 0 40px;
+}
+
+.home-feature-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+@media (max-width: 1200px) {
+  .home-features { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .home-hero { flex-direction: column; padding: 40px 32px 36px; min-height: auto; gap: 32px; }
+  .home-hero-left { max-width: 100%; }
+  .home-hero-right { max-width: 100%; width: 100%; justify-content: center; }
+}
+
+@media (max-width: 768px) {
+  .home-root { margin: -14px; min-height: calc(100% + 28px); }
+  .home-hero { padding: 32px 20px 28px; gap: 28px; }
+  .home-hero-right { display: none; }
+  .home-features { grid-template-columns: 1fr 1fr; padding: 0 20px; gap: 12px; }
+  .home-root > section:last-child { margin: 0 20px 8px; padding: 28px 28px; }
+}
+
 /* ─── PARTICLE BG ────────────────────────────── */
 .particle-bg {
   position: fixed;
@@ -995,7 +1081,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   position: fixed;
   bottom: 0; left: 0; right: 0;
   height: 60px;
-  background: rgba(7,11,17,0.97);
+  background: rgba(8,8,15,0.97);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border);
@@ -1248,8 +1334,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
     height: 62px;
     align-items: center;
     justify-content: center;
-    background: rgba(212,175,55,0.14);
-    border: 1px solid rgba(212,175,55,0.38);
+    background: rgba(139,92,246,0.14);
+    border: 1px solid rgba(139,92,246,0.38);
     border-right: none;
     border-radius: 8px 0 0 8px;
     color: var(--gold);
@@ -1257,7 +1343,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
     transition: background 0.18s;
   }
   .news-sidebar-toggle.open {
-    background: rgba(212,175,55,0.26);
+    background: rgba(139,92,246,0.26);
   }
 
   .news-sidebar-backdrop {

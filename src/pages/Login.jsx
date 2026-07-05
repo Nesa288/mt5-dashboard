@@ -24,7 +24,7 @@ export default function Login() {
       <ParticleBackground />
 
       {/* Background glows */}
-      <div style={{ position: 'absolute', top: '20%', left: '30%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,215,0,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '20%', left: '30%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '20%', right: '25%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,212,160,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
       {/* Back button */}
@@ -34,12 +34,12 @@ export default function Login() {
           position: 'absolute', top: 24, left: 24,
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-          background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.25)',
+          background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)',
           color: 'var(--gold)', cursor: 'pointer', fontFamily: 'inherit',
           transition: 'all 0.2s ease',
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.15)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.4)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.25)' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.15)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.08)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)' }}
       >
         {t('common.back')}
       </button>
@@ -53,8 +53,8 @@ export default function Login() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-              background: lang === code ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${lang === code ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
+              background: lang === code ? 'rgba(139,92,246,0.12)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${lang === code ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.1)'}`,
               color: lang === code ? 'var(--gold)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
@@ -72,14 +72,14 @@ export default function Login() {
         border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 22,
         padding: '40px 36px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,215,0,0.05)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(139,92,246,0.05)',
         position: 'relative', zIndex: 1,
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
-            fontSize: 28, fontFamily: 'Orbitron, monospace', fontWeight: 900,
-            background: 'linear-gradient(135deg, #D4AF37, #FFD700, #F5A623)',
+            fontSize: 28, fontFamily: "'Geist', 'Inter', sans-serif", fontWeight: 800,
+            background: 'linear-gradient(135deg, #6D28D9, #8B5CF6, #A78BFA)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             backgroundClip: 'text', letterSpacing: '0.1em',
             marginBottom: 4,

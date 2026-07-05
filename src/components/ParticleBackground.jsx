@@ -9,7 +9,7 @@ export default function ParticleBackground() {
       size: Math.random() * 3 + 1,
       duration: Math.random() * 20 + 15,
       delay: Math.random() * -20,
-      color: i % 3 === 0 ? 'rgba(255,215,0,0.25)' : i % 3 === 1 ? 'rgba(0,212,160,0.18)' : 'rgba(59,130,246,0.15)',
+      color: i % 3 === 0 ? 'rgba(139,92,246,0.25)' : i % 3 === 1 ? 'rgba(0,212,160,0.18)' : 'rgba(59,130,246,0.15)',
     }))
   }, [])
 

@@ -22,14 +22,14 @@ function ChatMessage({ msg, isBot }) {
       {isBot && (
         <div style={{
           width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-          background: 'linear-gradient(135deg, #D4AF37, #FFD700)',
+          background: 'linear-gradient(135deg, #6D28D9, #8B5CF6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16,
         }}>🤖</div>
       )}
       <div style={{
         maxWidth: '75%',
-        background: isBot ? 'rgba(255,255,255,0.05)' : 'rgba(255,215,0,0.12)',
+        background: isBot ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.12)',
         border: `1px solid ${isBot ? 'var(--border)' : 'var(--gold-border)'}`,
         borderRadius: isBot ? '4px 14px 14px 14px' : '14px 4px 14px 14px',
         padding: '12px 16px',
@@ -118,7 +118,7 @@ export default function AIMentor() {
           }}>
             <div style={{
               width: 36, height: 36, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #D4AF37, #FFD700)',
+              background: 'linear-gradient(135deg, #6D28D9, #8B5CF6)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
             }}>🤖</div>
             <div>
@@ -138,7 +138,7 @@ export default function AIMentor() {
             {messages.map(msg => <ChatMessage key={msg.id} msg={msg} isBot={msg.isBot} />)}
             {isTyping && (
               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 16 }}>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #D4AF37, #FFD700)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🤖</div>
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #6D28D9, #8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🤖</div>
                 <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '4px 14px 14px 14px', padding: '12px 16px' }}>
                   <div style={{ display: 'flex', gap: 5 }}>
                     {[0, 150, 300].map(d => (
@@ -195,7 +195,7 @@ export default function AIMentor() {
                     color: 'var(--text-2)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
                     transition: 'all 0.2s ease',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,215,0,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,215,0,0.2)'; e.currentTarget.style.color = 'var(--text-1)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.07)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.2)'; e.currentTarget.style.color = 'var(--text-1)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-2)' }}
                 >
                   {q}
