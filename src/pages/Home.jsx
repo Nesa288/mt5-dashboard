@@ -311,7 +311,7 @@ export default function Home() {
         <div style={{ position: 'absolute', bottom: -80, left: '25%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Left: full-bleed bull image */}
-        <div style={{
+        <div className="home-hero-image" style={{
           flex: '0 0 45%',
           alignSelf: 'stretch',
           position: 'relative',
@@ -421,17 +421,8 @@ export default function Home() {
       </section>
 
       {/* ── QUOTE ──────────────────────────────── */}
-      <section style={{
-        margin: '0 0 8px',
-        padding: '36px 52px',
-        borderRadius: 18,
-        background: 'linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(109,40,217,0.03) 100%)',
-        border: '1px solid rgba(139,92,246,0.12)',
-        textAlign: 'center', position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', left: 28, top: 12, fontSize: 88, color: 'rgba(139,92,246,0.14)', lineHeight: 1, pointerEvents: 'none', userSelect: 'none', fontFamily: 'Georgia, serif' }}>"</div>
-        <div style={{ position: 'absolute', right: -50, bottom: -40, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <p style={{ fontSize: 18, fontStyle: 'italic', color: 'var(--text-1)', lineHeight: 1.68, maxWidth: 600, margin: '0 auto 14px', position: 'relative', zIndex: 1 }}>
+      <section style={{ margin: '0 0 8px', padding: '24px 52px', textAlign: 'center' }}>
+        <p style={{ fontSize: 18, fontStyle: 'italic', color: 'var(--text-1)', lineHeight: 1.68, maxWidth: 600, margin: '0 auto 14px' }}>
           Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
         </p>
         <span style={{ fontSize: 13, color: 'var(--gold)', fontWeight: 600 }}>— Unknown</span>
