@@ -324,7 +324,7 @@ export default function Home() {
           WebkitMaskComposite: 'source-in',
         }}>
           <img
-            src={`${import.meta.env.BASE_URL}bull.png`}
+            src={`${import.meta.env.BASE_URL}bull2.png`}
             alt="Bull trader"
             style={{
               width: '100%',
@@ -332,8 +332,8 @@ export default function Home() {
               objectFit: 'cover',
               objectPosition: 'center top',
               display: 'block',
-              mixBlendMode: 'multiply',
-              filter: 'brightness(1.3) contrast(1.15) saturate(1.3)',
+              mixBlendMode: 'screen',
+              filter: 'brightness(1.1) contrast(1.05) saturate(1.1)',
             }}
           />
         </div>
