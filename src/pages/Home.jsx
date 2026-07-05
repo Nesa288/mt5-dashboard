@@ -369,7 +369,7 @@ export default function Home() {
             WebkitMaskComposite: 'source-in',
           }}>
             <img
-              src="/bull2.png"
+              src={`${import.meta.env.BASE_URL}bull2.png`}
               alt="Bull trader"
               style={{
                 width: '100%',
