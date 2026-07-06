@@ -1,33 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { IcoGold, IcoAIMentor, IcoJournal, IcoAcademy } from '../components/Icons'
+import { useLanguage } from '../context/LanguageContext'
 
-const FEATURES = [
-  {
-    Icon: IcoGold,
-    title: 'Smart Trading',
-    desc: 'Real-time gold data, candlestick charts, and professional tools for every trading style.',
-    color: '#8B5CF6',
-    path: '/gold',
-  },
-  {
-    Icon: IcoAIMentor,
-    title: 'AI Mentor',
-    desc: 'Instant AI-powered market analysis, key price levels, and high-probability trade setups.',
-    color: '#3B82F6',
-    path: '/ai-mentor',
-  },
-  {
-    Icon: IcoJournal,
-    title: 'Trade Journal',
-    desc: 'Track every trade, review performance statistics, and eliminate losing patterns over time.',
-    color: '#00D4A0',
-    path: '/journal',
-  },
-  {
-    Icon: IcoAcademy,
-    title: 'Academy',
-    desc: 'Structured courses from beginner basics to advanced strategy — all built for active traders.',
-    color: '#F59E0B',
+const FEATURE_KEYS = [
+  { Icon: IcoGold,     key: 'smartTrading', color: '#8B5CF6', path: '/gold' },
+  { Icon: IcoAIMentor, key: 'aiMentor',     color: '#3B82F6', path: '/ai-mentor' },
+  { Icon: IcoJournal,  key: 'journal',      color: '#00D4A0', path: '/journal' },
+  { Icon: IcoAcademy,  key: 'academy',      color: '#F59E0B',
     path: '/academy',
   },
 ]
@@ -299,6 +278,7 @@ function HeroBullVisual() {
 
 export default function Home() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
 
   return (
     <div className="home-root">
@@ -347,36 +327,36 @@ export default function Home() {
             background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.28)',
           }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--gold)', boxShadow: '0 0 8px var(--gold)', animation: 'dotPulse 2s ease infinite' }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>WELCOME TO SEVORA</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>{t('home.welcomeBadge')}</span>
           </div>
 
           <h1 style={{
             fontSize: 'clamp(34px, 3.8vw, 56px)', fontWeight: 800, lineHeight: 1.1,
             letterSpacing: '-0.03em', marginBottom: 20,
           }}>
-            Trade Smarter.<br />
-            <span style={{ color: 'var(--gold)' }}>Achieve More.</span>
+            {t('home.heroLine1')}<br />
+            <span style={{ color: 'var(--gold)' }}>{t('home.heroLine2')}</span>
           </h1>
 
           <p style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.75, maxWidth: 430, marginBottom: 38 }}>
-            Sevora is your all-in-one trading hub. Advanced tools, real-time insights, and AI automation — everything you need to stay ahead of the market.
+            {t('home.heroDesc')}
           </p>
 
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 52 }}>
             <button className="btn btn-gold" onClick={() => navigate('/gold')} style={{ padding: '14px 30px', fontSize: 14, gap: 10 }}>
               <IcoGold size={16} />
-              Go to Trading
+              {t('home.goToTrading')}
             </button>
             <button className="btn btn-ghost" onClick={() => navigate('/dashboard')} style={{ padding: '14px 28px', fontSize: 14 }}>
-              Explore Features →
+              {t('home.exploreFeatures')}
             </button>
           </div>
 
           <div style={{ display: 'flex', gap: 40 }}>
             {[
-              { value: '14+', label: 'Trading Tools' },
-              { value: '24/7', label: 'AI Monitoring' },
-              { value: '100%', label: 'Web-Based' },
+              { value: '14+', label: t('home.stats.tradingTools') },
+              { value: '24/7', label: t('home.stats.aiMonitoring') },
+              { value: '100%', label: t('home.stats.webBased') },
             ].map(s => (
               <div key={s.value}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-1)', fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</div>
@@ -400,9 +380,9 @@ export default function Home() {
 
       {/* ── FEATURE CARDS ──────────────────────── */}
       <section className="home-features">
-        {FEATURES.map(({ Icon, title, desc, color, path }) => (
+        {FEATURE_KEYS.map(({ Icon, key, color, path }) => (
           <div
-            key={title}
+            key={key}
             className="glass p-5 home-feature-card"
             onClick={() => navigate(path)}
           >
@@ -413,19 +393,89 @@ export default function Home() {
             }}>
               <Icon size={22} color={color} />
             </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>{title}</div>
-            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.72, flex: 1, margin: 0 }}>{desc}</p>
-            <div style={{ fontSize: 12, color: color, fontWeight: 600, marginTop: 14 }}>Explore →</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>{t(`home.features.${key}.title`)}</div>
+            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.72, flex: 1, margin: 0 }}>{t(`home.features.${key}.desc`)}</p>
+            <div style={{ fontSize: 12, color: color, fontWeight: 600, marginTop: 14 }}>{t('home.exploreLink')}</div>
           </div>
         ))}
       </section>
 
-      {/* ── QUOTE ──────────────────────────────── */}
-      <section style={{ margin: '0 0 8px', padding: '24px 52px', textAlign: 'center' }}>
-        <p style={{ fontSize: 18, fontStyle: 'italic', color: 'var(--text-1)', lineHeight: 1.68, maxWidth: 600, margin: '0 auto 14px' }}>
-          Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
-        </p>
-        <span style={{ fontSize: 13, color: 'var(--gold)', fontWeight: 600 }}>— Unknown</span>
+      {/* ── MINDSET BANNER ─────────────────────── */}
+      <section style={{
+        margin: '0 0 8px',
+        padding: '48px 40px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 48,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* BG glow */}
+        <div style={{ position: 'absolute', top: -60, left: '30%', width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* Left: text */}
+        <div style={{ flex: '1 1 50%', minWidth: 0 }}>
+          {/* Badge */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 22,
+            padding: '4px 14px', borderRadius: 20,
+            background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)',
+          }}>
+            <span style={{ fontSize: 11 }}>🎓</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--gold)' }}>{t('home.mindsetBadge')}</span>
+          </div>
+
+          {/* Heading */}
+          <h2 style={{
+            fontSize: 'clamp(26px, 2.8vw, 40px)', fontWeight: 800, lineHeight: 1.15,
+            letterSpacing: '-0.025em', marginBottom: 22, color: 'var(--text-1)',
+          }}>
+            {t('home.mindsetLine1')}<br />
+            <span style={{ color: 'var(--gold)' }}>{t('home.mindsetLine2')}</span>
+          </h2>
+
+          {/* Quote */}
+          <p style={{
+            fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
+            marginBottom: 8, paddingLeft: 16,
+            borderLeft: '2px solid rgba(139,92,246,0.4)',
+          }}>
+            Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
+          </p>
+          <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 600, paddingLeft: 16, marginBottom: 32 }}>{t('home.quoteAuthor')}</div>
+
+          {/* CTA */}
+          <button
+            className="btn btn-gold"
+            onClick={() => navigate('/academy')}
+            style={{ padding: '13px 28px', fontSize: 13, gap: 8 }}
+          >
+            <IcoAcademy size={15} />
+            {t('home.startLearning')}
+          </button>
+        </div>
+
+        {/* Right: image placeholder */}
+        <div style={{
+          flex: '0 0 42%',
+          aspectRatio: '4/3',
+          borderRadius: 18,
+          background: 'rgba(139,92,246,0.06)',
+          border: '1px dashed rgba(139,92,246,0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          color: 'var(--text-3)',
+        }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity={0.4}>
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+          <span style={{ fontSize: 11 }}>{t('home.imageSoon')}</span>
+        </div>
       </section>
 
     </div>
