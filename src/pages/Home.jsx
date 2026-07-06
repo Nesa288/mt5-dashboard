@@ -366,23 +366,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* white divider pinned to bottom of hero */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0, left: 0, right: 0,
-          height: 1,
-          background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.25) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.25) 80%, transparent 100%)',
-          boxShadow: '0 0 8px 1px rgba(255,255,255,0.12)',
-          pointerEvents: 'none',
-          zIndex: 2,
-        }} />
       </section>
-
 
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section style={{
         margin: '0 0 8px',
-        padding: '48px 40px',
+        padding: '40px 40px',
         display: 'flex',
         alignItems: 'center',
         gap: 48,
