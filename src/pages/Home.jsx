@@ -438,6 +438,7 @@ export default function Home() {
           position: 'relative',
           height: 520,
           overflow: 'hidden',
+          marginTop: 40,
           maskImage: 'radial-gradient(ellipse 88% 96% at 50% 50%, black 52%, transparent 84%)',
           WebkitMaskImage: 'radial-gradient(ellipse 88% 96% at 50% 50%, black 52%, transparent 84%)',
         }}>
