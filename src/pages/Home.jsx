@@ -407,7 +407,7 @@ export default function Home() {
             fontSize: 'clamp(26px, 2.8vw, 40px)', fontWeight: 800, lineHeight: 1.15,
             letterSpacing: '-0.025em', marginBottom: 22, color: 'var(--text-1)',
           }}>
-            {t('home.mindsetLine1')}<br />
+            <span style={{ color: 'transparent', WebkitTextStroke: '2px var(--gold)' }}>{t('home.mindsetLine1')}</span><br />
             <span style={{ color: 'var(--gold)' }}>{t('home.mindsetLine2')}</span>
           </h2>
 
