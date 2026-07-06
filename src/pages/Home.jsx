@@ -451,7 +451,7 @@ export default function Home() {
               objectFit: 'contain',
               objectPosition: 'center center',
               display: 'block',
-              filter: 'brightness(0.78) contrast(1.12)',
+              filter: 'none',
             }}
           />
         </div>
