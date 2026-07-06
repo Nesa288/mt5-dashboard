@@ -379,7 +379,7 @@ export default function Home() {
               { value: '100%', label: 'Web-Based' },
             ].map(s => (
               <div key={s.value}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-1)', fontFamily: 'Orbitron, monospace', lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-1)', fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 5, letterSpacing: '0.06em' }}>{s.label}</div>
               </div>
             ))}
