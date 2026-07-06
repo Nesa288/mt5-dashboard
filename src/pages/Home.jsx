@@ -381,18 +381,40 @@ export default function Home() {
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section style={{
         margin: '-32px 0 8px',
-        padding: '40px 40px',
+        padding: '40px 40px 48px',
         display: 'flex',
         alignItems: 'center',
-        gap: 48,
+        gap: 40,
         position: 'relative',
-        overflow: 'hidden',
       }}>
         {/* BG glow */}
-        <div style={{ position: 'absolute', top: -60, left: '30%', width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Left: text */}
-        <div style={{ flex: '1 1 50%', minWidth: 0 }}>
+        {/* Left: bull image */}
+        <div style={{
+          flex: '0 0 44%',
+          position: 'relative',
+          height: 520,
+          overflow: 'hidden',
+          maskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
+        }}>
+          <img
+            src={`${import.meta.env.BASE_URL}whitebull.png`}
+            alt="SEVORA Academy"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              display: 'block',
+              filter: 'brightness(0.78) contrast(1.12)',
+            }}
+          />
+        </div>
+
+        {/* Right: text */}
+        <div style={{ flex: '1 1 52%', minWidth: 0, paddingBottom: 8 }}>
           {/* Badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 22,
@@ -431,28 +453,6 @@ export default function Home() {
             <IcoAcademy size={15} />
             {t('home.startLearning')}
           </button>
-        </div>
-
-        {/* Right: image placeholder */}
-        <div style={{
-          flex: '0 0 42%',
-          aspectRatio: '4/3',
-          borderRadius: 18,
-          background: 'rgba(139,92,246,0.06)',
-          border: '1px dashed rgba(139,92,246,0.2)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          color: 'var(--text-3)',
-        }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity={0.4}>
-            <rect x="3" y="3" width="18" height="18" rx="3" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="M21 15l-5-5L5 21" />
-          </svg>
-          <span style={{ fontSize: 11 }}>{t('home.imageSoon')}</span>
         </div>
       </section>
 
