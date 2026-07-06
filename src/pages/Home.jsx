@@ -438,8 +438,8 @@ export default function Home() {
           position: 'relative',
           height: 520,
           overflow: 'hidden',
-          maskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
+          maskImage: 'radial-gradient(ellipse 88% 96% at 50% 50%, black 52%, transparent 84%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 88% 96% at 50% 50%, black 52%, transparent 84%)',
         }}>
           <img
             src={`${import.meta.env.BASE_URL}whitebull.png`}
@@ -447,7 +447,7 @@ export default function Home() {
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'cover',
+              objectFit: 'contain',
               objectPosition: 'center center',
               display: 'block',
               filter: 'brightness(0.78) contrast(1.12)',
