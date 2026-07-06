@@ -386,6 +386,8 @@ export default function Home() {
         alignItems: 'center',
         gap: 40,
         position: 'relative',
+        background: 'white',
+        borderRadius: 24,
       }}>
         {/* BG glow */}
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
