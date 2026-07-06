@@ -378,27 +378,6 @@ export default function Home() {
         }} />
       </section>
 
-      {/* ── FEATURE CARDS ──────────────────────── */}
-      <section className="home-features">
-        {FEATURE_KEYS.map(({ Icon, key, color, path }) => (
-          <div
-            key={key}
-            className="glass p-5 home-feature-card"
-            onClick={() => navigate(path)}
-          >
-            <div style={{
-              width: 46, height: 46, borderRadius: 12, marginBottom: 14,
-              background: `${color}14`, border: `1px solid ${color}30`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Icon size={22} color={color} />
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-1)', marginBottom: 8 }}>{t(`home.features.${key}.title`)}</div>
-            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.72, flex: 1, margin: 0 }}>{t(`home.features.${key}.desc`)}</p>
-            <div style={{ fontSize: 12, color: color, fontWeight: 600, marginTop: 14 }}>{t('home.exploreLink')}</div>
-          </div>
-        ))}
-      </section>
 
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section style={{
