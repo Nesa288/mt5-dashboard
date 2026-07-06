@@ -381,7 +381,7 @@ export default function Home() {
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section style={{
         margin: '-32px 0 8px',
-        padding: '40px 40px 48px',
+        padding: '0 40px 48px',
         display: 'flex',
         alignItems: 'center',
         gap: 40,
