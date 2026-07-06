@@ -390,30 +390,7 @@ export default function Home() {
         {/* BG glow */}
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Left: bull image */}
-        <div style={{
-          flex: '0 0 44%',
-          position: 'relative',
-          height: 520,
-          overflow: 'hidden',
-          maskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
-        }}>
-          <img
-            src={`${import.meta.env.BASE_URL}whitebull.png`}
-            alt="SEVORA Academy"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center center',
-              display: 'block',
-              filter: 'brightness(0.78) contrast(1.12)',
-            }}
-          />
-        </div>
-
-        {/* Right: text */}
+        {/* Left: text */}
         <div style={{ flex: '1 1 52%', minWidth: 0, paddingBottom: 8 }}>
           {/* Badge */}
           <div style={{
@@ -453,6 +430,29 @@ export default function Home() {
             <IcoAcademy size={15} />
             {t('home.startLearning')}
           </button>
+        </div>
+
+        {/* Right: bull image */}
+        <div style={{
+          flex: '0 0 44%',
+          position: 'relative',
+          height: 520,
+          overflow: 'hidden',
+          maskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 84% 92% at 50% 55%, black 36%, transparent 76%)',
+        }}>
+          <img
+            src={`${import.meta.env.BASE_URL}whitebull.png`}
+            alt="SEVORA Academy"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center center',
+              display: 'block',
+              filter: 'brightness(0.78) contrast(1.12)',
+            }}
+          />
         </div>
       </section>
 
