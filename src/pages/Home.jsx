@@ -415,7 +415,7 @@ export default function Home() {
 
           {/* Quote */}
           <p style={{
-            fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
+            fontSize: 16, fontStyle: 'italic', color: '#000000', lineHeight: 1.72,
             marginBottom: 32, paddingLeft: 16,
             borderLeft: '2px solid rgba(139,92,246,0.4)',
           }}>
