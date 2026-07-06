@@ -416,13 +416,11 @@ export default function Home() {
           {/* Quote */}
           <p style={{
             fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
-            marginBottom: 8, paddingLeft: 16,
+            marginBottom: 32, paddingLeft: 16,
             borderLeft: '2px solid rgba(139,92,246,0.4)',
           }}>
             Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
           </p>
-          <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 600, paddingLeft: 16, marginBottom: 32 }}>{t('home.quoteAuthor')}</div>
-
           {/* CTA */}
           <button
             className="btn btn-gold"
