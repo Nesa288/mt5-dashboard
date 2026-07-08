@@ -435,16 +435,13 @@ export default function Home() {
         <div style={{
           flex: '0 0 46%',
           position: 'relative',
-          height: 420,
         }}>
           <img
             src={`${import.meta.env.BASE_URL}whitebull2.png`}
             alt="SEVORA Academy"
             style={{
               width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center 18%',
+              height: 'auto',
               display: 'block',
             }}
           />
