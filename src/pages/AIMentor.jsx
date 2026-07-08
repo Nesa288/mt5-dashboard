@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
+import { goldData, instruments, news, calendarEvents, sentiment, journalStats, journalTrades, botGroups } from '../data/mockData'
 
 const SUGGESTED = [
   { icon: '📈', text: 'Why is Gold going up?' },
@@ -9,48 +10,257 @@ const SUGGESTED = [
   { icon: '📔', text: 'Analyze my journal' },
 ]
 
-const RESPONSES = {
-  "Why is Gold going up?": {
-    trend: 'Bullish', confidence: 83,
-    keyLevels: [3395, 3382, 3370],
-    news: [{ name: 'CPI', time: '14:30', risk: 'High' }],
-    conclusion: 'Gold is rising on DXY weakness and falling real yields. Safe haven demand is elevated. Structure remains bullish above 3,378.',
-  },
-  "Explain today's trend": {
-    trend: 'Bullish', confidence: 78,
-    keyLevels: [3395, 3378, 3355],
-    news: [{ name: 'FOMC Min.', time: '19:00', risk: 'Medium' }],
-    conclusion: 'Daily trend is bullish. H4 shows a continuation pattern with higher highs. Wait for a pullback to 3,378 for an optimal entry.',
-  },
-  'Show key levels': {
-    trend: 'Bullish', confidence: 91,
-    keyLevels: [3402, 3395, 3382, 3370, 3355],
-    news: [{ name: 'CPI', time: '14:30', risk: 'High' }, { name: 'Fed Speak', time: '16:00', risk: 'Medium' }],
-    conclusion: 'Resistance at 3,395 and 3,402. Strong support at 3,370. Liquidity pool above 3,395 is the primary target.',
-  },
-  'What should I avoid today?': {
-    trend: 'Neutral', confidence: 62,
-    keyLevels: [3395, 3370],
-    news: [{ name: 'CPI', time: '14:30', risk: 'High' }],
-    conclusion: 'Avoid entering 30 min before CPI. Do not hold large positions through the release. Avoid shorts until price breaks below 3,370.',
-  },
-  'Analyze my journal': {
-    trend: 'Neutral', confidence: 70,
-    keyLevels: [3382, 3370],
-    news: [{ name: 'CPI', time: '14:30', risk: 'High' }],
-    conclusion: 'Your recent trades show overtrading during news. Average hold time is too short. Focus on H4 setups and reduce frequency.',
-  },
-}
-
-const DEFAULT_RESPONSE = {
-  trend: 'Bullish', confidence: 76,
-  keyLevels: [3395, 3382, 3370],
-  news: [{ name: 'CPI', time: '14:30', risk: 'High' }],
-  conclusion: 'Wait for CPI before entering. Current setup has elevated volatility. Reduce position size to 50%.',
-}
-
 const RISK_COLORS = { High: '#ef4444', Medium: '#f59e0b', Low: '#34d399' }
 
+// ─── Static snapshots derived from imports (computed once at module load) ────
+const _dxy = instruments.find(i => i.symbol === 'DXY')
+const _btc = instruments.find(i => i.symbol === 'BTCUSD')
+const SNAPSHOT = [
+  {
+    label: 'Gold',
+    value: `$${goldData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    change: `${goldData.changePercent >= 0 ? '+' : ''}${goldData.changePercent}%`,
+    up: goldData.changePercent >= 0,
+  },
+  {
+    label: 'DXY',
+    value: (_dxy?.price ?? 104.23).toFixed(2),
+    change: `${(_dxy?.changePct ?? -0.30) >= 0 ? '+' : ''}${(_dxy?.changePct ?? -0.30).toFixed(2)}%`,
+    up: (_dxy?.changePct ?? -0.30) >= 0,
+  },
+  {
+    label: 'US10Y',
+    value: '4.82%',
+    change: '+0.06%',
+    up: true,
+  },
+  {
+    label: 'BTC',
+    value: `$${(_btc?.price ?? 68420).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+    change: `${(_btc?.changePct ?? 1.85) >= 0 ? '+' : ''}${(_btc?.changePct ?? 1.85).toFixed(2)}%`,
+    up: (_btc?.changePct ?? 1.85) >= 0,
+  },
+]
+
+// ─── Data aggregator ─────────────────────────────────────────────────────────
+function buildContext() {
+  const utcHour = new Date().getUTCHours()
+
+  let activeSession = 'Off-hours'
+  if (utcHour >= 23 || utcHour < 8) activeSession = 'Asian'
+  else if (utcHour >= 13 && utcHour < 17) activeSession = 'London / NY Overlap'
+  else if (utcHour >= 8 && utcHour < 17) activeSession = 'London'
+  else if (utcHour >= 13 && utcHour < 22) activeSession = 'New York'
+
+  const dxy = instruments.find(i => i.symbol === 'DXY')
+
+  const todayEvents = calendarEvents.filter(e => e.date === 'today')
+  const highImpactToday = todayEvents.filter(e => e.impact >= 4).sort((a, b) => b.impact - a.impact)
+  const avoidEvents = todayEvents.filter(e => e.recommendation === 'avoid')
+
+  const highImpactNews = news.filter(n => n.impact === 'high')
+  const bullishNews = highImpactNews.filter(n => n.sentiment === 'bullish')
+
+  const recentLosses = journalTrades.filter(t => t.status === 'loss')
+  const recentWins = journalTrades.filter(t => t.status === 'win')
+  const mistakes = recentLosses.map(t => t.mistake).filter(Boolean)
+
+  const activeBots = botGroups.filter(b => b.status === 'running' && b.enabled)
+  const botPnl = activeBots.reduce((sum, b) => {
+    const v = parseFloat(b.pnl.replace(/[+$]/g, ''))
+    return sum + (isNaN(v) ? 0 : v)
+  }, 0)
+
+  const tfList = [goldData.dailyTrend, goldData.h4Trend, goldData.h1Trend, goldData.m15Trend]
+  const bullishTF = tfList.filter(t => t === 'Bullish').length
+  const bearishTF = tfList.filter(t => t === 'Bearish').length
+
+  // Confidence reflects multi-TF alignment, news risk, smart money
+  let confidence = 52
+  if (goldData.aiOutlook === 'BULLISH') confidence += 18
+  if (dxy?.trend === 'Bearish') confidence += 10
+  if (bullishTF >= 3) confidence += 10
+  if (bullishTF === 4) confidence += 7
+  if (bearishTF >= 2) confidence -= 14
+  if (highImpactToday.length > 0) confidence -= 10
+  if (avoidEvents.length > 0) confidence -= 8
+  if (goldData.volatility === 'High') confidence -= 5
+  if (sentiment.smartMoney.long > 65) confidence += 7
+  confidence = Math.min(Math.max(Math.round(confidence), 38), 95)
+
+  return {
+    utcHour, activeSession, dxy,
+    gold: goldData,
+    todayEvents, highImpactToday, avoidEvents,
+    bullishNews, highImpactNews,
+    journal: { stats: journalStats, trades: journalTrades, recentLosses, recentWins, mistakes },
+    activeBots, botPnl,
+    smartMoney: sentiment.smartMoney,
+    retail: sentiment.retail,
+    tfList, bullishTF, bearishTF,
+    confidence,
+  }
+}
+
+function toNewsItems(ctx, max = 2) {
+  return ctx.highImpactToday.slice(0, max).map(e => ({
+    name: e.event.split('(')[0].trim().split(' ').slice(0, 4).join(' '),
+    time: e.time + ' UTC',
+    risk: e.impact >= 5 ? 'High' : e.impact >= 4 ? 'Medium' : 'Low',
+  }))
+}
+
+// ─── Brain: turns question + site context → structured card data ─────────────
+function generateResponse(question, ctx) {
+  const q = question.toLowerCase()
+  const ni = toNewsItems(ctx)
+
+  const isJournal = /journal|my trade|analyz|performance|mistake|history/.test(q)
+  const isAvoid = /avoid|what.*(not|don't)|warning|danger/.test(q) || (/news/.test(q) && /today/.test(q))
+  const isCpiEvent = /cpi|fomc|fed|inflation|central bank/.test(q)
+  const isLevels = /level|zone|support|resist|target|key|price/.test(q)
+  const isTrend = /trend|outlook|explain.*today|today.*trend|market|overview/.test(q)
+  const isWhyUp = /why.*gold|gold.*why|going up|bullish.*gold|gold.*rise|why up|why is/.test(q)
+  const isSession = /session|london|new york|asian/.test(q)
+  const isBot = /bot|automat|signal/.test(q)
+  const isDxy = /dxy|dollar index/.test(q)
+
+  // ── Journal analysis ──────────────────────────────────────────────────────
+  if (isJournal) {
+    const st = ctx.journal.stats
+    const topMistake = ctx.journal.mistakes[0] || 'entering too early'
+    const lastLoss = ctx.journal.recentLosses[0]
+    return {
+      trend: st.winRate >= 60 ? 'Bullish' : 'Neutral',
+      confidence: Math.round(st.winRate * 0.88),
+      keyLevels: [ctx.gold.resistance, ctx.gold.support],
+      news: ni.slice(0, 1),
+      conclusion: `Your journal shows ${st.winRate}% win rate across ${st.totalTrades} trades. Profit factor: ${st.profitFactor} | Net P&L: ${st.netProfit} | Avg R: ${st.avgR}. ${lastLoss ? `Last loss — ${lastLoss.instrument}: "${lastLoss.mistake || lastLoss.reason}".` : ''} Recurring mistake: "${topMistake}". Best single trade: ${st.bestTrade}. Recommendation: wait for H4 confirmation and avoid entries within 30 min of high-impact events.`,
+    }
+  }
+
+  // ── What to avoid / CPI / FOMC ────────────────────────────────────────────
+  if (isAvoid || isCpiEvent) {
+    const avoidList = ctx.avoidEvents
+      .map(e => `${e.event.split('(')[0].trim()} at ${e.time} UTC`)
+      .join(' and ')
+    const allEventItems = ctx.highImpactToday.map(e => ({
+      name: e.event.split('(')[0].trim().split(' ').slice(0, 4).join(' '),
+      time: e.time + ' UTC',
+      risk: e.impact >= 5 ? 'High' : 'Medium',
+    }))
+    return {
+      trend: 'Neutral',
+      confidence: Math.max(ctx.confidence - 22, 38),
+      keyLevels: [ctx.gold.support, ctx.gold.invalidation],
+      news: allEventItems.length > 0 ? allEventItems : ni,
+      conclusion: ctx.avoidEvents.length > 0
+        ? `${ctx.avoidEvents.length} event${ctx.avoidEvents.length > 1 ? 's' : ''} to avoid: ${avoidList}. ${ctx.gold.tradingWarning || ''} Cut position size to 50% before these windows. Do not enter shorts unless price breaks and holds below ${ctx.gold.invalidation}.`
+        : `No critical avoidance events today. Volatility: ${ctx.gold.volatility}. Stay within ${ctx.gold.support}–${ctx.gold.resistance}. ${ctx.gold.aiDailyPlan}`,
+    }
+  }
+
+  // ── Key levels ────────────────────────────────────────────────────────────
+  if (isLevels) {
+    const mz = ctx.gold.manipulationZone
+    return {
+      trend: ctx.gold.price > ctx.gold.support ? 'Bullish' : 'Bearish',
+      confidence: 91,
+      keyLevels: [ctx.gold.resistance, ctx.gold.liquidityZone, mz.high, mz.low, ctx.gold.support, ctx.gold.invalidation],
+      news: ni,
+      conclusion: `XAUUSD @ $${ctx.gold.price.toFixed(2)} · Resistance ${ctx.gold.resistance} · Liquidity zone ${ctx.gold.liquidityZone} · Manipulation band ${mz.low}–${mz.high} · Support ${ctx.gold.support} · Invalidation ${ctx.gold.invalidation}. Asian range: ${ctx.gold.asianLow}–${ctx.gold.asianHigh}. A confirmed close above ${ctx.gold.resistance} opens the path to ${ctx.gold.targetZone}.`,
+    }
+  }
+
+  // ── Trend / daily overview ────────────────────────────────────────────────
+  if (isTrend) {
+    const diverge = ctx.gold.h1Trend !== ctx.gold.dailyTrend || ctx.gold.m15Trend !== ctx.gold.dailyTrend
+    const alignment = ctx.bullishTF >= 3
+      ? 'aligned bullish across higher timeframes'
+      : ctx.bearishTF >= 3 ? 'showing bearish divergence'
+      : 'mixed — wait for H4 close to confirm'
+    return {
+      trend: ctx.gold.dailyTrend,
+      confidence: ctx.confidence,
+      keyLevels: [ctx.gold.asianHigh, ctx.gold.resistance, ctx.gold.support, ctx.gold.invalidation],
+      news: ni,
+      conclusion: `Daily: ${ctx.gold.dailyTrend} · H4: ${ctx.gold.h4Trend} · H1: ${ctx.gold.h1Trend} · M15: ${ctx.gold.m15Trend} — ${alignment}. ${diverge ? `Short-term divergence on H1/M15 suggests a pullback to ${ctx.gold.support} before the next leg.` : 'Clean alignment across all timeframes.'} ${ctx.gold.aiSummaryText}`,
+    }
+  }
+
+  // ── Why is Gold going up / DXY ────────────────────────────────────────────
+  if (isWhyUp || isDxy) {
+    const dxyDesc = ctx.dxy?.trend === 'Bearish'
+      ? `DXY weakening (${ctx.dxy.price}, ${ctx.dxy.changePct > 0 ? '+' : ''}${ctx.dxy.changePct}%)`
+      : `DXY at ${ctx.dxy?.price ?? '--'} (${ctx.dxy?.trend ?? 'Neutral'})`
+    const drivers = []
+    if (ctx.dxy?.trend === 'Bearish') drivers.push('dollar weakness')
+    if (ctx.bullishNews.length > 0) drivers.push(`${ctx.bullishNews.length} bullish macro catalysts`)
+    if (ctx.gold.dailyTrend === 'Bullish') drivers.push('intact daily uptrend')
+    if (ctx.smartMoney.long > 65) drivers.push(`institutional buying (${ctx.smartMoney.long}% long)`)
+    if (ctx.gold.change > 0) drivers.push(`positive momentum (+$${ctx.gold.change.toFixed(2)} today)`)
+    return {
+      trend: ctx.gold.aiOutlook === 'BULLISH' ? 'Bullish' : 'Bearish',
+      confidence: ctx.confidence,
+      keyLevels: [ctx.gold.resistance, ctx.gold.liquidityZone, ctx.gold.support],
+      news: ni,
+      conclusion: `Gold ${ctx.gold.change >= 0 ? '+' : ''}$${ctx.gold.change.toFixed(2)} (${ctx.gold.changePercent}%) today — current price $${ctx.gold.price.toFixed(2)}. ${dxyDesc}. Smart money ${ctx.smartMoney.long}% long vs retail ${ctx.retail.long}% long. Key drivers: ${drivers.length > 0 ? drivers.join(', ') : ctx.gold.aiSummaryText}. Target: ${ctx.gold.targetZone} | Invalidation: ${ctx.gold.invalidation}.`,
+    }
+  }
+
+  // ── Session ───────────────────────────────────────────────────────────────
+  if (isSession) {
+    const bigEvent = ctx.highImpactToday[0]
+    return {
+      trend: ctx.gold.dailyTrend,
+      confidence: ctx.confidence,
+      keyLevels: [ctx.gold.asianHigh, ctx.gold.asianLow, ctx.gold.resistance, ctx.gold.support],
+      news: ni,
+      conclusion: `Active session: ${ctx.activeSession}. Asian range: ${ctx.gold.asianLow}–${ctx.gold.asianHigh}. ${
+        ctx.activeSession.includes('London')
+          ? `Expect a sweep of the Asian high (${ctx.gold.asianHigh}) before the directional move. London favors breakout strategies.`
+          : ctx.activeSession === 'New York'
+          ? `NY often reverses or extends the London move.${bigEvent ? ` Key risk: ${bigEvent.event.split('(')[0].trim()} at ${bigEvent.time} UTC.` : ''}`
+          : 'Asian session is range-bound. Wait for London open (08:00 UTC) to trade the breakout.'
+      }`,
+    }
+  }
+
+  // ── Bot dashboard ─────────────────────────────────────────────────────────
+  if (isBot) {
+    const names = ctx.activeBots.map(b => b.name).join(', ')
+    const sign = ctx.botPnl >= 0 ? '+' : ''
+    const warn = ctx.avoidEvents[0]
+    return {
+      trend: ctx.gold.dailyTrend,
+      confidence: ctx.confidence,
+      keyLevels: [ctx.gold.resistance, ctx.gold.support],
+      news: ni,
+      conclusion: `${ctx.activeBots.length} bot${ctx.activeBots.length !== 1 ? 's' : ''} active: ${names || 'none'}. Combined P&L today: ${sign}$${ctx.botPnl.toFixed(2)}. ${warn ? `Pause bots before ${warn.event.split('(')[0].trim()} at ${warn.time} UTC — high volatility expected.` : 'No critical events — bots can run normally.'}`,
+    }
+  }
+
+  // ── Generic fallback — still reads real data ──────────────────────────────
+  return {
+    trend: ctx.gold.aiOutlook === 'BULLISH' ? 'Bullish' : 'Bearish',
+    confidence: ctx.confidence,
+    keyLevels: [ctx.gold.resistance, ctx.gold.liquidityZone, ctx.gold.support],
+    news: ni,
+    conclusion: ctx.gold.aiDailyPlan,
+  }
+}
+
+// ─── Initial overview card (real data, computed at module load) ───────────────
+const _initCtx = buildContext()
+const INITIAL_DATA = {
+  trend: _initCtx.gold.dailyTrend,
+  confidence: _initCtx.confidence,
+  keyLevels: [_initCtx.gold.resistance, _initCtx.gold.liquidityZone, _initCtx.gold.support, _initCtx.gold.invalidation],
+  news: toNewsItems(_initCtx, 3),
+  conclusion: _initCtx.gold.aiDailyPlan,
+}
+
+// ─── UI components ────────────────────────────────────────────────────────────
 function CopilotCard({ data }) {
   const trendColor = data.trend === 'Bullish' ? '#34d399' : data.trend === 'Bearish' ? '#ef4444' : '#94a3b8'
 
@@ -58,11 +268,8 @@ function CopilotCard({ data }) {
     <div style={{
       background: 'rgba(255,255,255,0.03)',
       border: '1px solid rgba(139,92,246,0.18)',
-      borderRadius: 12,
-      overflow: 'hidden',
-      minWidth: 0,
+      borderRadius: 12, overflow: 'hidden', minWidth: 0,
     }}>
-      {/* Card header */}
       <div style={{
         padding: '10px 14px',
         background: 'rgba(139,92,246,0.06)',
@@ -80,11 +287,7 @@ function CopilotCard({ data }) {
 
         {/* Trend + Confidence */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <div style={{
-            flex: '1 1 50%',
-            background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-            padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)',
-          }}>
+          <div style={{ flex: '1 1 50%', background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Trend</div>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -96,20 +299,11 @@ function CopilotCard({ data }) {
             </div>
           </div>
 
-          <div style={{
-            flex: '1 1 50%',
-            background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-            padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)',
-          }}>
+          <div style={{ flex: '1 1 50%', background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>Confidence</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%', borderRadius: 2,
-                  width: `${data.confidence}%`,
-                  background: `linear-gradient(to right, ${trendColor}80, ${trendColor})`,
-                  transition: 'width 0.8s ease',
-                }} />
+                <div style={{ height: '100%', borderRadius: 2, width: `${data.confidence}%`, background: `linear-gradient(to right, ${trendColor}80, ${trendColor})`, transition: 'width 0.8s ease' }} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 800, color: trendColor, fontFamily: 'Orbitron, monospace', minWidth: 32 }}>{data.confidence}%</span>
             </div>
@@ -117,10 +311,7 @@ function CopilotCard({ data }) {
         </div>
 
         {/* Key Levels */}
-        <div style={{
-          background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-          padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)',
-        }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Key Levels</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {data.keyLevels.map((lvl, i) => (
@@ -131,45 +322,42 @@ function CopilotCard({ data }) {
                 border: `1px solid ${i === 0 ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.08)'}`,
                 color: i === 0 ? 'var(--gold)' : 'var(--text-2)',
               }}>
-                {lvl.toLocaleString()}
+                {typeof lvl === 'number' ? lvl.toLocaleString() : lvl}
               </span>
             ))}
           </div>
         </div>
 
         {/* Important News */}
-        <div style={{
-          background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-          padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)',
-        }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Important News</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {data.news.map((n, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-1)', minWidth: 70 }}>{n.name}</span>
-                <span style={{ fontSize: 11, fontFamily: 'Orbitron, monospace', color: 'var(--text-3)' }}>{n.time}</span>
-                <span style={{
-                  fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                  padding: '2px 7px', borderRadius: 4,
-                  background: `${RISK_COLORS[n.risk]}18`,
-                  color: RISK_COLORS[n.risk],
-                  border: `1px solid ${RISK_COLORS[n.risk]}30`,
-                }}>
-                  Risk: {n.risk}
-                </span>
-              </div>
-            ))}
+        {data.news && data.news.length > 0 && (
+          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '9px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 8 }}>Important News</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {data.news.map((n, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-1)', flex: 1, minWidth: 0 }}>{n.name}</span>
+                  <span style={{ fontSize: 11, fontFamily: 'Orbitron, monospace', color: 'var(--text-3)', flexShrink: 0 }}>{n.time}</span>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    padding: '2px 7px', borderRadius: 4, flexShrink: 0,
+                    background: `${RISK_COLORS[n.risk]}18`,
+                    color: RISK_COLORS[n.risk],
+                    border: `1px solid ${RISK_COLORS[n.risk]}30`,
+                  }}>
+                    Risk: {n.risk}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Conclusion */}
-        <div style={{
-          background: 'rgba(139,92,246,0.05)', borderRadius: 8,
-          padding: '10px 12px', borderLeft: '3px solid rgba(139,92,246,0.4)',
-        }}>
+        <div style={{ background: 'rgba(139,92,246,0.05)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid rgba(139,92,246,0.4)' }}>
           <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 6 }}>Conclusion</div>
           <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.65, margin: 0 }}>{data.conclusion}</p>
         </div>
+
       </div>
     </div>
   )
@@ -180,14 +368,10 @@ function UserBubble({ text }) {
     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', justifyContent: 'flex-end', marginBottom: 16 }}>
       <div style={{
         maxWidth: '70%',
-        background: 'rgba(139,92,246,0.12)',
-        border: '1px solid rgba(139,92,246,0.2)',
-        borderRadius: '14px 4px 14px 14px',
-        padding: '10px 14px',
+        background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.2)',
+        borderRadius: '14px 4px 14px 14px', padding: '10px 14px',
         fontSize: 13, color: 'var(--text-1)', lineHeight: 1.6,
-      }}>
-        {text}
-      </div>
+      }}>{text}</div>
       <div style={{
         width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
         background: 'rgba(255,255,255,0.07)', border: '1px solid var(--border)',
@@ -231,11 +415,12 @@ function TypingIndicator() {
   )
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AIMentor() {
   const { t } = useLanguage()
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([
-    { id: 1, type: 'bot', data: DEFAULT_RESPONSE },
+    { id: 1, type: 'bot', data: INITIAL_DATA },
   ])
   const [isTyping, setIsTyping] = useState(false)
   const bottomRef = useRef(null)
@@ -253,7 +438,8 @@ export default function AIMentor() {
     setInput('')
     setIsTyping(true)
     await new Promise(r => setTimeout(r, 1100 + Math.random() * 600))
-    const data = RESPONSES[text] || DEFAULT_RESPONSE
+    const ctx = buildContext()
+    const data = generateResponse(text, ctx)
     setIsTyping(false)
     setMessages(p => [...p, { id: Date.now() + 1, type: 'bot', data }])
   }
@@ -263,17 +449,16 @@ export default function AIMentor() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <h1 className="page-title">Trading Copilot</h1>
-          <p className="page-subtitle">AI-powered analysis. Ask anything about the market.</p>
+          <p className="page-subtitle">AI analysis powered by live site data — trend, calendar, news, journal, bots.</p>
         </div>
-        <span className="badge badge-demo">AI Response is DEMO</span>
+        <span className="badge badge-demo">Data-Driven · Mock Mode</span>
       </div>
 
-      {/* Main 2-column layout — chat left, panel right */}
+      {/* Main 2-column layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
 
         {/* LEFT: Chat */}
         <div className="glass" style={{ display: 'flex', flexDirection: 'column', height: 640 }}>
-          {/* Chat header */}
           <div style={{
             padding: '12px 18px', borderBottom: '1px solid var(--border)',
             display: 'flex', alignItems: 'center', gap: 10,
@@ -288,12 +473,11 @@ export default function AIMentor() {
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>SEVORA Trading Copilot</div>
               <div style={{ fontSize: 10, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--green)', animation: 'dotPulse 1.5s ease infinite' }} />
-                Online · Analyzing markets
+                Online · Reading site data
               </div>
             </div>
           </div>
 
-          {/* Messages */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '18px 16px 8px' }}>
             {messages.map(msg =>
               msg.type === 'user'
@@ -304,7 +488,6 @@ export default function AIMentor() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
             <input
               ref={inputRef}
@@ -312,7 +495,7 @@ export default function AIMentor() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send(input)}
-              placeholder="Ask about Gold, trends, levels, risk..."
+              placeholder="Ask about Gold, trend, levels, news, journal..."
               style={{ flex: 1, fontSize: 13 }}
             />
             <button
@@ -345,8 +528,7 @@ export default function AIMentor() {
                     background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
                     color: 'var(--text-2)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
                     display: 'flex', alignItems: 'center', gap: 8,
-                    transition: 'all 0.18s',
-                    opacity: isTyping ? 0.5 : 1,
+                    transition: 'all 0.18s', opacity: isTyping ? 0.5 : 1,
                   }}
                   onMouseEnter={e => { if (!isTyping) { e.currentTarget.style.background = 'rgba(139,92,246,0.08)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.25)'; e.currentTarget.style.color = 'var(--text-1)' } }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-2)' }}
@@ -358,18 +540,13 @@ export default function AIMentor() {
             </div>
           </div>
 
-          {/* Live Market Snapshot */}
+          {/* Live Market Snapshot — reads from actual instruments / goldData */}
           <div className="glass p-4">
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 12 }}>
               Market Snapshot
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                { label: 'Gold', value: '3,382.40', change: '+0.62%', up: true },
-                { label: 'DXY', value: '104.18', change: '-0.31%', up: false },
-                { label: 'US10Y', value: '4.21%', change: '-0.04%', up: false },
-                { label: 'VIX', value: '18.42', change: '+1.2%', up: true },
-              ].map(row => (
+              {SNAPSHOT.map(row => (
                 <div key={row.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{row.label}</span>
                   <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Orbitron, monospace', color: 'var(--text-1)' }}>{row.value}</span>
