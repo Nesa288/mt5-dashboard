@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import ParticleBackground from './ParticleBackground'
+import CommandPalette from './CommandPalette'
 
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -116,6 +117,7 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
+      <CommandPalette />
       <ParticleBackground />
       <div
         className={`sidebar-backdrop ${drawerOpen ? 'open' : ''}`}
