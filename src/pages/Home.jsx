@@ -433,7 +433,7 @@ export default function Home() {
 
         {/* Right: sitting bull image */}
         <div style={{
-          flex: '0 0 46%',
+          flex: '0 0 38%',
           position: 'relative',
         }}>
           <img
