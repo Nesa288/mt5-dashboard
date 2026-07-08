@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import ParticleBackground from './ParticleBackground'
 import CommandPalette from './CommandPalette'
+import FloatingCopilot from './FloatingCopilot'
 
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -118,6 +119,7 @@ export default function Layout() {
   return (
     <div className="app-shell">
       <CommandPalette />
+      <FloatingCopilot />
       <ParticleBackground />
       <div
         className={`sidebar-backdrop ${drawerOpen ? 'open' : ''}`}
