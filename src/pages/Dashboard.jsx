@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { goldData, news, calendarEvents, scenarios, sentiment, instruments } from '../data/mockData'
 import { GoldMiniChart } from '../components/TradingViewWidget'
 import { IcoArrowUp, IcoArrowDown, IcoAlert, IcoInfo, IcoChevronRight, IcoTarget, IcoShield } from '../components/Icons'
+import AIDailyBrief from '../components/AIDailyBrief'
 
 function TrendBadge({ trend }) {
   const cls = trend === 'Bullish' ? 'badge-bull' : trend === 'Bearish' ? 'badge-bear' : 'badge-neutral'
@@ -81,6 +82,9 @@ export default function Dashboard() {
           AI zones: DEMO
         </span>
       </div>
+
+      {/* AI Daily Brief */}
+      <AIDailyBrief />
 
       {/* Row 1: Hero + Sessions + Sentiment */}
       <div className="g-aside">
