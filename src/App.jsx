@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
+import SplashScreen from './components/SplashScreen'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Gold from './pages/Gold'
@@ -17,7 +19,18 @@ import Premium from './pages/Premium'
 import Login from './pages/Login'
 
 export default function App() {
+  const [splash, setSplash] = useState(
+    () => !sessionStorage.getItem('sevora_splash_shown')
+  )
+
+  function handleSplashDone() {
+    sessionStorage.setItem('sevora_splash_shown', '1')
+    setSplash(false)
+  }
+
   return (
+    <>
+      {splash && <SplashScreen onComplete={handleSplashDone} />}
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route element={<Layout />}>
@@ -37,5 +50,6 @@ export default function App() {
         <Route path="/premium" element={<Premium />} />
       </Route>
     </Routes>
+    </>
   )
 }
