@@ -380,14 +380,13 @@ export default function Home() {
 
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section style={{
-        margin: '-32px 0 8px',
+        margin: '-52px 0 0',
         padding: '0 40px 48px',
         display: 'flex',
         alignItems: 'center',
         gap: 40,
         position: 'relative',
-        background: 'white',
-        borderRadius: 24,
+        background: 'var(--bg-2)',
       }}>
         {/* BG glow */}
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -409,13 +408,13 @@ export default function Home() {
             fontSize: 'clamp(26px, 2.8vw, 40px)', fontWeight: 800, lineHeight: 1.15,
             letterSpacing: '-0.025em', marginBottom: 22, color: 'var(--text-1)',
           }}>
-            <span style={{ color: 'transparent', WebkitTextStroke: '2px var(--gold)' }}>{t('home.mindsetLine1')}</span><br />
+            <span style={{ color: 'var(--text-1)' }}>{t('home.mindsetLine1')}</span><br />
             <span style={{ color: 'var(--gold)' }}>{t('home.mindsetLine2')}</span>
           </h2>
 
           {/* Quote */}
           <p style={{
-            fontSize: 16, fontStyle: 'italic', color: '#000000', lineHeight: 1.72,
+            fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
             marginBottom: 32, paddingLeft: 16,
             borderLeft: '2px solid rgba(139,92,246,0.4)',
           }}>
@@ -432,29 +431,25 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Right: bull image */}
+        {/* Right: sitting bull image */}
         <div style={{
-          flex: '0 0 44%',
+          flex: '0 0 46%',
           position: 'relative',
-          height: 520,
-          overflow: 'hidden',
-          marginTop: 40,
-          maskImage: 'radial-gradient(ellipse 88% 96% at 50% 50%, black 52%, transparent 84%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 88% 96% at 50% 50%, black 52%, transparent 84%)',
+          height: 420,
         }}>
           <img
-            src={`${import.meta.env.BASE_URL}whitebull.png`}
+            src={`${import.meta.env.BASE_URL}whitebull2.png`}
             alt="SEVORA Academy"
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'contain',
-              objectPosition: 'center center',
+              objectFit: 'cover',
+              objectPosition: 'center 18%',
               display: 'block',
-              filter: 'none',
             }}
           />
         </div>
+
       </section>
 
     </div>
