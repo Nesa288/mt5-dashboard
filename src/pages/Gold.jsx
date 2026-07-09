@@ -1249,6 +1249,15 @@ export default function Gold() {
   const liveDXY = market?.dxy
   const liveBTC = market?.btc
 
+  // Per-second freshness counter
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setElapsed(lastUpdate ? Math.round((Date.now() - lastUpdate) / 1000) : 0)
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lastUpdate])
+
   // Scroll active tab into view
   useEffect(() => {
     const el = tabRef.current?.querySelector('[data-active="true"]')
@@ -1256,7 +1265,7 @@ export default function Gold() {
   }, [tab])
 
   const updatedStr = lastUpdate
-    ? lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    ? elapsed < 5 ? 'just now' : `${elapsed}s ago`
     : null
 
   return (
@@ -1350,7 +1359,7 @@ export default function Gold() {
 
         {/* Data source note */}
         <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>Live price: metals.live · BTC: CoinCap · DXY: Frankfurter (ECB) · Chart: TradingView · Refreshes every 30s</span>
+          <span>Live price: Bybit · TradingView · OKX · goldprice.org · Yahoo Finance · BTC: CoinCap · DXY: Frankfurter (ECB) · Refreshes every 5s</span>
         </div>
       </div>
 
