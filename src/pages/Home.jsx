@@ -383,7 +383,7 @@ export default function Home() {
         margin: '0',
         padding: '0px 40px 6px',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 40,
         position: 'relative',
         background: 'var(--bg-2)',
