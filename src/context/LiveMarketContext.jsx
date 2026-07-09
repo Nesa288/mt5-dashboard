@@ -2,76 +2,115 @@ import { createContext, useContext, useState, useEffect, useRef, useCallback } f
 
 const Ctx = createContext(null)
 
-// ─── Gold / Silver ────────────────────────────────────────────────────────────
-// Tries 3 sources in sequence; returns on first success.
+const T = 6000 // 6 s per source timeout
+
+function sig() {
+  try { return { signal: AbortSignal.timeout(T) } } catch (_) { return {} }
+}
+
+// ─── Gold / Silver sources (raced in parallel) ────────────────────────────────
+
+async function src_goldpriceorg() {
+  const r = await fetch('https://data-asg.goldprice.org/dbXRates/USD', sig())
+  if (!r.ok) throw new Error('gpo')
+  const d = await r.json()
+  const item = d.items?.[0]
+  if (!(item?.xauPrice > 100)) throw new Error('gpo-bad')
+  return { gold: item.xauPrice, silver: item.xagPrice || null }
+}
+
+async function src_swissquote() {
+  const r = await fetch(
+    'https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD', sig()
+  )
+  if (!r.ok) throw new Error('sq')
+  const d = await r.json()
+  const row = Array.isArray(d) ? d[0] : d
+  const price = parseFloat(row.bid ?? row.ask ?? row.price ?? 0)
+  if (!(price > 100)) throw new Error('sq-bad')
+  return { gold: price, silver: null }
+}
+
+async function src_metals_live() {
+  const r = await fetch('https://api.metals.live/v1/spot', sig())
+  if (!r.ok) throw new Error('ml')
+  const data = await r.json()
+  const row = Array.isArray(data) ? data[0] : data
+  const gold   = parseFloat(row.gold   ?? row.XAU ?? row.GOLD ?? 0)
+  const silver = parseFloat(row.silver ?? row.XAG ?? row.SILVER ?? 0) || null
+  if (!(gold > 100)) throw new Error('ml-bad')
+  return { gold, silver }
+}
+
+async function src_yahoo_allorigins() {
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&range=1d&includePrePost=false'
+  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, sig())
+  if (!r.ok) throw new Error('yf-ao')
+  const d = await r.json()
+  const meta = d.chart?.result?.[0]?.meta
+  if (!(meta?.regularMarketPrice > 100)) throw new Error('yf-ao-bad')
+  return {
+    gold: meta.regularMarketPrice,
+    silver: null,
+    high: meta.regularMarketDayHigh,
+    low: meta.regularMarketDayLow,
+  }
+}
+
+async function src_yahoo_corsproxy() {
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&range=1d&includePrePost=false'
+  const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, sig())
+  if (!r.ok) throw new Error('yf-cp')
+  const d = await r.json()
+  const meta = d.chart?.result?.[0]?.meta
+  if (!(meta?.regularMarketPrice > 100)) throw new Error('yf-cp-bad')
+  return {
+    gold: meta.regularMarketPrice,
+    silver: null,
+    high: meta.regularMarketDayHigh,
+    low: meta.regularMarketDayLow,
+  }
+}
 
 async function fetchMetals() {
-  // Source 1: goldprice.org public widget API — CORS-enabled (powers their embeddable widgets)
+  // Race all 5 sources — use whichever responds first with valid data
   try {
-    const r = await fetch('https://data-asg.goldprice.org/dbXRates/USD')
-    if (r.ok) {
-      const d = await r.json()
-      const item = d.items?.[0]
-      if (item?.xauPrice > 100) {
-        return {
-          gold:   item.xauPrice,
-          silver: item.xagPrice || null,
-        }
-      }
-    }
-  } catch (_) { /* fall through */ }
-
-  // Source 2: metals.live community API
-  try {
-    const r = await fetch('https://api.metals.live/v1/spot')
-    if (r.ok) {
-      const data = await r.json()
-      const row = Array.isArray(data) ? data[0] : data
-      const gold   = parseFloat(row.gold   ?? row.XAU ?? row.GOLD)   || null
-      const silver = parseFloat(row.silver ?? row.XAG ?? row.SILVER) || null
-      if (gold) return { gold, silver }
-    }
-  } catch (_) { /* fall through */ }
-
-  // Source 3: Forex API gold via metals symbols
-  try {
-    const r = await fetch('https://open.er-api.com/v6/latest/XAU')
-    if (r.ok) {
-      const d = await r.json()
-      if (d.rates?.USD > 100) {
-        return { gold: d.rates.USD, silver: d.rates.USD / (d.rates.USD / (d.rates?.XAG ?? null)) || null }
-      }
-    }
-  } catch (_) { /* fall through */ }
-
-  throw new Error('all-metals-sources-failed')
+    return await Promise.any([
+      src_goldpriceorg(),
+      src_swissquote(),
+      src_metals_live(),
+      src_yahoo_allorigins(),
+      src_yahoo_corsproxy(),
+    ])
+  } catch (_) {
+    throw new Error('all-gold-sources-failed')
+  }
 }
 
 // ─── BTC ─────────────────────────────────────────────────────────────────────
+
 async function fetchBTC() {
-  // Source 1: CoinCap
   try {
-    const r = await fetch('https://api.coincap.io/v2/assets/bitcoin')
+    const r = await fetch('https://api.coincap.io/v2/assets/bitcoin', sig())
     if (r.ok) {
       const { data } = await r.json()
       return { price: parseFloat(data.priceUsd), changePct: parseFloat(data.changePercent24Hr) }
     }
-  } catch (_) { /* fall through */ }
-
-  // Source 2: Coinbase public price API (CORS-enabled)
-  const r = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot')
+  } catch (_) {}
+  // Fallback: Coinbase public API
+  const r = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', sig())
   if (!r.ok) throw new Error('btc-all-failed')
   const { data } = await r.json()
   return { price: parseFloat(data.amount), changePct: 0 }
 }
 
-// ─── DXY via ECB rates (Frankfurter) ─────────────────────────────────────────
+// ─── DXY via ECB FX rates ─────────────────────────────────────────────────────
+
 async function fetchDXY() {
-  const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,CAD,SEK,CHF')
+  const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,CAD,SEK,CHF', sig())
   if (!r.ok) throw new Error('fx')
   const { rates } = await r.json()
   const { EUR, JPY, GBP, CAD, SEK, CHF } = rates
-  // Official ICE DXY formula
   const dxy =
     50.14348112 *
     Math.pow(1 / EUR, -0.576) *
@@ -83,11 +122,12 @@ async function fetchDXY() {
   return { dxy, eur: 1 / EUR, gbp: 1 / GBP, jpy: JPY, cad: CAD }
 }
 
-// ─── Gold news via RSS2JSON ───────────────────────────────────────────────────
+// ─── Gold news ────────────────────────────────────────────────────────────────
+
 async function fetchGoldNews() {
   const rss = 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F'
   const r = await fetch(
-    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=8`
+    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=8`, sig()
   )
   if (!r.ok) throw new Error('news')
   const data = await r.json()
@@ -108,6 +148,7 @@ async function fetchGoldNews() {
 }
 
 // ─── Sessions ─────────────────────────────────────────────────────────────────
+
 function computeSessions() {
   const now = new Date()
   const h = now.getUTCHours()
@@ -129,16 +170,16 @@ function computeSessions() {
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-const POLL_MS  = 15_000    // 15 seconds — feels live
+const POLL_MS  = 20_000    // 20 seconds
 const NEWS_MS  = 600_000   // 10 minutes
 const HIST_MAX = 40
 
 export function LiveMarketProvider({ children }) {
-  const [market, setMarket]       = useState(null)
-  const [status, setStatus]       = useState('loading')
+  const [market, setMarket]         = useState(null)
+  const [status, setStatus]         = useState('loading')
   const [lastUpdate, setLastUpdate] = useState(null)
-  const [news, setNews]           = useState([])
-  const [sessions, setSessions]   = useState(computeSessions)
+  const [news, setNews]             = useState([])
+  const [sessions, setSessions]     = useState(computeSessions)
 
   const openRef    = useRef({})
   const hiloRef    = useRef({})
@@ -151,11 +192,12 @@ export function LiveMarketProvider({ children }) {
 
     const out = {}
 
-    if (metals.status === 'fulfilled' && metals.value.gold != null) {
-      const p = metals.value.gold
+    if (metals.status === 'fulfilled' && metals.value?.gold > 100) {
+      const p   = metals.value.gold
+      const ext = metals.value          // may have .high, .low, .silver from Yahoo source
       if (!openRef.current.gold) openRef.current.gold = p
-      hiloRef.current.goldH = Math.max(hiloRef.current.goldH ?? p, p)
-      hiloRef.current.goldL = Math.min(hiloRef.current.goldL ?? p, p)
+      hiloRef.current.goldH = Math.max(hiloRef.current.goldH ?? (ext.high ?? p), ext.high ?? p)
+      hiloRef.current.goldL = Math.min(hiloRef.current.goldL ?? (ext.low  ?? p), ext.low  ?? p)
       const open = openRef.current.gold
       historyRef.current.push({ price: p, time: new Date() })
       if (historyRef.current.length > HIST_MAX) historyRef.current.shift()
@@ -169,13 +211,12 @@ export function LiveMarketProvider({ children }) {
         ask:  p + 0.20,
         history: [...historyRef.current],
       }
-    }
-
-    if (metals.status === 'fulfilled' && metals.value.silver != null) {
-      const p = metals.value.silver
-      if (!openRef.current.silver) openRef.current.silver = p
-      const open = openRef.current.silver
-      out.silver = { price: p, changePct: ((p - open) / open) * 100 }
+      if (ext.silver > 0) {
+        const sp = ext.silver
+        if (!openRef.current.silver) openRef.current.silver = sp
+        const sopen = openRef.current.silver
+        out.silver = { price: sp, changePct: ((sp - sopen) / sopen) * 100 }
+      }
     }
 
     if (btc.status === 'fulfilled') out.btc = btc.value
@@ -197,21 +238,18 @@ export function LiveMarketProvider({ children }) {
     }
   }, [])
 
-  // Price poll every 15s
   useEffect(() => {
     poll()
     const id = setInterval(poll, POLL_MS)
     return () => clearInterval(id)
   }, [poll])
 
-  // News every 10 min
   useEffect(() => {
     fetchGoldNews().then(setNews).catch(() => {})
     const id = setInterval(() => fetchGoldNews().then(setNews).catch(() => {}), NEWS_MS)
     return () => clearInterval(id)
   }, [])
 
-  // Sessions every minute
   useEffect(() => {
     const id = setInterval(() => setSessions(computeSessions()), 60_000)
     return () => clearInterval(id)
