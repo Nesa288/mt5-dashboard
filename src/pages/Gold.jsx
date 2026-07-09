@@ -28,6 +28,20 @@ const SENT_COLOR = { bullish: '#34d399', bearish: '#ef4444', neutral: '#94a3b8' 
 
 // ─── TREND ───────────────────────────────────────────────────────────────────
 function TrendPanel() {
+  const { market, status } = useLiveMarket()
+  const liveG = market?.gold
+  const livePrice = liveG?.price ?? goldData.price
+  const liveHigh  = liveG?.high  ?? goldData.high
+  const liveLow   = liveG?.low   ?? goldData.low
+  const liveSpread = liveG ? (liveG.ask - liveG.bid).toFixed(2) : (goldData.ask - goldData.bid).toFixed(2)
+  const pct = liveHigh > liveLow ? ((livePrice - liveLow) / (liveHigh - liveLow) * 100).toFixed(1) : 50
+
+  // derive short-term momentum from price history
+  const history = liveG?.history ?? []
+  const momentum = history.length >= 3
+    ? (history[history.length - 1].price - history[Math.max(0, history.length - 4)].price)
+    : null
+
   const tfs = [
     { tf: 'Daily', trend: goldData.dailyTrend,  detail: 'Strong bullish structure',  sub: 'Above 50MA & 200MA — dominant uptrend' },
     { tf: 'H4',    trend: goldData.h4Trend,     detail: 'Higher-highs / higher-lows', sub: 'Above key moving averages' },
@@ -68,6 +82,11 @@ function TrendPanel() {
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 11, color: '#34d399' }}>{bullCount} Bullish TF</div>
               <div style={{ fontSize: 11, color: '#ef4444', marginTop: 2 }}>{bearCount} Bearish TF</div>
+              {momentum !== null && (
+                <div style={{ fontSize: 10, color: momentum >= 0 ? '#34d399' : '#ef4444', marginTop: 3 }}>
+                  Momentum: {momentum >= 0 ? '+' : ''}{momentum.toFixed(2)}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -91,13 +110,16 @@ function TrendPanel() {
             </div>
           </div>
           <div className="glass p-3">
-            <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Today's Range</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Session Range</div>
+              {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
+            </div>
             <div style={{ position: 'relative', height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 3, marginBottom: 6 }}>
-              <div style={{ position: 'absolute', left: `${((goldData.price - goldData.low) / (goldData.high - goldData.low) * 100).toFixed(1)}%`, top: -4, width: 13, height: 13, background: 'var(--gold)', borderRadius: '50%', transform: 'translateX(-50%)', boxShadow: '0 0 8px var(--gold)' }} />
+              <div style={{ position: 'absolute', left: `${pct}%`, top: -4, width: 13, height: 13, background: 'var(--gold)', borderRadius: '50%', transform: 'translateX(-50%)', boxShadow: '0 0 8px var(--gold)', transition: 'left 0.6s ease' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 10, color: '#ef4444', fontFamily: 'Orbitron, monospace' }}>L {goldData.low}</span>
-              <span style={{ fontSize: 10, color: '#34d399', fontFamily: 'Orbitron, monospace' }}>H {goldData.high}</span>
+              <span style={{ fontSize: 10, color: '#ef4444', fontFamily: 'Orbitron, monospace' }}>L {liveLow.toFixed(2)}</span>
+              <span style={{ fontSize: 10, color: '#34d399', fontFamily: 'Orbitron, monospace' }}>H {liveHigh.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -113,7 +135,7 @@ function TrendPanel() {
             { label: 'ATR (14)', value: goldData.atr, unit: 'pips', color: 'var(--amber)' },
             { label: 'Volatility', value: goldData.volatility, color: 'var(--amber)' },
             { label: 'Volume', value: goldData.volume, color: 'var(--text-1)' },
-            { label: 'Spread', value: (goldData.ask - goldData.bid).toFixed(2), unit: 'pts', color: 'var(--text-2)' },
+            { label: 'Spread', value: liveSpread, unit: 'pts', color: 'var(--text-2)' },
           ].map(s => (
             <div key={s.label} className="glass p-3" style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{s.label}</div>
@@ -128,8 +150,22 @@ function TrendPanel() {
 
 // ─── BIAS ─────────────────────────────────────────────────────────────────────
 function BiasPanel() {
+  const { market, status } = useLiveMarket()
+  const liveG   = market?.gold
+  const liveDXY = market?.dxy
+  const livePrice  = liveG?.price ?? goldData.price
+  const liveChange = liveG?.change ?? goldData.change
+
+  // Dynamic confidence: base 74, +5 if price > support, +5 if DXY falling, -8 if price < manip zone low
+  let confidence = 74
+  if (livePrice > goldData.support)               confidence += 5
+  if (livePrice > goldData.liquidityZone)         confidence += 3
+  if ((liveDXY?.changePct ?? -0.3) < 0)           confidence += 5
+  if (livePrice < goldData.manipulationZone.low)  confidence -= 8
+  if (liveChange < 0)                             confidence -= 4
+  confidence = Math.max(20, Math.min(95, confidence))
+
   const biasColor = goldData.aiOutlook === 'BULLISH' ? '#34d399' : '#ef4444'
-  const confidence = 74
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Big bias card */}
@@ -173,8 +209,9 @@ function BiasPanel() {
           {[
             { label: 'Daily Trend', value: goldData.dailyTrend, positive: goldData.dailyTrend === 'Bullish' },
             { label: 'H4 Trend', value: goldData.h4Trend, positive: goldData.h4Trend === 'Bullish' },
-            { label: 'DXY', value: 'Bearish (↑ Gold)', positive: true },
+            { label: 'DXY', value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Bearish (↑ Gold)', positive: (liveDXY?.changePct ?? -0.3) < 0 },
             { label: 'Smart Money', value: `${sentiment.smartMoney.long}% Long`, positive: true },
+            { label: 'Momentum', value: liveChange >= 0 ? `+${liveChange.toFixed(2)} ↑` : `${liveChange.toFixed(2)} ↓`, positive: liveChange >= 0, neutral: Math.abs(liveChange) < 1 },
             { label: 'Volatility', value: goldData.volatility, positive: false, neutral: true },
           ].map(f => (
             <div key={f.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8 }}>
@@ -201,8 +238,12 @@ function BiasPanel() {
 
 // ─── LEVELS ───────────────────────────────────────────────────────────────────
 function LevelsPanel() {
+  const { market, status } = useLiveMarket()
+  const livePrice = market?.gold?.price ?? goldData.price
   const MIN = 3200, MAX = 3295, RANGE = MAX - MIN
   const pos = (p) => `${((MAX - p) / RANGE * 100).toFixed(2)}%`
+  const dist = (p) => Math.abs(livePrice - p).toFixed(1)
+  const approaching = (p) => Math.abs(livePrice - p) < 8
 
   const marks = [
     { price: goldData.targetZone,            label: 'Target Zone',       color: '#8B5CF6', dashed: true, weight: 600 },
@@ -210,7 +251,7 @@ function LevelsPanel() {
     { price: goldData.manipulationZone.high, label: 'Manip High',        color: '#f59e0b', dashed: true, weight: 400 },
     { price: goldData.asianHigh,             label: 'Asian High',        color: '#f59e0b', weight: 500 },
     { price: goldData.liquidityZone,         label: 'Liquidity Zone',    color: '#3b82f6', dashed: true, weight: 500 },
-    { price: goldData.price,                 label: '▶ XAUUSD',          color: '#ffffff', weight: 900, current: true },
+    { price: livePrice,                      label: '▶ XAUUSD',          color: '#ffffff', weight: 900, current: true },
     { price: goldData.manipulationZone.low,  label: 'Manip Low',         color: '#f59e0b', dashed: true, weight: 400 },
     { price: goldData.asianLow,              label: 'Asian Low',         color: '#f59e0b', weight: 500 },
     { price: goldData.support,               label: 'Support',           color: '#34d399', weight: 700 },
@@ -241,7 +282,10 @@ function LevelsPanel() {
 
       {/* Right panel: level cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div className="section-label">Key Zones</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="section-label">Key Zones</div>
+          {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
+        </div>
         {[
           { label: 'Resistance', value: goldData.resistance, color: '#ef4444', icon: '🔴', desc: 'Strong sell zone' },
           { label: 'Target', value: goldData.targetZone, color: '#8B5CF6', icon: '🎯', desc: 'Bullish objective' },
@@ -249,12 +293,14 @@ function LevelsPanel() {
           { label: 'Support', value: goldData.support, color: '#34d399', icon: '🟢', desc: 'Buy zone' },
           { label: 'Invalidation', value: goldData.invalidation, color: '#ef4444', icon: '❌', desc: 'Short bias below' },
         ].map(z => (
-          <div key={z.label} style={{ padding: '12px 14px', background: `${z.color}08`, border: `1px solid ${z.color}22`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div key={z.label} style={{ padding: '12px 14px', background: approaching(z.value) ? `${z.color}16` : `${z.color}08`, border: `1px solid ${approaching(z.value) ? z.color + '55' : z.color + '22'}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>{z.icon}</span>
               <div>
                 <div style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 600 }}>{z.label}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{z.desc}</div>
+                <div style={{ fontSize: 10, color: approaching(z.value) ? z.color : 'var(--text-3)' }}>
+                  {approaching(z.value) ? '⚡ Approaching' : `${dist(z.value)} pts away`}
+                </div>
               </div>
             </div>
             <span style={{ fontSize: 14, fontWeight: 800, color: z.color, fontFamily: 'Orbitron, monospace' }}>{z.value.toLocaleString()}</span>
@@ -283,6 +329,9 @@ function LevelsPanel() {
 
 // ─── NEWS ─────────────────────────────────────────────────────────────────────
 function NewsPanel() {
+  const { news: liveNews } = useLiveMarket()
+  const displayNews = liveNews.length > 0 ? liveNews : news
+  const isLive = liveNews.length > 0
   const todayEvents = calendarEvents.filter(e => e.date === 'today').sort((a, b) => b.impact - a.impact)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -324,9 +373,21 @@ function NewsPanel() {
 
       {/* News feed */}
       <div className="glass p-4">
-        <div className="section-label mb-3">📰 Market News — Gold Impact</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div className="section-label">📰 Market News — Gold Impact</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {isLive ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} />
+                <span style={{ fontSize: 9, color: '#34d399', fontWeight: 700 }}>LIVE</span>
+              </div>
+            ) : (
+              <span style={{ fontSize: 9, color: 'var(--text-3)' }}>Sample data</span>
+            )}
+          </div>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {news.map(n => (
+          {displayNews.map(n => (
             <div key={n.id} style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${SENT_COLOR[n.sentiment]}18`, color: SENT_COLOR[n.sentiment], border: `1px solid ${SENT_COLOR[n.sentiment]}30`, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{n.sentiment}</span>
@@ -334,7 +395,7 @@ function NewsPanel() {
                 <span style={{ fontSize: 10, color: 'var(--text-3)', marginLeft: 'auto' }}>{n.time}</span>
               </div>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.4, marginBottom: 6 }}>{n.title}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>{n.aiSummary}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>{n.summary ?? n.aiSummary}</div>
               <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 8 }}>Source: {n.source}</div>
             </div>
           ))}
@@ -346,9 +407,33 @@ function NewsPanel() {
 
 // ─── SCENARIOS ────────────────────────────────────────────────────────────────
 function ScenariosPanel() {
+  const { market, status } = useLiveMarket()
+  const livePrice = market?.gold?.price ?? goldData.price
   const bull = scenarios.bullish
   const bear = scenarios.bearish
   const neutral = scenarios.neutral
+
+  function scenarioStatus(entry, target1, invalidation, isBull) {
+    const pricedIn = typeof entry === 'string' ? parseFloat(entry) : entry
+    const t1 = typeof target1 === 'string' ? parseFloat(target1) : target1
+    const inv = typeof invalidation === 'string' ? parseFloat(invalidation) : invalidation
+    if (isBull) {
+      if (livePrice >= t1) return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
+      if (livePrice < inv) return { label: 'INVALIDATED', color: '#ef4444' }
+      if (livePrice >= pricedIn) return { label: 'IN PROGRESS', color: '#34d399' }
+      if (Math.abs(livePrice - pricedIn) < 8) return { label: 'APPROACHING', color: '#f59e0b' }
+    } else {
+      if (livePrice <= t1) return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
+      if (livePrice > inv) return { label: 'INVALIDATED', color: '#ef4444' }
+      if (livePrice <= pricedIn) return { label: 'IN PROGRESS', color: '#ef4444' }
+      if (Math.abs(livePrice - pricedIn) < 8) return { label: 'APPROACHING', color: '#f59e0b' }
+    }
+    return { label: 'WATCHING', color: '#94a3b8' }
+  }
+
+  const bullStatus = scenarioStatus(bull.entry, bull.target1, bull.invalidation, true)
+  const bearStatus = scenarioStatus(bear.entry, bear.target1, bear.invalidation, false)
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -359,8 +444,11 @@ function ScenariosPanel() {
               <span style={{ fontSize: 20 }}>🐂</span>
               <span style={{ fontSize: 14, fontWeight: 800, color: '#34d399' }}>BULLISH SCENARIO</span>
             </div>
-            <div style={{ padding: '4px 12px', background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 20 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#34d399', fontFamily: 'Orbitron, monospace' }}>{bull.probability}%</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {status === 'live' && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${bullStatus.color}18`, border: `1px solid ${bullStatus.color}40`, color: bullStatus.color, fontWeight: 700, textTransform: 'uppercase' }}>{bullStatus.label}</span>}
+              <div style={{ padding: '4px 12px', background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 20 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#34d399', fontFamily: 'Orbitron, monospace' }}>{bull.probability}%</span>
+              </div>
             </div>
           </div>
           {/* Probability bar */}
@@ -392,8 +480,11 @@ function ScenariosPanel() {
               <span style={{ fontSize: 20 }}>🐻</span>
               <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444' }}>BEARISH SCENARIO</span>
             </div>
-            <div style={{ padding: '4px 12px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 20 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#ef4444', fontFamily: 'Orbitron, monospace' }}>{bear.probability}%</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {status === 'live' && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${bearStatus.color}18`, border: `1px solid ${bearStatus.color}40`, color: bearStatus.color, fontWeight: 700, textTransform: 'uppercase' }}>{bearStatus.label}</span>}
+              <div style={{ padding: '4px 12px', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 20 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#ef4444', fontFamily: 'Orbitron, monospace' }}>{bear.probability}%</span>
+              </div>
             </div>
           </div>
           <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden', marginBottom: 16 }}>
@@ -448,8 +539,12 @@ function ScenariosPanel() {
 
 // ─── LIQUIDITY ────────────────────────────────────────────────────────────────
 function LiquidityPanel() {
+  const { market, status } = useLiveMarket()
+  const livePrice = market?.gold?.price ?? goldData.price
   const sm = sentiment.smartMoney
   const rt = sentiment.retail
+
+  const nearZone = (level) => Math.abs(livePrice - level) < 10
 
   const buySide = [
     { level: goldData.asianHigh, label: 'Asian High (sweep target)', likely: 'High' },
@@ -502,26 +597,38 @@ function LiquidityPanel() {
       {/* Buy-side & Sell-side liquidity */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div style={{ padding: '18px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>💚 Buy-Side Liquidity (above price)</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.1em' }}>💚 Buy-Side Liquidity (above price)</div>
+            {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
+          </div>
           {buySide.map((b, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(52,211,153,0.1)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(52,211,153,0.1)', background: nearZone(b.level) ? 'rgba(52,211,153,0.04)' : 'transparent' }}>
               <div>
                 <div style={{ fontSize: 12, fontFamily: 'Orbitron, monospace', fontWeight: 700, color: '#34d399' }}>{b.level.toFixed(2)}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.label}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.label}{status === 'live' ? ` · ${Math.abs(livePrice - b.level).toFixed(1)} pts` : ''}</div>
               </div>
-              <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(52,211,153,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#34d399' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {nearZone(b.level) && <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>⚡ NEAR</span>}
+                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(52,211,153,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#34d399' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely}</span>
+              </div>
             </div>
           ))}
         </div>
         <div style={{ padding: '18px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>🔴 Sell-Side Liquidity (below price)</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em' }}>🔴 Sell-Side Liquidity (below price)</div>
+            {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
+          </div>
           {sellSide.map((b, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(239,68,68,0.1)', background: nearZone(b.level) ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
               <div>
                 <div style={{ fontSize: 12, fontFamily: 'Orbitron, monospace', fontWeight: 700, color: '#ef4444' }}>{b.level.toFixed(2)}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.label}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.label}{status === 'live' ? ` · ${Math.abs(livePrice - b.level).toFixed(1)} pts` : ''}</div>
               </div>
-              <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#ef4444' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {nearZone(b.level) && <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>⚡ NEAR</span>}
+                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#ef4444' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -532,9 +639,10 @@ function LiquidityPanel() {
 
 // ─── SESSIONS ─────────────────────────────────────────────────────────────────
 function SessionsPanel() {
-  const now = new Date()
-  const utcH = now.getUTCHours()
-  const utcM = now.getUTCMinutes()
+  const { sessions: liveSessions } = useLiveMarket()
+  const now = liveSessions?.time ?? new Date()
+  const utcH = liveSessions?.utcHour ?? now.getUTCHours()
+  const utcM = liveSessions?.utcMin  ?? now.getUTCMinutes()
   const utcDecimal = utcH + utcM / 60
   const pct = (h) => `${(h / 24 * 100).toFixed(3)}%`
   const width = (s, e) => `${((e - s) / 24 * 100).toFixed(3)}%`
@@ -632,11 +740,18 @@ function SessionsPanel() {
 
 // ─── ALERTS ───────────────────────────────────────────────────────────────────
 function AlertsPanel() {
+  const { market, status } = useLiveMarket()
+  const livePrice = market?.gold?.price ?? null
   const [alerts, setAlerts] = useState([
     { id: 1, price: 3268, dir: 'above', label: 'Resistance break', active: true },
     { id: 2, price: 3218, dir: 'below', label: 'Support lost', active: true },
     { id: 3, price: 3280, dir: 'above', label: 'Target reached', active: false },
   ])
+
+  function isTriggered(a) {
+    if (!a.active || livePrice === null) return false
+    return a.dir === 'above' ? livePrice >= a.price : livePrice <= a.price
+  }
   const [price, setPrice] = useState('')
   const [dir, setDir] = useState('above')
   const [label, setLabel] = useState('')
@@ -656,19 +771,28 @@ function AlertsPanel() {
       <div className="glass p-4">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <div className="section-label">Active Alerts — XAUUSD</div>
-          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{alerts.filter(a => a.active).length} active</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {livePrice !== null && <span style={{ fontSize: 11, fontFamily: 'Orbitron, monospace', color: 'var(--gold)', fontWeight: 700 }}>${livePrice.toFixed(2)}</span>}
+            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{alerts.filter(a => a.active).length} active</span>
+          </div>
         </div>
         {alerts.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-3)', fontSize: 13 }}>No alerts set. Add one →</div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {alerts.map(a => (
-            <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', background: a.active ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)', border: `1px solid ${a.active ? 'rgba(139,92,246,0.2)' : 'var(--border)'}`, borderRadius: 10, opacity: a.active ? 1 : 0.5 }}>
+          {alerts.map(a => {
+            const triggered = isTriggered(a)
+            return (
+            <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', background: triggered ? 'rgba(239,68,68,0.07)' : a.active ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)', border: `1px solid ${triggered ? 'rgba(239,68,68,0.4)' : a.active ? 'rgba(139,92,246,0.2)' : 'var(--border)'}`, borderRadius: 10, opacity: a.active ? 1 : 0.5 }}>
               <span style={{ fontSize: 20 }}>{a.dir === 'above' ? '🔼' : '🔽'}</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{a.label}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{a.label}</span>
+                  {triggered && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontWeight: 700 }}>🔴 TRIGGERED</span>}
+                </div>
                 <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
                   Alert when price goes <span style={{ color: a.dir === 'above' ? '#34d399' : '#ef4444', fontWeight: 700 }}>{a.dir}</span> <span style={{ fontFamily: 'Orbitron, monospace', color: 'var(--gold)', fontWeight: 700 }}>${a.price.toLocaleString()}</span>
+                  {livePrice !== null && <span style={{ color: 'var(--text-3)' }}> · now ${livePrice.toFixed(2)}</span>}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -680,7 +804,8 @@ function AlertsPanel() {
                 </button>
               </div>
             </div>
-          ))}
+          )
+          })}
         </div>
       </div>
 
@@ -735,16 +860,29 @@ function AlertsPanel() {
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
 function AIPanel({ navigate }) {
+  const { market, status } = useLiveMarket()
+  const liveG   = market?.gold
+  const liveDXY = market?.dxy
+  const liveBTC = market?.btc
   const bull = scenarios.bullish
   const bear = scenarios.bearish
   const sm = sentiment.smartMoney
 
+  const goldPrice = liveG?.price ?? goldData.price
+  const goldChange = liveG?.changePct ?? 0
+  const dxyStr = liveDXY
+    ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%) — ${liveDXY.changePct < 0 ? 'weakening → bullish gold' : 'strengthening → headwind'}`
+    : 'DXY weakening → gold positive'
+  const btcStr = liveBTC
+    ? `BTC $${Math.round(liveBTC.price).toLocaleString()} (${liveBTC.changePct >= 0 ? '+' : ''}${liveBTC.changePct.toFixed(2)}%) — ${liveBTC.changePct > 0 ? 'risk-on confirms dollar weakness' : 'mixed signal'}`
+    : `${bull.probability}% — Target ${bull.target1} / ${bull.target2}`
+
   const pillars = [
     { icon: '📈', title: 'Trend Alignment', value: `${goldData.dailyTrend} bias across Daily + H4`, color: '#34d399', pos: true },
     { icon: '🏦', title: 'Smart Money', value: `${sm.long}% institutional long positioning`, color: '#8B5CF6', pos: true },
-    { icon: '📉', title: 'DXY Risk', value: 'DXY weakening → gold positive', color: '#34d399', pos: true },
+    { icon: '📉', title: 'DXY', value: dxyStr, color: (liveDXY?.changePct ?? -0.3) < 0 ? '#34d399' : '#ef4444', pos: (liveDXY?.changePct ?? -0.3) < 0 },
     { icon: '⚠️', title: 'Event Risk', value: 'CPI + FOMC today — reduce size', color: '#f59e0b', pos: false },
-    { icon: '🎯', title: 'Bullish Scenario', value: `${bull.probability}% — Target ${bull.target1} / ${bull.target2}`, color: '#34d399', pos: true },
+    { icon: '🎯', title: 'Bullish Scenario', value: btcStr, color: '#34d399', pos: true },
     { icon: '🐻', title: 'Bear Trigger', value: `Break below ${goldData.invalidation} flips bias`, color: '#ef4444', pos: false },
   ]
 
@@ -761,7 +899,10 @@ function AIPanel({ navigate }) {
               Online · Reading site data · {new Date().toUTCString().slice(0, 25)} UTC
             </div>
           </div>
-          <div style={{ marginLeft: 'auto', padding: '4px 12px', background: goldData.aiOutlook === 'BULLISH' ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)', border: `1px solid ${goldData.aiOutlook === 'BULLISH' ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 20, fontSize: 13, fontWeight: 800, color: goldData.aiOutlook === 'BULLISH' ? '#34d399' : '#ef4444' }}>{goldData.aiOutlook}</div>
+          <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            {status === 'live' && <span style={{ fontSize: 14, fontFamily: 'Orbitron, monospace', fontWeight: 700, color: 'var(--gold)' }}>${goldPrice.toFixed(2)}</span>}
+            <div style={{ padding: '4px 12px', background: goldData.aiOutlook === 'BULLISH' ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)', border: `1px solid ${goldData.aiOutlook === 'BULLISH' ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 20, fontSize: 13, fontWeight: 800, color: goldData.aiOutlook === 'BULLISH' ? '#34d399' : '#ef4444' }}>{goldData.aiOutlook}</div>
+          </div>
         </div>
         <div style={{ padding: '14px 16px', background: 'rgba(139,92,246,0.06)', borderLeft: '3px solid rgba(139,92,246,0.5)', borderRadius: '0 8px 8px 0', marginBottom: 16 }}>
           <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{goldData.aiDailyPlan}</p>
@@ -856,19 +997,29 @@ function HistoryPanel() {
 
 // ─── CORRELATION ──────────────────────────────────────────────────────────────
 function CorrelationPanel() {
-  const dxy = instruments.find(i => i.symbol === 'DXY')
-  const btc = instruments.find(i => i.symbol === 'BTCUSD')
-  const silver = instruments.find(i => i.symbol === 'XAGUSD')
+  const { market, status } = useLiveMarket()
+  const staticDxy = instruments.find(i => i.symbol === 'DXY')
+  const staticBtc = instruments.find(i => i.symbol === 'BTCUSD')
+  const staticSilver = instruments.find(i => i.symbol === 'XAGUSD')
+
+  const liveDxyCh = market?.dxy?.changePct ?? staticDxy?.changePct ?? -0.3
+  const liveDxyPr = market?.dxy?.price ?? staticDxy?.price ?? 104.2
+  const liveBtcCh = market?.btc?.changePct ?? staticBtc?.changePct ?? 1.2
+  const liveBtcPr = market?.btc?.price ?? staticBtc?.price ?? 67000
+  const liveSilverCh = market?.silver?.changePct ?? staticSilver?.changePct ?? 1.3
+  const liveSilverPr = market?.silver?.price ?? staticSilver?.price ?? 32.5
+
+  const liveLabel = status === 'live' ? ' ●' : ''
 
   const pairs = [
     {
-      symbol: 'DXY', name: 'US Dollar Index',
-      price: dxy?.price.toFixed(2), change: `${dxy?.changePct > 0 ? '+' : ''}${dxy?.changePct?.toFixed(2)}%`,
-      trend: dxy?.trend,
+      symbol: 'DXY' + liveLabel, name: 'US Dollar Index',
+      price: liveDxyPr.toFixed(2), change: `${liveDxyCh >= 0 ? '+' : ''}${liveDxyCh.toFixed(2)}%`,
+      trend: liveDxyCh < 0 ? 'Bearish' : 'Bullish',
       corr: 'INVERSE', corrNum: -0.92,
       impact: 'DXY bearish = Gold bullish. This is the #1 driver of Gold.',
-      signal: dxy?.trend === 'Bearish' ? '↑ Gold' : '↓ Gold',
-      signalColor: dxy?.trend === 'Bearish' ? '#34d399' : '#ef4444',
+      signal: liveDxyCh < 0 ? '↑ Gold' : '↓ Gold',
+      signalColor: liveDxyCh < 0 ? '#34d399' : '#ef4444',
       color: '#ef4444',
     },
     {
@@ -882,23 +1033,23 @@ function CorrelationPanel() {
       color: '#f59e0b',
     },
     {
-      symbol: 'BTCUSD', name: 'Bitcoin',
-      price: `$${btc?.price.toLocaleString()}`, change: `+${btc?.changePct?.toFixed(2)}%`,
-      trend: btc?.trend,
+      symbol: 'BTCUSD' + liveLabel, name: 'Bitcoin',
+      price: `$${Math.round(liveBtcPr).toLocaleString()}`, change: `${liveBtcCh >= 0 ? '+' : ''}${liveBtcCh.toFixed(2)}%`,
+      trend: liveBtcCh > 0 ? 'Bullish' : 'Bearish',
       corr: 'MODERATE', corrNum: 0.44,
       impact: 'BTC and Gold both rising together signals dollar weakness and inflation hedge demand.',
-      signal: '↑ Neutral',
+      signal: liveBtcCh > 0 ? '↑ Neutral' : '↓ Neutral',
       signalColor: '#94a3b8',
       color: '#f59e0b',
     },
     {
-      symbol: 'XAGUSD', name: 'Silver',
-      price: `$${silver?.price.toFixed(2)}`, change: `+${silver?.changePct?.toFixed(2)}%`,
-      trend: silver?.trend,
+      symbol: 'XAGUSD' + liveLabel, name: 'Silver',
+      price: `$${liveSilverPr.toFixed(2)}`, change: `${liveSilverCh >= 0 ? '+' : ''}${liveSilverCh.toFixed(2)}%`,
+      trend: liveSilverCh > 0 ? 'Bullish' : 'Bearish',
       corr: 'STRONG', corrNum: 0.87,
-      impact: 'Silver moves with Gold but amplified. Silver is up +1.32% today — confirms Gold bulls.',
-      signal: '↑ Confirms',
-      signalColor: '#34d399',
+      impact: 'Silver moves with Gold but amplified. Co-movement confirms metals rally direction.',
+      signal: liveSilverCh > 0 ? '↑ Confirms' : '↓ Weakens',
+      signalColor: liveSilverCh > 0 ? '#34d399' : '#ef4444',
       color: '#3b82f6',
     },
   ]
@@ -956,11 +1107,11 @@ function CorrelationPanel() {
       <div style={{ padding: '16px 20px', background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>📊 Macro Correlation Summary</div>
         <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.7 }}>
-          DXY is weakening (<b style={{ color: '#ef4444' }}>bearish</b> for USD → <b style={{ color: '#34d399' }}>bullish</b> for Gold).
-          Silver is up confirming the metals rally.
-          Treasury yields at 4.82% create mild headwinds but are secondary to the dollar direction.
-          BTC rising with Gold signals broad dollar weakness.
-          Net macro read: <b style={{ color: '#34d399' }}>BULLISH GOLD</b>.
+          DXY is <b style={{ color: liveDxyCh < 0 ? '#34d399' : '#ef4444' }}>{liveDxyCh < 0 ? 'weakening' : 'strengthening'}</b> ({liveDxyCh >= 0 ? '+' : ''}{liveDxyCh.toFixed(2)}%) → {liveDxyCh < 0 ? <b style={{ color: '#34d399' }}>bullish</b> : <b style={{ color: '#ef4444' }}>bearish</b>} for Gold.{' '}
+          Silver {liveSilverCh > 0 ? 'is up confirming the metals rally' : 'is down — mixed signal for metals'}.{' '}
+          Treasury yields at 4.82% create mild headwinds but are secondary to dollar direction.{' '}
+          BTC {liveBtcCh > 0 ? 'rising with Gold signals broad dollar weakness' : 'falling adds mixed signal'}.{' '}
+          Net macro read: <b style={{ color: liveDxyCh < 0 && liveSilverCh > 0 ? '#34d399' : '#f59e0b' }}>{liveDxyCh < 0 && liveSilverCh > 0 ? 'BULLISH GOLD' : 'CAUTIOUSLY BULLISH'}</b>.
         </div>
       </div>
     </div>
@@ -969,6 +1120,11 @@ function CorrelationPanel() {
 
 // ─── SENTIMENT ────────────────────────────────────────────────────────────────
 function SentimentPanel() {
+  const { market, status } = useLiveMarket()
+  const liveG = market?.gold
+  const liveChangePct = liveG?.changePct ?? 0
+  const momentumLabel = liveChangePct > 0.5 ? 'STRONG BULLISH' : liveChangePct > 0 ? 'MILD BULLISH' : liveChangePct < -0.5 ? 'STRONG BEARISH' : 'MILD BEARISH'
+  const momentumColor = liveChangePct > 0 ? '#34d399' : '#ef4444'
   const sm = sentiment.smartMoney
   const rt = sentiment.retail
 
@@ -1032,6 +1188,22 @@ function SentimentPanel() {
           </div>
         </div>
       </div>
+
+      {/* Live price-action momentum */}
+      {status === 'live' && (
+        <div style={{ padding: '14px 18px', background: `${momentumColor}08`, border: `1px solid ${momentumColor}25`, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} />
+            <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Price-Action Momentum (Live)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 16, fontFamily: 'Orbitron, monospace', fontWeight: 900, color: momentumColor }}>
+              {liveChangePct >= 0 ? '+' : ''}{liveChangePct.toFixed(2)}%
+            </span>
+            <span style={{ fontSize: 10, padding: '2px 10px', borderRadius: 20, background: `${momentumColor}15`, border: `1px solid ${momentumColor}35`, color: momentumColor, fontWeight: 700 }}>{momentumLabel}</span>
+          </div>
+        </div>
+      )}
 
       {/* Historical trend */}
       <div className="glass p-4">
