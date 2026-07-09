@@ -342,7 +342,7 @@ export default function Home() {
             {t('home.heroDesc')}
           </p>
 
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 52 }}>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 24 }}>
             <button className="btn btn-gold" onClick={() => navigate('/gold')} style={{ padding: '14px 30px', fontSize: 14, gap: 10 }}>
               <IcoGold size={16} />
               {t('home.goToTrading')}
@@ -380,8 +380,8 @@ export default function Home() {
 
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section style={{
-        margin: '-52px 0 0',
-        padding: '0 40px 48px',
+        margin: '0',
+        padding: '28px 40px 24px',
         display: 'flex',
         alignItems: 'center',
         gap: 40,
