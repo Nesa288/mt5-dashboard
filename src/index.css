@@ -1043,7 +1043,7 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   position: relative;
   z-index: 1;
   background: var(--bg-2);
-  padding: 28px 40px 4px;
+  padding: 28px 40px 20px;
   display: flex;
   align-items: center;
   gap: 40px;
