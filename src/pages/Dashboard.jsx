@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
+import { useLiveMarket } from '../context/LiveMarketContext'
 import { goldData, news, calendarEvents, scenarios, sentiment, instruments } from '../data/mockData'
 import { GoldMiniChart } from '../components/TradingViewWidget'
 import { IcoArrowUp, IcoArrowDown, IcoAlert, IcoInfo, IcoChevronRight, IcoTarget, IcoShield } from '../components/Icons'
@@ -59,6 +60,13 @@ function SessionBlock({ name, color, isActive, label }) {
 export default function Dashboard() {
   const { t } = useLanguage()
   const navigate = useNavigate()
+  const { market, status: liveStatus } = useLiveMarket()
+  const liveG = market?.gold
+  const goldPrice      = liveG?.price     ?? goldData.price
+  const goldChange     = liveG?.change    ?? goldData.change
+  const goldChangePct  = liveG?.changePct ?? goldData.changePercent
+  const goldHigh       = liveG?.high      ?? goldData.high
+  const goldLow        = liveG?.low       ?? goldData.low
   const todayNews = news.slice(0, 3)
   const todayEvents = calendarEvents.filter(e => e.date === 'today').slice(0, 4)
 
@@ -99,20 +107,28 @@ export default function Dashboard() {
 
           <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="card-heading" style={{ color: 'var(--gold)', marginBottom: 4 }}>XAUUSD — Gold / US Dollar</div>
-              <div className="price-lg">${goldData.price.toFixed(2)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <div className="card-heading" style={{ color: 'var(--gold)' }}>XAUUSD — Gold / US Dollar</div>
+                {liveStatus === 'live' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 7px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s ease infinite' }} />
+                    <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399', letterSpacing: '0.08em' }}>LIVE</span>
+                  </div>
+                )}
+              </div>
+              <div className="price-lg">${goldPrice.toFixed(2)}</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end',
-                color: goldData.change > 0 ? 'var(--green)' : 'var(--red)',
+                color: goldChange > 0 ? 'var(--green)' : 'var(--red)',
                 fontSize: 16, fontWeight: 700, fontFamily: 'Orbitron, monospace',
               }}>
-                {goldData.change > 0 ? <IcoArrowUp size={16} /> : <IcoArrowDown size={16} />}
-                +${goldData.change.toFixed(2)} ({goldData.changePercent}%)
+                {goldChange > 0 ? <IcoArrowUp size={16} /> : <IcoArrowDown size={16} />}
+                {goldChange > 0 ? '+' : ''}${Math.abs(goldChange).toFixed(2)} ({goldChange > 0 ? '+' : ''}{goldChangePct.toFixed(2)}%)
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
-                H: ${goldData.high.toFixed(2)} &nbsp; L: ${goldData.low.toFixed(2)}
+                H: ${goldHigh.toFixed(2)} &nbsp; L: ${goldLow.toFixed(2)}
               </div>
             </div>
           </div>

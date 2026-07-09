@@ -5,6 +5,7 @@ import {
   scenarios, sentiment, sessions, journalTrades,
 } from '../data/mockData'
 import { GoldChart } from '../components/TradingViewWidget'
+import { useLiveMarket } from '../context/LiveMarketContext'
 
 const TABS = [
   { id: 'trend',       icon: '📈', label: 'Trend' },
@@ -1059,8 +1060,22 @@ function SentimentPanel() {
 export default function Gold() {
   const [tab, setTab] = useState('trend')
   const navigate = useNavigate()
-  const isUp = goldData.changePercent >= 0
   const tabRef = useRef(null)
+  const { market, status, lastUpdate } = useLiveMarket()
+
+  // Merge: live tick data over the static analysis/levels from mockData
+  const liveG = market?.gold
+  const price         = liveG?.price     ?? goldData.price
+  const change        = liveG?.change    ?? goldData.change
+  const changePct     = liveG?.changePct ?? goldData.changePercent
+  const bid           = liveG?.bid       ?? goldData.bid
+  const ask           = liveG?.ask       ?? goldData.ask
+  const sessionHigh   = liveG?.high      ?? goldData.high
+  const sessionLow    = liveG?.low       ?? goldData.low
+  const isUp          = change >= 0
+
+  const liveDXY = market?.dxy
+  const liveBTC = market?.btc
 
   // Scroll active tab into view
   useEffect(() => {
@@ -1068,25 +1083,44 @@ export default function Gold() {
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
   }, [tab])
 
+  const updatedStr = lastUpdate
+    ? lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : null
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       {/* ── HERO HEADER ── */}
       <div style={{ padding: '0 0 16px 0', borderBottom: '1px solid var(--border)', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 2 }}>XAUUSD · Gold / US Dollar</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                <span style={{ fontSize: 42, fontWeight: 900, fontFamily: 'Orbitron, monospace', color: 'var(--gold)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                  ${goldData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: isUp ? '#34d399' : '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {isUp ? '▲' : '▼'} {isUp ? '+' : ''}${goldData.change.toFixed(2)} ({isUp ? '+' : ''}{goldData.changePercent}%)
-                </span>
-              </div>
+          <div>
+            {/* Symbol + LIVE badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>XAUUSD · Gold / US Dollar</div>
+              {status === 'live' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s ease infinite' }} />
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399', letterSpacing: '0.08em' }}>LIVE</span>
+                </div>
+              ) : status === 'loading' ? (
+                <div style={{ fontSize: 9, color: 'var(--text-3)', padding: '2px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: 20 }}>Connecting…</div>
+              ) : (
+                <div style={{ fontSize: 9, color: 'var(--amber)', padding: '2px 8px', background: 'rgba(245,158,11,0.1)', borderRadius: 20, border: '1px solid rgba(245,158,11,0.2)' }}>⚠ Offline — showing cached data</div>
+              )}
+              {updatedStr && <span style={{ fontSize: 9, color: 'var(--text-3)' }}>Updated {updatedStr}</span>}
+            </div>
+
+            {/* Price + change */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+              <span style={{ fontSize: 42, fontWeight: 900, fontFamily: 'Orbitron, monospace', color: 'var(--gold)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: isUp ? '#34d399' : '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}>
+                {isUp ? '▲' : '▼'} {isUp ? '+' : ''}${Math.abs(change).toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
+              </span>
             </div>
           </div>
+
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ padding: '5px 14px', borderRadius: 20, background: isUp ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)', border: `1px solid ${isUp ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, fontSize: 12, fontWeight: 800, color: isUp ? '#34d399' : '#ef4444' }}>
               {isUp ? '▲' : '▼'} {goldData.aiOutlook}
@@ -1100,14 +1134,17 @@ export default function Gold() {
         {/* Stats row */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {[
-            { label: 'BID', value: goldData.bid.toFixed(2), color: 'var(--text-2)' },
-            { label: 'ASK', value: goldData.ask.toFixed(2), color: 'var(--text-2)' },
-            { label: 'HIGH', value: goldData.high.toFixed(2), color: '#34d399' },
-            { label: 'LOW', value: goldData.low.toFixed(2), color: '#ef4444' },
+            { label: 'BID',  value: bid.toFixed(2),         color: 'var(--text-2)' },
+            { label: 'ASK',  value: ask.toFixed(2),         color: 'var(--text-2)' },
+            { label: 'HIGH', value: sessionHigh.toFixed(2), color: '#34d399' },
+            { label: 'LOW',  value: sessionLow.toFixed(2),  color: '#ef4444' },
             { label: 'OPEN', value: goldData.open.toFixed(2), color: 'var(--text-2)' },
-            { label: 'VOL', value: goldData.volume, color: 'var(--text-2)' },
-            { label: 'ATR', value: `${goldData.atr} pts`, color: 'var(--amber)' },
-            { label: 'VOLA', value: goldData.volatility, color: 'var(--amber)' },
+            { label: 'VOL',  value: goldData.volume,          color: 'var(--text-2)' },
+            { label: 'ATR',  value: `${goldData.atr} pts`,    color: 'var(--amber)' },
+            { label: 'VOLA', value: goldData.volatility,      color: 'var(--amber)' },
+            // Live correlated instruments
+            { label: 'DXY',  value: (liveDXY?.price ?? 104.23).toFixed(2), color: (liveDXY?.changePct ?? -0.30) >= 0 ? '#ef4444' : '#34d399' },
+            { label: 'BTC',  value: `$${((liveBTC?.price ?? 68420) / 1000).toFixed(1)}K`, color: (liveBTC?.changePct ?? 1.85) >= 0 ? '#34d399' : '#ef4444' },
           ].map(s => (
             <div key={s.label} style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7 }}>
               <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>{s.label}</span>
@@ -1116,9 +1153,9 @@ export default function Gold() {
           ))}
           {/* Multi-TF trend pills */}
           {[
-            { tf: 'D1', trend: goldData.dailyTrend },
-            { tf: 'H4', trend: goldData.h4Trend },
-            { tf: 'H1', trend: goldData.h1Trend },
+            { tf: 'D1',  trend: goldData.dailyTrend },
+            { tf: 'H4',  trend: goldData.h4Trend },
+            { tf: 'H1',  trend: goldData.h1Trend },
             { tf: 'M15', trend: goldData.m15Trend },
           ].map(t => {
             const c = TC(t.trend)
@@ -1131,13 +1168,18 @@ export default function Gold() {
           })}
         </div>
 
-        {/* Warning if present */}
+        {/* Warning */}
         {goldData.tradingWarning && (
           <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
             <span style={{ fontSize: 14, flexShrink: 0 }}>⚠️</span>
             <span style={{ fontSize: 12, color: 'var(--amber)' }}>{goldData.tradingWarning}</span>
           </div>
         )}
+
+        {/* Data source note */}
+        <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>Live price: metals.live · BTC: CoinCap · DXY: Frankfurter (ECB) · Chart: TradingView · Refreshes every 30s</span>
+        </div>
       </div>
 
       {/* ── TAB NAV ── */}

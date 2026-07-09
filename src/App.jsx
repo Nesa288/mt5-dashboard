@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { LiveMarketProvider } from './context/LiveMarketContext'
 import Layout from './components/Layout'
 import SplashScreen from './components/SplashScreen'
 import Home from './pages/Home'
@@ -29,7 +30,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <LiveMarketProvider>
       {splash && <SplashScreen onComplete={handleSplashDone} />}
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -50,6 +51,6 @@ export default function App() {
         <Route path="/premium" element={<Premium />} />
       </Route>
     </Routes>
-    </>
+    </LiveMarketProvider>
   )
 }

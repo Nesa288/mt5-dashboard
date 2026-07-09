@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
+import { useLiveMarket } from '../context/LiveMarketContext'
 import { instruments } from '../data/mockData'
 import { MarketOverviewWidget } from '../components/TradingViewWidget'
 import { IcoArrowUp, IcoArrowDown, IcoStar } from '../components/Icons'
@@ -29,6 +30,18 @@ export default function Markets() {
   const { t } = useLanguage()
   const [filter, setFilter] = useState('all')
   const [favs, setFavs] = useState(() => new Set(instruments.filter(i => i.isFav).map(i => i.symbol)))
+  const { market } = useLiveMarket()
+
+  // Patch live prices into the instruments list for the 4 instruments we have live data for
+  const livePatches = {}
+  if (market?.gold)   livePatches['XAUUSD'] = { price: market.gold.price,   changePct: market.gold.changePct }
+  if (market?.silver) livePatches['XAGUSD'] = { price: market.silver.price, changePct: market.silver.changePct }
+  if (market?.btc)    livePatches['BTCUSD'] = { price: market.btc.price,    changePct: market.btc.changePct }
+  if (market?.dxy)    livePatches['DXY']    = { price: market.dxy.price,    changePct: market.dxy.changePct }
+
+  const patchedInstruments = instruments.map(i =>
+    livePatches[i.symbol] ? { ...i, ...livePatches[i.symbol] } : i
+  )
 
   const toggleFav = (symbol, e) => {
     e.stopPropagation()
@@ -39,7 +52,7 @@ export default function Markets() {
     })
   }
 
-  const filtered = instruments.filter(i => {
+  const filtered = patchedInstruments.filter(i => {
     if (filter === 'all') return true
     if (filter === 'favorites') return favs.has(i.symbol)
     return i.category === filter
@@ -124,7 +137,7 @@ export default function Markets() {
       <div className="glass p-5">
         <div className="section-label mb-4">{t('markets.heatmap')}</div>
         <div className="heatmap-grid">
-          {instruments.map(inst => <HeatCell key={inst.symbol} inst={inst} />)}
+          {patchedInstruments.map(inst => <HeatCell key={inst.symbol} inst={inst} />)}
         </div>
       </div>
 
