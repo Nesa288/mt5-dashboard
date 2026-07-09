@@ -42,11 +42,26 @@ function TrendPanel() {
     ? (history[history.length - 1].price - history[Math.max(0, history.length - 4)].price)
     : null
 
+  const liveChangePct = liveG?.changePct ?? 0
+  const dailyTrend = liveChangePct > 0.1 ? 'Bullish' : liveChangePct < -0.1 ? 'Bearish' : 'Neutral'
+  const h4Trend = momentum !== null ? (momentum > 0.5 ? 'Bullish' : momentum < -0.5 ? 'Bearish' : 'Neutral') : dailyTrend
+  const lastTwo = history.length >= 2
+  const h1Trend = lastTwo ? (history[history.length-1].price >= history[history.length-2].price ? 'Bullish' : 'Bearish') : dailyTrend
+  const m15Trend = h1Trend
+
   const tfs = [
-    { tf: 'Daily', trend: goldData.dailyTrend,  detail: 'Strong bullish structure',  sub: 'Above 50MA & 200MA — dominant uptrend' },
-    { tf: 'H4',    trend: goldData.h4Trend,     detail: 'Higher-highs / higher-lows', sub: 'Above key moving averages' },
-    { tf: 'H1',    trend: goldData.h1Trend,     detail: 'Consolidating at resistance', sub: 'Near 50MA — watch for break' },
-    { tf: 'M15',   trend: goldData.m15Trend,    detail: 'Short-term pullback',         sub: 'Below 50MA — minor bearish' },
+    { tf: 'Daily', trend: dailyTrend,
+      detail: dailyTrend === 'Bullish' ? 'Bullish price action on session' : dailyTrend === 'Bearish' ? 'Bearish pressure on session' : 'Consolidating — no clear trend',
+      sub: dailyTrend === 'Bullish' ? `Up ${liveChangePct.toFixed(2)}% — momentum positive` : dailyTrend === 'Bearish' ? `Down ${Math.abs(liveChangePct).toFixed(2)}% — watch key supports` : 'Range-bound — wait for directional break' },
+    { tf: 'H4',    trend: h4Trend,
+      detail: h4Trend === 'Bullish' ? 'Higher-highs / higher-lows' : h4Trend === 'Bearish' ? 'Lower-highs / lower-lows' : 'No momentum — flat',
+      sub: h4Trend === 'Bullish' ? 'Momentum confirms bullish structure' : h4Trend === 'Bearish' ? 'Momentum confirms bearish pressure' : 'Await a break' },
+    { tf: 'H1',    trend: h1Trend,
+      detail: h1Trend === 'Bullish' ? 'Short-term upward move' : 'Short-term pullback',
+      sub: h1Trend === 'Bullish' ? 'Recent ticks trending higher' : 'Recent ticks pulling back' },
+    { tf: 'M15',   trend: m15Trend,
+      detail: m15Trend === 'Bullish' ? 'Micro bullish flow' : 'Micro bearish flow',
+      sub: 'Based on most recent tick data' },
   ]
   const bullCount = tfs.filter(t => t.trend === 'Bullish').length
   const bearCount = tfs.filter(t => t.trend === 'Bearish').length
@@ -132,8 +147,8 @@ function TrendPanel() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 200 }}>
           {[
-            { label: 'ATR (14)', value: goldData.atr, unit: 'pips', color: 'var(--amber)' },
-            { label: 'Volatility', value: goldData.volatility, color: 'var(--amber)' },
+            { label: 'Day Range', value: (liveHigh - liveLow).toFixed(1), unit: 'pts', color: 'var(--amber)' },
+            { label: 'Volatility', value: liveHigh > liveLow && livePrice > 0 ? (((liveHigh - liveLow) / livePrice) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
             { label: 'Volume', value: goldData.volume, color: 'var(--text-1)' },
             { label: 'Spread', value: liveSpread, unit: 'pts', color: 'var(--text-2)' },
           ].map(s => (
@@ -246,14 +261,19 @@ function BiasPanel() {
           <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{aiDailyPlan}</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[
-            { label: 'Daily Trend', value: goldData.dailyTrend, positive: goldData.dailyTrend === 'Bullish' },
-            { label: 'H4 Trend', value: goldData.h4Trend, positive: goldData.h4Trend === 'Bullish' },
-            { label: 'DXY', value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Bearish (↑ Gold)', positive: dxyFalling },
+          {(() => {
+            const { changePct: cp, dayRange, price: p } = lvl
+            const h4Trend = cp > 0 ? 'Bullish' : cp < 0 ? 'Bearish' : 'Neutral'
+            const volPct = p > 0 ? (dayRange / p * 100).toFixed(2) + '%' : 'N/A'
+            return [
+            { label: 'Daily Trend', value: trendStatus, positive: bias === 'BULLISH', neutral: bias === 'NEUTRAL' },
+            { label: 'H4 Trend',    value: h4Trend,     positive: h4Trend === 'Bullish', neutral: h4Trend === 'Neutral' },
+            { label: 'DXY', value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Weakening (+Gold)', positive: dxyFalling },
             { label: 'Smart Money', value: `${sentiment.smartMoney.long}% Long`, positive: true },
-            { label: 'Momentum', value: change >= 0 ? `+${change.toFixed(2)} ↑` : `${change.toFixed(2)} ↓`, positive: change >= 0, neutral: Math.abs(change) < 1 },
-            { label: 'Volatility', value: goldData.volatility, positive: false, neutral: true },
-          ].map(f => (
+            { label: 'Momentum', value: change >= 0 ? `+${change.toFixed(2)}` : `${change.toFixed(2)}`, positive: change >= 0, neutral: Math.abs(change) < 1 },
+            { label: 'Volatility', value: volPct, positive: false, neutral: true },
+            ]
+          })().map(f => (
             <div key={f.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8 }}>
               <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{f.label}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: f.neutral ? 'var(--amber)' : f.positive ? '#34d399' : '#ef4444' }}>{f.value}</span>
@@ -605,22 +625,23 @@ function ScenariosPanel() {
 
 // ─── LIQUIDITY ────────────────────────────────────────────────────────────────
 function LiquidityPanel() {
-  const { market, status } = useLiveMarket()
-  const livePrice = market?.gold?.price ?? goldData.price
+  const lvl = useLiveLevels()
+  const { price: livePrice, resistance, support, target, invalidation, liquidityZone,
+          asianHigh, asianLow, dayRange, status } = lvl
   const sm = sentiment.smartMoney
   const rt = sentiment.retail
 
-  const nearZone = (level) => Math.abs(livePrice - level) < 10
+  const nearZone = (level) => Math.abs(livePrice - level) < dayRange * 0.1
 
   const buySide = [
-    { level: goldData.asianHigh, label: 'Asian High (sweep target)', likely: 'High' },
-    { level: 3265, label: 'Recent High / EQH', likely: 'Medium' },
-    { level: goldData.targetZone, label: 'Equal Highs / Target Zone', likely: 'High' },
+    { level: resistance,    label: 'Resistance / EQH (sweep target)', likely: 'High' },
+    { level: liquidityZone, label: 'Liquidity Zone (buy-side pool)',   likely: 'Medium' },
+    { level: target,        label: 'Target Zone / Equal Highs',        likely: 'High' },
   ]
   const sellSide = [
-    { level: goldData.asianLow, label: 'Asian Low (manipulation)', likely: 'Medium' },
-    { level: goldData.support, label: 'Support / EQL', likely: 'High' },
-    { level: goldData.invalidation, label: 'Invalidation Level', likely: 'Low' },
+    { level: asianLow, label: 'Day Low (manipulation zone)',  likely: 'Medium' },
+    { level: support,  label: 'Support / EQL (sell-side)',    likely: 'High' },
+    { level: invalidation, label: 'Invalidation Level',       likely: 'Low' },
   ]
 
   return (
@@ -806,13 +827,21 @@ function SessionsPanel() {
 
 // ─── ALERTS ───────────────────────────────────────────────────────────────────
 function AlertsPanel() {
-  const { market, status } = useLiveMarket()
-  const livePrice = market?.gold?.price ?? null
-  const [alerts, setAlerts] = useState([
-    { id: 1, price: 3268, dir: 'above', label: 'Resistance break', active: true },
-    { id: 2, price: 3218, dir: 'below', label: 'Support lost', active: true },
-    { id: 3, price: 3280, dir: 'above', label: 'Target reached', active: false },
-  ])
+  const lvl = useLiveLevels()
+  const { price: livePrice, resistance, support, target, invalidation, status } = lvl
+  const initialized = useRef(false)
+  const [alerts, setAlerts] = useState([])
+
+  useEffect(() => {
+    if (status === 'live' && !initialized.current && resistance > 1000) {
+      initialized.current = true
+      setAlerts([
+        { id: 1, price: resistance, dir: 'above', label: 'Resistance break', active: true },
+        { id: 2, price: support,    dir: 'below', label: 'Support lost',     active: true },
+        { id: 3, price: target,     dir: 'above', label: 'Target reached',   active: false },
+      ])
+    }
+  }, [status, resistance, support, target])
 
   function isTriggered(a) {
     if (!a.active || livePrice === null) return false
@@ -907,10 +936,10 @@ function AlertsPanel() {
           <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Quick Set — Key Levels</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              { price: goldData.resistance, label: 'Resistance break', dir: 'above' },
-              { price: goldData.targetZone, label: 'Target reached', dir: 'above' },
-              { price: goldData.support, label: 'Support lost', dir: 'below' },
-              { price: goldData.invalidation, label: 'Invalidation hit', dir: 'below' },
+              { price: resistance,   label: 'Resistance break', dir: 'above' },
+              { price: target,       label: 'Target reached',   dir: 'above' },
+              { price: support,      label: 'Support lost',     dir: 'below' },
+              { price: invalidation, label: 'Invalidation hit', dir: 'below' },
             ].map(q => (
               <button key={q.price} onClick={() => { setPrice(q.price); setDir(q.dir); setLabel(q.label) }} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', justifyContent: 'space-between', textAlign: 'left' }}>
                 <span>{q.label}</span>
@@ -926,30 +955,32 @@ function AlertsPanel() {
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
 function AIPanel({ navigate }) {
-  const { market, status } = useLiveMarket()
-  const liveG   = market?.gold
-  const liveDXY = market?.dxy
+  const lvl = useLiveLevels()
+  const { price: goldPrice, changePct: goldChange, resistance, support, target, invalidation,
+          bias, biasColor, aiDailyPlan, status, liveDXY } = lvl
+  const { market } = useLiveMarket()
   const liveBTC = market?.btc
-  const bull = scenarios.bullish
-  const bear = scenarios.bearish
   const sm = sentiment.smartMoney
 
-  const goldPrice = liveG?.price ?? goldData.price
-  const goldChange = liveG?.changePct ?? 0
+  const bullProb = bias === 'BULLISH' ? 70 : bias === 'BEARISH' ? 30 : 50
+  const dxyDir = (liveDXY?.changePct ?? -0.1) < 0 ? 'weakening (bullish gold)' : 'strengthening (headwind)'
   const dxyStr = liveDXY
-    ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%) — ${liveDXY.changePct < 0 ? 'weakening → bullish gold' : 'strengthening → headwind'}`
-    : 'DXY weakening → gold positive'
+    ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%) — ${dxyDir}`
+    : 'DXY weakening — gold positive'
+  const btcDir = (liveBTC?.changePct ?? 0) > 0 ? 'risk-on confirms dollar weakness' : 'mixed signal'
   const btcStr = liveBTC
-    ? `BTC $${Math.round(liveBTC.price).toLocaleString()} (${liveBTC.changePct >= 0 ? '+' : ''}${liveBTC.changePct.toFixed(2)}%) — ${liveBTC.changePct > 0 ? 'risk-on confirms dollar weakness' : 'mixed signal'}`
-    : `${bull.probability}% — Target ${bull.target1} / ${bull.target2}`
+    ? `BTC $${Math.round(liveBTC.price).toLocaleString()} (${liveBTC.changePct >= 0 ? '+' : ''}${liveBTC.changePct.toFixed(2)}%) — ${btcDir}`
+    : `${bullProb}% bullish — Target ${resistance.toFixed(0)} / ${target.toFixed(0)}`
+
+  const aiSummaryText = `Gold (XAUUSD) is trading at $${goldPrice.toFixed(2)}, ${goldChange >= 0 ? 'up' : 'down'} ${Math.abs(goldChange).toFixed(2)}% on the session. ${bias === 'BULLISH' ? `Momentum is positive with price holding above the ${support.toFixed(0)} support zone. Institutional flow and DXY weakness continue to favour the bull case. Watch for a breakout above ${resistance.toFixed(0)} targeting ${target.toFixed(0)}.` : bias === 'BEARISH' ? `Bearish pressure is building with price failing to sustain above ${resistance.toFixed(0)}. Risk of a deeper pullback toward ${support.toFixed(0)}–${invalidation.toFixed(0)} if sellers maintain control.` : `Price is consolidating between ${support.toFixed(0)} and ${resistance.toFixed(0)}. Wait for a decisive break before committing directionally. Range-bound conditions favour scalp strategies with tight stops.`} A daily close below ${invalidation.toFixed(0)} would flip the bias bearish.`
 
   const pillars = [
-    { icon: '📈', title: 'Trend Alignment', value: `${goldData.dailyTrend} bias across Daily + H4`, color: '#34d399', pos: true },
+    { icon: '📈', title: 'Trend Alignment', value: `${bias} bias — price ${goldChange >= 0 ? 'above' : 'below'} key levels`, color: biasColor, pos: bias !== 'BEARISH' },
     { icon: '🏦', title: 'Smart Money', value: `${sm.long}% institutional long positioning`, color: '#8B5CF6', pos: true },
     { icon: '📉', title: 'DXY', value: dxyStr, color: (liveDXY?.changePct ?? -0.3) < 0 ? '#34d399' : '#ef4444', pos: (liveDXY?.changePct ?? -0.3) < 0 },
-    { icon: '⚠️', title: 'Event Risk', value: 'CPI + FOMC today — reduce size', color: '#f59e0b', pos: false },
-    { icon: '🎯', title: 'Bullish Scenario', value: btcStr, color: '#34d399', pos: true },
-    { icon: '🐻', title: 'Bear Trigger', value: `Break below ${goldData.invalidation} flips bias`, color: '#ef4444', pos: false },
+    { icon: '⚠️', title: 'Event Risk', value: 'Watch economic calendar — reduce size near releases', color: '#f59e0b', pos: false },
+    { icon: '🎯', title: 'BTC Correlation', value: btcStr, color: '#34d399', pos: true },
+    { icon: '🐻', title: 'Bear Trigger', value: `Break below ${invalidation.toFixed(0)} flips bias bearish`, color: '#ef4444', pos: false },
   ]
 
   return (
@@ -967,13 +998,13 @@ function AIPanel({ navigate }) {
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
             {status === 'live' && <span style={{ fontSize: 14, fontFamily: 'Orbitron, monospace', fontWeight: 700, color: 'var(--gold)' }}>${goldPrice.toFixed(2)}</span>}
-            <div style={{ padding: '4px 12px', background: goldData.aiOutlook === 'BULLISH' ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)', border: `1px solid ${goldData.aiOutlook === 'BULLISH' ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 20, fontSize: 13, fontWeight: 800, color: goldData.aiOutlook === 'BULLISH' ? '#34d399' : '#ef4444' }}>{goldData.aiOutlook}</div>
+            <div style={{ padding: '4px 12px', background: `${biasColor}20`, border: `1px solid ${biasColor}50`, borderRadius: 20, fontSize: 13, fontWeight: 800, color: biasColor }}>{bias}</div>
           </div>
         </div>
         <div style={{ padding: '14px 16px', background: 'rgba(139,92,246,0.06)', borderLeft: '3px solid rgba(139,92,246,0.5)', borderRadius: '0 8px 8px 0', marginBottom: 16 }}>
-          <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{goldData.aiDailyPlan}</p>
+          <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{aiDailyPlan}</p>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>{goldData.aiSummaryText}</p>
+        <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>{aiSummaryText}</p>
       </div>
 
       {/* AI pillars */}
@@ -1315,6 +1346,11 @@ export default function Gold() {
   const liveDXY = market?.dxy
   const liveBTC = market?.btc
 
+  const liveBias    = changePct > 0.15 ? 'BULLISH' : changePct < -0.15 ? 'BEARISH' : 'NEUTRAL'
+  const liveBiasClr = liveBias === 'BULLISH' ? '#34d399' : liveBias === 'BEARISH' ? '#ef4444' : '#f59e0b'
+  const liveDailyTrend = changePct > 0.1 ? 'Bullish' : changePct < -0.1 ? 'Bearish' : 'Neutral'
+  const liveH4Trend    = change >= 0 ? 'Bullish' : 'Bearish'
+
   // Per-second freshness counter
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
@@ -1369,8 +1405,8 @@ export default function Gold() {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ padding: '5px 14px', borderRadius: 20, background: isUp ? 'rgba(52,211,153,0.12)' : 'rgba(239,68,68,0.12)', border: `1px solid ${isUp ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)'}`, fontSize: 12, fontWeight: 800, color: isUp ? '#34d399' : '#ef4444' }}>
-              {isUp ? '▲' : '▼'} {goldData.aiOutlook}
+            <span style={{ padding: '5px 14px', borderRadius: 20, background: `${liveBiasClr}20`, border: `1px solid ${liveBiasClr}50`, fontSize: 12, fontWeight: 800, color: liveBiasClr }}>
+              {isUp ? '▲' : '▼'} {liveBias}
             </span>
             <button className="btn btn-ghost btn-sm" onClick={() => setTab('alerts')}>🔔 Alert</button>
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/journal')}>📔 Journal</button>
@@ -1387,8 +1423,8 @@ export default function Gold() {
             { label: 'LOW',  value: sessionLow.toFixed(2),  color: '#ef4444' },
             { label: 'OPEN', value: goldData.open.toFixed(2), color: 'var(--text-2)' },
             { label: 'VOL',  value: goldData.volume,          color: 'var(--text-2)' },
-            { label: 'ATR',  value: `${goldData.atr} pts`,    color: 'var(--amber)' },
-            { label: 'VOLA', value: goldData.volatility,      color: 'var(--amber)' },
+            { label: 'RNG',  value: `${(sessionHigh - sessionLow).toFixed(1)} pts`, color: 'var(--amber)' },
+            { label: 'VOLA', value: sessionHigh > sessionLow && price > 0 ? (((sessionHigh - sessionLow) / price) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
             // Live correlated instruments
             { label: 'DXY',  value: (liveDXY?.price ?? 104.23).toFixed(2), color: (liveDXY?.changePct ?? -0.30) >= 0 ? '#ef4444' : '#34d399' },
             { label: 'BTC',  value: `$${((liveBTC?.price ?? 68420) / 1000).toFixed(1)}K`, color: (liveBTC?.changePct ?? 1.85) >= 0 ? '#34d399' : '#ef4444' },
@@ -1400,10 +1436,10 @@ export default function Gold() {
           ))}
           {/* Multi-TF trend pills */}
           {[
-            { tf: 'D1',  trend: goldData.dailyTrend },
-            { tf: 'H4',  trend: goldData.h4Trend },
-            { tf: 'H1',  trend: goldData.h1Trend },
-            { tf: 'M15', trend: goldData.m15Trend },
+            { tf: 'D1',  trend: liveDailyTrend },
+            { tf: 'H4',  trend: liveH4Trend },
+            { tf: 'H1',  trend: liveH4Trend },
+            { tf: 'M15', trend: liveH4Trend },
           ].map(t => {
             const c = TC(t.trend)
             return (
