@@ -148,24 +148,65 @@ function TrendPanel() {
   )
 }
 
-// ─── BIAS ─────────────────────────────────────────────────────────────────────
-function BiasPanel() {
+// ─── LIVE LEVELS — all key price levels computed from live market data ─────────
+function useLiveLevels() {
   const { market, status } = useLiveMarket()
   const liveG   = market?.gold
   const liveDXY = market?.dxy
-  const livePrice  = liveG?.price ?? goldData.price
-  const liveChange = liveG?.change ?? goldData.change
 
-  // Dynamic confidence: base 74, +5 if price > support, +5 if DXY falling, -8 if price < manip zone low
-  let confidence = 74
-  if (livePrice > goldData.support)               confidence += 5
-  if (livePrice > goldData.liquidityZone)         confidence += 3
-  if ((liveDXY?.changePct ?? -0.3) < 0)           confidence += 5
-  if (livePrice < goldData.manipulationZone.low)  confidence -= 8
-  if (liveChange < 0)                             confidence -= 4
-  confidence = Math.max(20, Math.min(95, confidence))
+  const price     = liveG?.price     ?? goldData.price
+  const high      = liveG?.high      ?? goldData.high
+  const low       = liveG?.low       ?? goldData.low
+  const change    = liveG?.change    ?? goldData.change
+  const changePct = liveG?.changePct ?? goldData.changePercent
 
-  const biasColor = goldData.aiOutlook === 'BULLISH' ? '#34d399' : '#ef4444'
+  const dayRange = Math.max(high - low, 20)
+
+  // Round to nearest $25 for clean institutional levels
+  const resistance    = Math.ceil((Math.max(high, price) + 3) / 25) * 25
+  const support       = Math.floor((Math.min(low, price) - 3) / 25) * 25
+  const target        = Math.round((resistance + dayRange * 0.5) / 5) * 5
+  const invalidation  = Math.round((support - dayRange * 0.25) / 5) * 5
+  const liquidityZone = Math.round((price + resistance) / 2 / 5) * 5
+  const manipHigh     = Math.round((support + (resistance - support) * 0.72) / 5) * 5
+  const manipLow      = Math.round((support + (resistance - support) * 0.28) / 5) * 5
+
+  const dxyFalling  = (liveDXY?.changePct ?? -0.1) < 0
+  const bias        = changePct > 0.15 ? 'BULLISH' : changePct < -0.15 ? 'BEARISH' : 'NEUTRAL'
+  const biasColor   = bias === 'BULLISH' ? '#34d399' : bias === 'BEARISH' ? '#ef4444' : '#f59e0b'
+  const trendStatus = bias === 'BULLISH' ? 'Bullish' : bias === 'BEARISH' ? 'Bearish' : 'Neutral'
+
+  let conf = 62
+  if (price > (support + resistance) / 2) conf += 8
+  if (dxyFalling)                         conf += 7
+  if (changePct > 0.3)                    conf += 5
+  if (changePct < -0.3)                   conf -= 10
+  if (price >= resistance - dayRange * 0.12) conf += 5
+  const confidence = Math.max(25, Math.min(92, Math.round(conf)))
+
+  const e1 = Math.round((support + dayRange * 0.2) / 5) * 5
+  const aiDailyPlan = bias === 'BULLISH'
+    ? `Look for longs on pullbacks to $${e1}–$${support.toFixed(0)}. First target: $${resistance.toFixed(0)}. Extended: $${target.toFixed(0)}. Stop below $${invalidation.toFixed(0)}. Avoid 30 min before major news. Keep risk at 1%.`
+    : bias === 'BEARISH'
+    ? `Watch for rejections near $${resistance.toFixed(0)}. Short entries targeting $${support.toFixed(0)}. Stop above $${Math.round((resistance + dayRange * 0.2) / 5) * 5}. Reduce size ahead of data releases. Keep risk at 1%.`
+    : `Range-bound near $${Math.round(price)}. Wait for a clear break of $${support.toFixed(0)} or $${resistance.toFixed(0)} before committing. Avoid trading the middle of the range. Keep risk below 0.5%.`
+
+  return {
+    price, high, low, change, changePct, dayRange, status,
+    resistance, support, target, invalidation, liquidityZone,
+    asianHigh: high, asianLow: low,
+    manipHigh, manipLow,
+    bias, biasColor, confidence, trendStatus, dxyFalling,
+    aiDailyPlan, liveDXY,
+  }
+}
+
+// ─── BIAS ─────────────────────────────────────────────────────────────────────
+function BiasPanel() {
+  const lvl = useLiveLevels()
+  const { price, change, bias, biasColor, confidence, trendStatus,
+          aiDailyPlan, target, invalidation, liveDXY, dxyFalling, status } = lvl
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Big bias card */}
@@ -174,17 +215,17 @@ function BiasPanel() {
           <div>
             <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 8 }}>Today's Directional Bias</div>
             <div style={{ fontSize: 48, fontWeight: 900, color: biasColor, fontFamily: 'Orbitron, monospace', lineHeight: 1, letterSpacing: '-0.02em' }}>
-              {goldData.aiOutlook === 'BULLISH' ? '↑' : '↓'} {goldData.aiOutlook}
+              {bias === 'BULLISH' ? '↑' : bias === 'BEARISH' ? '↓' : '→'} {bias}
             </div>
             <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>Confidence: <span style={{ color: biasColor, fontWeight: 700 }}>{confidence}%</span></div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>AI Outlook</div>
             <div style={{ padding: '4px 14px', borderRadius: 20, background: `${biasColor}18`, border: `1px solid ${biasColor}35`, color: biasColor, fontSize: 12, fontWeight: 700, display: 'inline-block' }}>
-              {goldData.trendStatus}
+              {trendStatus}
             </div>
-            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-3)' }}>Target: <span style={{ color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${goldData.targetZone.toLocaleString()}</span></div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 3 }}>Invalidation: <span style={{ color: '#ef4444', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${goldData.invalidation.toLocaleString()}</span></div>
+            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-3)' }}>Target: <span style={{ color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${target.toLocaleString()}</span></div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 3 }}>Invalidation: <span style={{ color: '#ef4444', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${invalidation.toLocaleString()}</span></div>
           </div>
         </div>
         {/* Confidence bar */}
@@ -202,16 +243,15 @@ function BiasPanel() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div className="glass-gold p-4">
           <div style={{ fontSize: 9, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, marginBottom: 10 }}>⚡ AI DAILY PLAN</div>
-          <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{goldData.aiDailyPlan}</p>
+          <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{aiDailyPlan}</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Bias factors */}
           {[
             { label: 'Daily Trend', value: goldData.dailyTrend, positive: goldData.dailyTrend === 'Bullish' },
             { label: 'H4 Trend', value: goldData.h4Trend, positive: goldData.h4Trend === 'Bullish' },
-            { label: 'DXY', value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Bearish (↑ Gold)', positive: (liveDXY?.changePct ?? -0.3) < 0 },
+            { label: 'DXY', value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Bearish (↑ Gold)', positive: dxyFalling },
             { label: 'Smart Money', value: `${sentiment.smartMoney.long}% Long`, positive: true },
-            { label: 'Momentum', value: liveChange >= 0 ? `+${liveChange.toFixed(2)} ↑` : `${liveChange.toFixed(2)} ↓`, positive: liveChange >= 0, neutral: Math.abs(liveChange) < 1 },
+            { label: 'Momentum', value: change >= 0 ? `+${change.toFixed(2)} ↑` : `${change.toFixed(2)} ↓`, positive: change >= 0, neutral: Math.abs(change) < 1 },
             { label: 'Volatility', value: goldData.volatility, positive: false, neutral: true },
           ].map(f => (
             <div key={f.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8 }}>
@@ -222,14 +262,10 @@ function BiasPanel() {
         </div>
       </div>
 
-      {/* Warning */}
-      {goldData.tradingWarning && (
-        <div style={{ padding: '14px 16px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 10, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-          <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Trading Warning</div>
-            <div style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.6 }}>{goldData.tradingWarning}</div>
-          </div>
+      {status === 'live' && (
+        <div style={{ padding: '10px 16px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite', flexShrink: 0 }} />
+          <span style={{ fontSize: 11, color: 'var(--text-2)' }}>Bias computed live from XAUUSD ${price.toFixed(2)} · refreshes every 5s</span>
         </div>
       )}
     </div>
@@ -238,25 +274,30 @@ function BiasPanel() {
 
 // ─── LEVELS ───────────────────────────────────────────────────────────────────
 function LevelsPanel() {
-  const { market, status } = useLiveMarket()
-  const livePrice = market?.gold?.price ?? goldData.price
-  const MIN = 3200, MAX = 3295, RANGE = MAX - MIN
-  const pos = (p) => `${((MAX - p) / RANGE * 100).toFixed(2)}%`
-  const dist = (p) => Math.abs(livePrice - p).toFixed(1)
-  const approaching = (p) => Math.abs(livePrice - p) < 8
+  const lvl = useLiveLevels()
+  const { price, resistance, support, target, invalidation, liquidityZone,
+          asianHigh, asianLow, manipHigh, manipLow, dayRange, status } = lvl
+
+  // Dynamic range: span from below invalidation to above target
+  const MIN   = Math.floor((invalidation - 15) / 10) * 10
+  const MAX   = Math.ceil((target + 15) / 10) * 10
+  const RANGE = MAX - MIN
+  const pos = (p) => `${Math.max(0, Math.min(100, (MAX - p) / RANGE * 100)).toFixed(2)}%`
+  const dist = (p) => Math.abs(price - p).toFixed(1)
+  const approaching = (p) => Math.abs(price - p) < dayRange * 0.12
 
   const marks = [
-    { price: goldData.targetZone,            label: 'Target Zone',       color: '#8B5CF6', dashed: true, weight: 600 },
-    { price: goldData.resistance,            label: 'Resistance',        color: '#ef4444', weight: 700 },
-    { price: goldData.manipulationZone.high, label: 'Manip High',        color: '#f59e0b', dashed: true, weight: 400 },
-    { price: goldData.asianHigh,             label: 'Asian High',        color: '#f59e0b', weight: 500 },
-    { price: goldData.liquidityZone,         label: 'Liquidity Zone',    color: '#3b82f6', dashed: true, weight: 500 },
-    { price: livePrice,                      label: '▶ XAUUSD',          color: '#ffffff', weight: 900, current: true },
-    { price: goldData.manipulationZone.low,  label: 'Manip Low',         color: '#f59e0b', dashed: true, weight: 400 },
-    { price: goldData.asianLow,              label: 'Asian Low',         color: '#f59e0b', weight: 500 },
-    { price: goldData.support,               label: 'Support',           color: '#34d399', weight: 700 },
-    { price: goldData.invalidation,          label: 'Invalidation',      color: '#ef4444', dashed: true, weight: 400 },
-  ]
+    { price: target,        label: 'Target Zone',    color: '#8B5CF6', dashed: true,  weight: 600 },
+    { price: resistance,    label: 'Resistance',     color: '#ef4444', dashed: false, weight: 700 },
+    { price: manipHigh,     label: 'Manip High',     color: '#f59e0b', dashed: true,  weight: 400 },
+    { price: asianHigh,     label: 'Day High',       color: '#f59e0b', dashed: false, weight: 500 },
+    { price: liquidityZone, label: 'Liquidity Zone', color: '#3b82f6', dashed: true,  weight: 500 },
+    { price: price,         label: '▶ XAUUSD',       color: '#ffffff', dashed: false, weight: 900, current: true },
+    { price: manipLow,      label: 'Manip Low',      color: '#f59e0b', dashed: true,  weight: 400 },
+    { price: asianLow,      label: 'Day Low',        color: '#f59e0b', dashed: false, weight: 500 },
+    { price: support,       label: 'Support',        color: '#34d399', dashed: false, weight: 700 },
+    { price: invalidation,  label: 'Invalidation',   color: '#ef4444', dashed: true,  weight: 400 },
+  ].sort((a, b) => b.price - a.price)
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 14 }}>
@@ -265,7 +306,7 @@ function LevelsPanel() {
         <div className="section-label mb-4">Price Ladder — XAUUSD</div>
         <div style={{ position: 'relative', height: 420, marginTop: 8 }}>
           {/* Manipulation zone band */}
-          <div style={{ position: 'absolute', left: 88, right: 8, top: pos(goldData.manipulationZone.high), bottom: `${(100 - parseFloat(pos(goldData.manipulationZone.low))).toFixed(2)}%`, background: 'rgba(245,158,11,0.06)', border: '1px dashed rgba(245,158,11,0.2)', borderRadius: 4, zIndex: 0 }}>
+          <div style={{ position: 'absolute', left: 88, right: 8, top: pos(manipHigh), bottom: `${(100 - parseFloat(pos(manipLow))).toFixed(2)}%`, background: 'rgba(245,158,11,0.06)', border: '1px dashed rgba(245,158,11,0.2)', borderRadius: 4, zIndex: 0 }}>
             <span style={{ position: 'absolute', right: 8, top: 2, fontSize: 8, color: 'rgba(245,158,11,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Manipulation Zone</span>
           </div>
 
@@ -287,11 +328,11 @@ function LevelsPanel() {
           {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
         </div>
         {[
-          { label: 'Resistance', value: goldData.resistance, color: '#ef4444', icon: '🔴', desc: 'Strong sell zone' },
-          { label: 'Target', value: goldData.targetZone, color: '#8B5CF6', icon: '🎯', desc: 'Bullish objective' },
-          { label: 'Liquidity', value: goldData.liquidityZone, color: '#3b82f6', icon: '💧', desc: 'Buy-side liquidity' },
-          { label: 'Support', value: goldData.support, color: '#34d399', icon: '🟢', desc: 'Buy zone' },
-          { label: 'Invalidation', value: goldData.invalidation, color: '#ef4444', icon: '❌', desc: 'Short bias below' },
+          { label: 'Resistance',   value: resistance,    color: '#ef4444', icon: '🔴', desc: 'Strong sell zone' },
+          { label: 'Target',       value: target,        color: '#8B5CF6', icon: '🎯', desc: 'Bullish objective' },
+          { label: 'Liquidity',    value: liquidityZone, color: '#3b82f6', icon: '💧', desc: 'Buy-side liquidity' },
+          { label: 'Support',      value: support,       color: '#34d399', icon: '🟢', desc: 'Buy zone' },
+          { label: 'Invalidation', value: invalidation,  color: '#ef4444', icon: '❌', desc: 'Short bias below' },
         ].map(z => (
           <div key={z.label} style={{ padding: '12px 14px', background: approaching(z.value) ? `${z.color}16` : `${z.color}08`, border: `1px solid ${approaching(z.value) ? z.color + '55' : z.color + '22'}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -308,18 +349,18 @@ function LevelsPanel() {
         ))}
 
         <div style={{ padding: '12px 14px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 10 }}>
-          <div style={{ fontSize: 9, color: 'var(--amber)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Asian Range</div>
+          <div style={{ fontSize: 9, color: 'var(--amber)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Day Range</div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 12, color: 'var(--text-2)' }}>High</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)', fontFamily: 'Orbitron, monospace' }}>{goldData.asianHigh}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)', fontFamily: 'Orbitron, monospace' }}>{asianHigh.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
             <span style={{ fontSize: 12, color: 'var(--text-2)' }}>Low</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)', fontFamily: 'Orbitron, monospace' }}>{goldData.asianLow}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)', fontFamily: 'Orbitron, monospace' }}>{asianLow.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 5 }}>
             <span style={{ fontSize: 10, color: 'var(--text-3)' }}>Range Width</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', fontFamily: 'Orbitron, monospace' }}>{(goldData.asianHigh - goldData.asianLow).toFixed(2)} pts</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', fontFamily: 'Orbitron, monospace' }}>{dayRange.toFixed(2)} pts</span>
           </div>
         </div>
       </div>
@@ -407,32 +448,57 @@ function NewsPanel() {
 
 // ─── SCENARIOS ────────────────────────────────────────────────────────────────
 function ScenariosPanel() {
-  const { market, status } = useLiveMarket()
-  const livePrice = market?.gold?.price ?? goldData.price
-  const bull = scenarios.bullish
-  const bear = scenarios.bearish
+  const lvl = useLiveLevels()
+  const { price, resistance, support, target, invalidation, dayRange, bias, status } = lvl
+
+  // Compute bull/bear entry zones from live levels
+  const bullEntryLow  = Math.round((support + dayRange * 0.2) / 5) * 5
+  const bullEntryHigh = Math.round((support + dayRange * 0.4) / 5) * 5
+  const bullStop      = Math.round((support - dayRange * 0.15) / 5) * 5
+  const bearEntryHigh = Math.round((resistance - dayRange * 0.2) / 5) * 5
+  const bearStop      = Math.round((resistance + dayRange * 0.15) / 5) * 5
+  const bullProb      = bias === 'BULLISH' ? 70 : bias === 'BEARISH' ? 30 : 50
+  const bearProb      = 100 - bullProb
+
+  const bull = {
+    probability:   bullProb,
+    condition:     `Price holds above $${support.toFixed(0)} and bounces from $${bullEntryLow.toFixed(0)}–$${bullEntryHigh.toFixed(0)} entry zone`,
+    entry:         `$${bullEntryLow.toFixed(0)}–$${bullEntryHigh.toFixed(0)}`,
+    target1:       `$${resistance.toFixed(0)}`,
+    target2:       `$${target.toFixed(0)}`,
+    invalidation:  `$${bullStop.toFixed(0)}`,
+    aiExplanation: `Bullish momentum active above $${support.toFixed(0)}. Buy pullbacks to $${bullEntryLow.toFixed(0)}. First target $${resistance.toFixed(0)}, extended $${target.toFixed(0)}. Stop below $${bullStop.toFixed(0)} on daily close.`,
+    _entryNum: bullEntryLow, _t1Num: resistance, _stopNum: bullStop,
+  }
+  const bear = {
+    probability:   bearProb,
+    condition:     `Price rejects $${resistance.toFixed(0)} resistance and breaks below $${bearEntryHigh.toFixed(0)}`,
+    entry:         `$${bearEntryHigh.toFixed(0)}–$${resistance.toFixed(0)} (short from resistance)`,
+    target1:       `$${support.toFixed(0)}`,
+    target2:       `$${invalidation.toFixed(0)}`,
+    invalidation:  `$${bearStop.toFixed(0)}`,
+    aiExplanation: `Bearish setup triggers on rejection at $${resistance.toFixed(0)}. Short between $${bearEntryHigh.toFixed(0)}–$${resistance.toFixed(0)}. Target $${support.toFixed(0)}, extended $${invalidation.toFixed(0)}. Stop above $${bearStop.toFixed(0)}.`,
+    _entryNum: bearEntryHigh, _t1Num: support, _stopNum: bearStop,
+  }
   const neutral = scenarios.neutral
 
-  function scenarioStatus(entry, target1, invalidation, isBull) {
-    const pricedIn = typeof entry === 'string' ? parseFloat(entry) : entry
-    const t1 = typeof target1 === 'string' ? parseFloat(target1) : target1
-    const inv = typeof invalidation === 'string' ? parseFloat(invalidation) : invalidation
+  function scenarioStatus(entryNum, t1Num, stopNum, isBull) {
     if (isBull) {
-      if (livePrice >= t1) return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
-      if (livePrice < inv) return { label: 'INVALIDATED', color: '#ef4444' }
-      if (livePrice >= pricedIn) return { label: 'IN PROGRESS', color: '#34d399' }
-      if (Math.abs(livePrice - pricedIn) < 8) return { label: 'APPROACHING', color: '#f59e0b' }
+      if (price >= t1Num)                               return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
+      if (price < stopNum)                              return { label: 'INVALIDATED',  color: '#ef4444' }
+      if (price >= entryNum)                            return { label: 'IN PROGRESS',  color: '#34d399' }
+      if (Math.abs(price - entryNum) < dayRange * 0.1) return { label: 'APPROACHING',  color: '#f59e0b' }
     } else {
-      if (livePrice <= t1) return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
-      if (livePrice > inv) return { label: 'INVALIDATED', color: '#ef4444' }
-      if (livePrice <= pricedIn) return { label: 'IN PROGRESS', color: '#ef4444' }
-      if (Math.abs(livePrice - pricedIn) < 8) return { label: 'APPROACHING', color: '#f59e0b' }
+      if (price <= t1Num)                               return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
+      if (price > stopNum)                              return { label: 'INVALIDATED',  color: '#ef4444' }
+      if (price <= entryNum)                            return { label: 'IN PROGRESS',  color: '#ef4444' }
+      if (Math.abs(price - entryNum) < dayRange * 0.1) return { label: 'APPROACHING',  color: '#f59e0b' }
     }
     return { label: 'WATCHING', color: '#94a3b8' }
   }
 
-  const bullStatus = scenarioStatus(bull.entry, bull.target1, bull.invalidation, true)
-  const bearStatus = scenarioStatus(bear.entry, bear.target1, bear.invalidation, false)
+  const bullStatus = scenarioStatus(bull._entryNum, bull._t1Num, bull._stopNum, true)
+  const bearStatus = scenarioStatus(bear._entryNum, bear._t1Num, bear._stopNum, false)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
