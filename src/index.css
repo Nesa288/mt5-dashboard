@@ -698,8 +698,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0%   { background-position: 300% 0; }
+  100% { background-position: -300% 0; }
 }
 
 @keyframes pulseGold {
@@ -722,14 +722,89 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   50% { opacity: 0.3; }
 }
 
+/* Tab content fade-slide in */
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Price flash — green (up) */
+@keyframes flashUp {
+  0%   { text-shadow: none; }
+  25%  { text-shadow: 0 0 22px rgba(52,211,153,0.75), 0 0 8px rgba(52,211,153,0.4); }
+  100% { text-shadow: none; }
+}
+/* Price flash — red (down) */
+@keyframes flashDown {
+  0%   { text-shadow: none; }
+  25%  { text-shadow: 0 0 22px rgba(239,68,68,0.75), 0 0 8px rgba(239,68,68,0.4); }
+  100% { text-shadow: none; }
+}
+/* Micro nudge on price change */
+@keyframes nudgeUp   { 0%,100%{transform:translateY(0)} 35%{transform:translateY(-2.5px)} }
+@keyframes nudgeDown { 0%,100%{transform:translateY(0)} 35%{transform:translateY(2.5px)} }
+
+/* Number highlight on any value change */
+@keyframes numPop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
 .pulse-gold { animation: pulseGold 2.5s ease-in-out infinite; }
 .pulse-green { animation: pulseGreen 2s ease-in-out infinite; }
 
+/* Tab content */
+.tab-content-anim {
+  animation: tabFadeIn 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Price flash classes (applied via JS on price update) */
+.flash-up   { animation: flashUp   0.6s ease forwards, nudgeUp   0.28s ease; }
+.flash-down { animation: flashDown 0.6s ease forwards, nudgeDown 0.28s ease; }
+.num-pop    { animation: numPop    0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* Skeleton — richer shimmer */
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.6s infinite;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.10) 40%,
+    rgba(255,255,255,0.04) 80%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
   border-radius: 6px;
+}
+
+/* Stat pill hover */
+.stat-pill {
+  transition: transform 0.14s ease, background 0.14s ease,
+              border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.stat-pill:hover {
+  transform: scale(1.07) translateY(-1px);
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(139,92,246,0.22) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+/* Level mark hover */
+.level-mark {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.level-mark:hover { opacity: 1 !important; transform: scaleX(1.01); }
+
+/* Glass card — already has hover but add will-change */
+.glass { will-change: transform, box-shadow; }
+
+/* News / calendar row hover */
+.news-row {
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.news-row:hover {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(139,92,246,0.18) !important;
+  transform: translateX(2px);
 }
 
 /* ─── SIDEBAR STYLES ─────────────────────────── */

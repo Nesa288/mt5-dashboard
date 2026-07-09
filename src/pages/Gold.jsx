@@ -26,6 +26,55 @@ const TC = (t) => t === 'Bullish' ? '#34d399' : t === 'Bearish' ? '#ef4444' : '#
 const IMPACT_COLOR = { 5: '#ef4444', 4: '#f59e0b', 3: '#94a3b8' }
 const SENT_COLOR = { bullish: '#34d399', bearish: '#ef4444', neutral: '#94a3b8' }
 
+// ─── ANIMATION HOOKS ──────────────────────────────────────────────────────────
+function useAnimatedNumber(target, duration = 380) {
+  const [val, setVal] = useState(target)
+  const fromRef = useRef(target)
+  const rafRef  = useRef(null)
+  useEffect(() => {
+    const from = fromRef.current
+    if (from === target) return
+    cancelAnimationFrame(rafRef.current)
+    const t0 = performance.now()
+    const tick = (now) => {
+      const p = Math.min((now - t0) / duration, 1)
+      const e = 1 - Math.pow(1 - p, 3)          // ease-out cubic
+      setVal(from + (target - from) * e)
+      if (p < 1) rafRef.current = requestAnimationFrame(tick)
+      else { fromRef.current = target; setVal(target) }
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [target, duration])
+  return val
+}
+
+function useFlash(value) {
+  const [cls, setCls] = useState('')
+  const prev = useRef(value)
+  useEffect(() => {
+    if (value === prev.current) return
+    const dir = value > prev.current ? 'flash-up' : 'flash-down'
+    prev.current = value
+    setCls(dir)
+    const id = setTimeout(() => setCls(''), 650)
+    return () => clearTimeout(id)
+  }, [value])
+  return cls
+}
+
+function useParallax(speed = 0.12) {
+  const [offset, setOffset] = useState(0)
+  useEffect(() => {
+    const el = document.querySelector('.page-area')
+    if (!el) return
+    const onScroll = () => setOffset(el.scrollTop * speed)
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [speed])
+  return offset
+}
+
 // ─── TREND ───────────────────────────────────────────────────────────────────
 function TrendPanel() {
   const { market, status } = useLiveMarket()
@@ -221,6 +270,8 @@ function BiasPanel() {
   const lvl = useLiveLevels()
   const { price, change, bias, biasColor, confidence, trendStatus,
           aiDailyPlan, target, invalidation, liveDXY, dxyFalling, status } = lvl
+  const animConf = useAnimatedNumber(confidence, 600)
+  const biasFlash = useFlash(price)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -229,10 +280,10 @@ function BiasPanel() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 8 }}>Today's Directional Bias</div>
-            <div style={{ fontSize: 48, fontWeight: 900, color: biasColor, fontFamily: 'Orbitron, monospace', lineHeight: 1, letterSpacing: '-0.02em' }}>
+            <div className={biasFlash} style={{ fontSize: 48, fontWeight: 900, color: biasColor, fontFamily: 'Orbitron, monospace', lineHeight: 1, letterSpacing: '-0.02em', transition: 'color 0.5s ease', display: 'inline-block' }}>
               {bias === 'BULLISH' ? '↑' : bias === 'BEARISH' ? '↓' : '→'} {bias}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>Confidence: <span style={{ color: biasColor, fontWeight: 700 }}>{confidence}%</span></div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>Confidence: <span style={{ color: biasColor, fontWeight: 700 }}>{Math.round(animConf)}%</span></div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>AI Outlook</div>
@@ -249,7 +300,7 @@ function BiasPanel() {
             <span>0%</span><span>Bias Strength</span><span>100%</span>
           </div>
           <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${confidence}%`, background: `linear-gradient(to right, ${biasColor}80, ${biasColor})`, borderRadius: 4, transition: 'width 1s ease' }} />
+            <div style={{ height: '100%', width: `${animConf}%`, background: `linear-gradient(to right, ${biasColor}80, ${biasColor})`, borderRadius: 4, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
           </div>
         </div>
       </div>
@@ -297,6 +348,7 @@ function LevelsPanel() {
   const lvl = useLiveLevels()
   const { price, resistance, support, target, invalidation, liquidityZone,
           asianHigh, asianLow, manipHigh, manipLow, dayRange, status } = lvl
+  const animP = useAnimatedNumber(price, 500)
 
   // Dynamic range: span from below invalidation to above target
   const MIN   = Math.floor((invalidation - 15) / 10) * 10
@@ -330,14 +382,17 @@ function LevelsPanel() {
             <span style={{ position: 'absolute', right: 8, top: 2, fontSize: 8, color: 'rgba(245,158,11,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Manipulation Zone</span>
           </div>
 
-          {marks.map((m, i) => (
-            <div key={i} style={{ position: 'absolute', top: pos(m.price), left: 0, right: 0, display: 'flex', alignItems: 'center', gap: 8, zIndex: 1, transform: 'translateY(-50%)' }}>
-              <span style={{ fontSize: 10, fontFamily: 'Orbitron, monospace', color: m.color, width: 82, textAlign: 'right', fontWeight: m.weight, flexShrink: 0 }}>{m.price.toFixed(2)}</span>
+          {marks.map((m, i) => {
+            const displayPrice = m.current ? animP : m.price
+            return (
+            <div key={i} className="level-mark" style={{ position: 'absolute', top: pos(m.current ? animP : m.price), left: 0, right: 0, display: 'flex', alignItems: 'center', gap: 8, zIndex: 1, transform: 'translateY(-50%)', transition: m.current ? 'top 0.5s cubic-bezier(0.4,0,0.2,1)' : 'none' }}>
+              <span style={{ fontSize: 10, fontFamily: 'Orbitron, monospace', color: m.color, width: 82, textAlign: 'right', fontWeight: m.weight, flexShrink: 0 }}>{displayPrice.toFixed(2)}</span>
               <div style={{ flex: 1, height: 0, borderTop: `${m.current ? 2 : 1}px ${m.dashed ? 'dashed' : 'solid'} ${m.color}`, opacity: m.current ? 1 : 0.65 }} />
               <span style={{ fontSize: m.current ? 11 : 10, color: m.color, fontWeight: m.weight, flexShrink: 0 }}>{m.label}</span>
-              {m.current && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ffffff', flexShrink: 0, boxShadow: '0 0 6px #fff' }} />}
+              {m.current && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ffffff', flexShrink: 0, boxShadow: '0 0 8px rgba(255,255,255,0.9)', animation: 'dotPulse 1.5s ease infinite' }} />}
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
@@ -354,7 +409,7 @@ function LevelsPanel() {
           { label: 'Support',      value: support,       color: '#34d399', icon: '🟢', desc: 'Buy zone' },
           { label: 'Invalidation', value: invalidation,  color: '#ef4444', icon: '❌', desc: 'Short bias below' },
         ].map(z => (
-          <div key={z.label} style={{ padding: '12px 14px', background: approaching(z.value) ? `${z.color}16` : `${z.color}08`, border: `1px solid ${approaching(z.value) ? z.color + '55' : z.color + '22'}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div key={z.label} className="stat-pill" style={{ padding: '12px 14px', background: approaching(z.value) ? `${z.color}16` : `${z.color}08`, border: `1px solid ${approaching(z.value) ? z.color + '55' : z.color + '22'}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>{z.icon}</span>
               <div>
@@ -431,7 +486,7 @@ function NewsPanel() {
           {todayEvents.map(ev => {
             const ic = IMPACT_COLOR[ev.impact] || '#94a3b8'
             return (
-              <div key={ev.id} style={{ display: 'flex', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${ev.recommendation === 'avoid' ? 'rgba(239,68,68,0.2)' : 'var(--border)'}`, borderRadius: 10 }}>
+              <div key={ev.id} className="news-row" style={{ display: 'flex', gap: 12, padding: '12px 14px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${ev.recommendation === 'avoid' ? 'rgba(239,68,68,0.2)' : 'var(--border)'}`, borderRadius: 10 }}>
                 <div style={{ flexShrink: 0, width: 56, textAlign: 'center', paddingTop: 2 }}>
                   <div style={{ fontSize: 12, fontFamily: 'Orbitron, monospace', color: 'var(--text-1)', fontWeight: 700 }}>{ev.time}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-3)', marginTop: 2 }}>UTC</div>
@@ -477,7 +532,7 @@ function NewsPanel() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {enrichedNews.map(n => (
-            <div key={n.id} style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10 }}>
+            <div key={n.id} className="news-row" style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${SENT_COLOR[n.sentiment]}18`, color: SENT_COLOR[n.sentiment], border: `1px solid ${SENT_COLOR[n.sentiment]}30`, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{n.sentiment}</span>
                 <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: n.impact === 'high' ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.1)', color: n.impact === 'high' ? '#ef4444' : 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{n.impact}</span>
@@ -1379,6 +1434,11 @@ export default function Gold() {
   const liveDailyTrend = changePct > 0.1 ? 'Bullish' : changePct < -0.1 ? 'Bearish' : 'Neutral'
   const liveH4Trend    = change >= 0 ? 'Bullish' : 'Bearish'
 
+  // Animation hooks
+  const animPrice  = useAnimatedNumber(price)
+  const priceFlash = useFlash(price)
+  const parallax   = useParallax(0.10)
+
   // Per-second freshness counter
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
@@ -1422,11 +1482,15 @@ export default function Gold() {
             </div>
 
             {/* Price + change */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-              <span style={{ fontSize: 42, fontWeight: 900, fontFamily: 'Orbitron, monospace', color: 'var(--gold)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: isUp ? '#34d399' : '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, transform: `translateY(${-parallax}px)`, transition: 'transform 0.05s linear', willChange: 'transform' }}>
+              {status === 'loading' ? (
+                <div className="skeleton" style={{ width: 200, height: 44, borderRadius: 8 }} />
+              ) : (
+                <span className={priceFlash} style={{ fontSize: 42, fontWeight: 900, fontFamily: 'Orbitron, monospace', color: 'var(--gold)', lineHeight: 1, letterSpacing: '-0.02em', display: 'inline-block', transition: 'color 0.3s ease' }}>
+                  ${animPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              )}
+              <span style={{ fontSize: 16, fontWeight: 700, color: isUp ? '#34d399' : '#ef4444', display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.4s ease' }}>
                 {isUp ? '▲' : '▼'} {isUp ? '+' : ''}${Math.abs(change).toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
               </span>
             </div>
@@ -1457,7 +1521,7 @@ export default function Gold() {
             { label: 'DXY',  value: (liveDXY?.price ?? 104.23).toFixed(2), color: (liveDXY?.changePct ?? -0.30) >= 0 ? '#ef4444' : '#34d399' },
             { label: 'BTC',  value: `$${((liveBTC?.price ?? 68420) / 1000).toFixed(1)}K`, color: (liveBTC?.changePct ?? 1.85) >= 0 ? '#34d399' : '#ef4444' },
           ].map(s => (
-            <div key={s.label} style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7 }}>
+            <div key={s.label} className="stat-pill" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7 }}>
               <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>{s.label}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: s.color, fontFamily: 'Orbitron, monospace' }}>{s.value}</span>
             </div>
@@ -1471,7 +1535,7 @@ export default function Gold() {
           ].map(t => {
             const c = TC(t.trend)
             return (
-              <div key={t.tf} style={{ padding: '5px 10px', background: `${c}10`, border: `1px solid ${c}28`, borderRadius: 7, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div key={t.tf} className="stat-pill" style={{ padding: '5px 10px', background: `${c}10`, border: `1px solid ${c}28`, borderRadius: 7, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.tf}</span>
                 <span style={{ fontSize: 11, fontWeight: 800, color: c }}>{t.trend === 'Bullish' ? '↑' : t.trend === 'Bearish' ? '↓' : '→'}</span>
               </div>
@@ -1520,7 +1584,7 @@ export default function Gold() {
       </div>
 
       {/* ── TAB CONTENT ── */}
-      <div style={{ minHeight: 500 }}>
+      <div key={tab} className="tab-content-anim" style={{ minHeight: 500 }}>
         {tab === 'trend'       && <TrendPanel />}
         {tab === 'bias'        && <BiasPanel />}
         {tab === 'levels'      && <LevelsPanel />}
