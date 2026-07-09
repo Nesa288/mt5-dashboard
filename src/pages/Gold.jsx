@@ -391,11 +391,39 @@ function LevelsPanel() {
 // ─── NEWS ─────────────────────────────────────────────────────────────────────
 function NewsPanel() {
   const { news: liveNews } = useLiveMarket()
+  const lvl = useLiveLevels()
+  const { price: livePrice, resistance, support, target, invalidation, bias, biasColor, status } = lvl
   const displayNews = liveNews.length > 0 ? liveNews : news
   const isLive = liveNews.length > 0
   const todayEvents = calendarEvents.filter(e => e.date === 'today').sort((a, b) => b.impact - a.impact)
+
+  // Inject live price into news AI summaries
+  const enrichedNews = displayNews.map(n => ({
+    ...n,
+    aiSummary: (n.aiSummary ?? n.summary ?? '')
+      .replace('current session support', `$${support.toFixed(0)} support`)
+      .replace('current session resistance', `$${resistance.toFixed(0)} resistance`)
+      .replace('current support zone', `$${support.toFixed(0)}`)
+      .replace('key support', `$${support.toFixed(0)} support`)
+      .replace('next target zone', `$${target.toFixed(0)}`),
+  }))
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Live price context bar */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {status === 'live' && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite', flexShrink: 0 }} />}
+          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Live context:</span>
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Orbitron, monospace', color: 'var(--gold)' }}>${livePrice.toFixed(2)}</span>
+        <span style={{ fontSize: 11, color: biasColor, fontWeight: 700 }}>{bias}</span>
+        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>S: <b style={{ color: '#34d399', fontFamily: 'Orbitron, monospace' }}>${support.toFixed(0)}</b></span>
+        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>R: <b style={{ color: '#ef4444', fontFamily: 'Orbitron, monospace' }}>${resistance.toFixed(0)}</b></span>
+        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Target: <b style={{ color: '#8B5CF6', fontFamily: 'Orbitron, monospace' }}>${target.toFixed(0)}</b></span>
+        <span style={{ fontSize: 9, color: 'var(--text-3)', marginLeft: 'auto' }}>Refreshes every 5s</span>
+      </div>
+
       {/* Economic Calendar */}
       <div className="glass p-4">
         <div className="section-label mb-3">📅 Economic Calendar — Today</div>
@@ -448,7 +476,7 @@ function NewsPanel() {
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {displayNews.map(n => (
+          {enrichedNews.map(n => (
             <div key={n.id} style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${SENT_COLOR[n.sentiment]}18`, color: SENT_COLOR[n.sentiment], border: `1px solid ${SENT_COLOR[n.sentiment]}30`, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{n.sentiment}</span>
@@ -456,7 +484,7 @@ function NewsPanel() {
                 <span style={{ fontSize: 10, color: 'var(--text-3)', marginLeft: 'auto' }}>{n.time}</span>
               </div>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.4, marginBottom: 6 }}>{n.title}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>{n.summary ?? n.aiSummary}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>{n.aiSummary ?? n.summary}</div>
               <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 8 }}>Source: {n.source}</div>
             </div>
           ))}
