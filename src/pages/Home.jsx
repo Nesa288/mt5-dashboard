@@ -383,7 +383,7 @@ export default function Home() {
         margin: '0',
         padding: '0px 40px 6px',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         gap: 40,
         position: 'relative',
         background: 'var(--bg-2)',
@@ -435,6 +435,7 @@ export default function Home() {
         <div style={{
           flex: '0 0 38%',
           position: 'relative',
+          alignSelf: 'flex-start',
         }}>
           <img
             src={`${import.meta.env.BASE_URL}whitebull2.png`}
