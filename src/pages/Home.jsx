@@ -391,25 +391,7 @@ export default function Home() {
         {/* BG glow */}
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Left: sitting bull image */}
-        <div style={{
-          flex: '0 0 38%',
-          position: 'relative',
-          alignSelf: 'flex-start',
-          paddingTop: 25,
-        }}>
-          <img
-            src={`${import.meta.env.BASE_URL}whitebull2.png`}
-            alt="SEVORA Academy"
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-            }}
-          />
-        </div>
-
-        {/* Right: text */}
+        {/* Left: text */}
         <div style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 25, paddingBottom: 8 }}>
           {/* Badge */}
           <div style={{
@@ -447,6 +429,20 @@ export default function Home() {
             <IcoAcademy size={15} />
             {t('home.startLearning')}
           </button>
+        </div>
+
+        {/* Right: sitting bull image */}
+        <div style={{
+          flex: '0 0 38%',
+          position: 'relative',
+          alignSelf: 'flex-start',
+          paddingTop: 25,
+        }}>
+          <img
+            src={`${import.meta.env.BASE_URL}whitebull2.png`}
+            alt="SEVORA Academy"
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
         </div>
 
       </section>
