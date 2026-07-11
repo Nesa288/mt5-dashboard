@@ -436,6 +436,7 @@ export default function Home() {
           flex: '0 0 38%',
           position: 'relative',
           alignSelf: 'flex-start',
+          paddingTop: 25,
         }}>
           <img
             src={`${import.meta.env.BASE_URL}whitebull2.png`}
