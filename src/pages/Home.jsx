@@ -392,7 +392,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Left: text */}
-        <div style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 25, paddingBottom: 8 }}>
+        <div style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 25, paddingBottom: 8, textAlign: 'right' }}>
           {/* Badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 22,
@@ -415,8 +415,8 @@ export default function Home() {
           {/* Quote */}
           <p style={{
             fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
-            marginBottom: 32, paddingLeft: 16,
-            borderLeft: '2px solid rgba(139,92,246,0.4)',
+            marginBottom: 32, paddingRight: 16,
+            borderRight: '2px solid rgba(139,92,246,0.4)',
           }}>
             Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
           </p>
