@@ -383,7 +383,7 @@ export default function Home() {
         margin: '0',
         padding: '0px 40px 6px',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 40,
         position: 'relative',
         background: 'var(--bg-2)',
@@ -392,7 +392,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Left: text */}
-        <div style={{ flex: '1 1 52%', minWidth: 0, paddingBottom: 8 }}>
+        <div style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 20, paddingBottom: 8 }}>
           {/* Badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 22,
