@@ -405,8 +405,8 @@ export default function Home() {
 
           {/* Heading */}
           <h2 style={{
-            fontSize: 'clamp(26px, 2.8vw, 40px)', fontWeight: 800, lineHeight: 1.15,
-            letterSpacing: '-0.025em', marginBottom: 22, color: 'var(--text-1)',
+            fontSize: 'clamp(34px, 3.8vw, 56px)', fontWeight: 800, lineHeight: 1.1,
+            letterSpacing: '-0.03em', marginBottom: 22, color: 'var(--text-1)',
           }}>
             <span style={{ color: 'var(--text-1)' }}>{t('home.mindsetLine1')}</span><br />
             <span style={{ color: 'var(--gold)' }}>{t('home.mindsetLine2')}</span>
@@ -423,7 +423,7 @@ export default function Home() {
           <button
             className="btn btn-gold"
             onClick={() => navigate('/academy')}
-            style={{ padding: '13px 28px', fontSize: 13, gap: 8 }}
+            style={{ padding: '14px 30px', fontSize: 14, gap: 10 }}
           >
             <IcoAcademy size={15} />
             {t('home.startLearning')}
