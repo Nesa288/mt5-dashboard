@@ -445,8 +445,10 @@ export default function Home() {
             style={{
               width: '100%', height: '100%', display: 'block',
               objectFit: 'cover', objectPosition: 'center top',
-              maskImage: 'linear-gradient(to right, transparent 0%, black 28%, black 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 28%, black 100%)',
+              maskImage: 'linear-gradient(to right, transparent 0%, black 28%, black 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 28%, black 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              maskComposite: 'intersect',
+              WebkitMaskComposite: 'source-in',
             }}
           />
         </div>
