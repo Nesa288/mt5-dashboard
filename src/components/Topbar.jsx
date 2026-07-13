@@ -58,7 +58,11 @@ export default function Topbar({ onMenuOpen }) {
       <div className="topbar-clock-wrap">
         <IcoClock size={14} color="var(--text-3)" />
         <div>
-          <div className="topbar-clock">{utc}</div>
+          <div className="topbar-clock">
+            {[...utc].map((ch, i) => (
+              <span key={i} style={{ display: 'inline-block', width: '1ch', textAlign: 'center' }}>{ch}</span>
+            ))}
+          </div>
           <div className="topbar-date">{dateStr}</div>
         </div>
       </div>
