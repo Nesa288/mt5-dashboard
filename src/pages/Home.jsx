@@ -381,7 +381,7 @@ export default function Home() {
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section className="mindset-banner" style={{
         margin: '0',
-        padding: '0px 40px 6px',
+        padding: '0px 40px 0px',
         display: 'flex',
         alignItems: 'flex-start',
         gap: 40,
