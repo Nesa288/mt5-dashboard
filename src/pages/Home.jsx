@@ -415,8 +415,7 @@ export default function Home() {
           {/* Quote */}
           <p style={{
             fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
-            marginBottom: 32, paddingLeft: 16,
-            borderLeft: '2px solid rgba(139,92,246,0.4)',
+            marginBottom: 32,
           }}>
             Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
           </p>
