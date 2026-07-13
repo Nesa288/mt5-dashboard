@@ -444,12 +444,6 @@ export default function Home() {
             alt="SEVORA Academy"
             style={{
               width: '100%', height: 'auto', display: 'block',
-              mixBlendMode: 'screen',
-              maskImage: 'linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%), linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%), linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%)',
-              maskComposite: 'intersect',
-              WebkitMaskComposite: 'source-in',
-              filter: 'sepia(0.35) hue-rotate(220deg) saturate(0.85) brightness(0.62)',
             }}
           />
         </div>
