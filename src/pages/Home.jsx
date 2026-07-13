@@ -379,7 +379,7 @@ export default function Home() {
       </section>
 
       {/* ── MINDSET BANNER ─────────────────────── */}
-      <section style={{
+      <section className="mindset-banner" style={{
         margin: '0',
         padding: '0px 40px 6px',
         display: 'flex',
@@ -392,7 +392,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Left: text */}
-        <div style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 25, paddingBottom: 25, textAlign: 'center', alignSelf: 'center' }}>
+        <div className="mindset-text" style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 25, paddingBottom: 25, textAlign: 'center', alignSelf: 'center' }}>
           {/* Badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 22,
@@ -431,7 +431,7 @@ export default function Home() {
         </div>
 
         {/* Right: sitting bull image */}
-        <div style={{
+        <div className="mindset-img" style={{
           flex: '0 0 38%',
           position: 'relative',
           alignSelf: 'flex-start',
