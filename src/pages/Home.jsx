@@ -443,8 +443,8 @@ export default function Home() {
             style={{
               width: '100%', height: 'auto', display: 'block',
               mixBlendMode: 'screen',
-              maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 100%)',
+              maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
               maskComposite: 'intersect',
               WebkitMaskComposite: 'source-in',
               filter: 'brightness(1.05) saturate(0.8)',
