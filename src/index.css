@@ -931,6 +931,8 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   color: var(--text-1);
   letter-spacing: 0.05em;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  min-width: 112px;
 }
 
 .topbar-date {
