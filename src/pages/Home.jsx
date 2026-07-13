@@ -440,7 +440,15 @@ export default function Home() {
           <img
             src={`${import.meta.env.BASE_URL}whitebull2.png`}
             alt="SEVORA Academy"
-            style={{ width: '100%', height: 'auto', display: 'block' }}
+            style={{
+              width: '100%', height: 'auto', display: 'block',
+              mixBlendMode: 'screen',
+              maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 100%)',
+              maskComposite: 'intersect',
+              WebkitMaskComposite: 'source-in',
+              filter: 'brightness(1.05) saturate(0.8)',
+            }}
           />
         </div>
 
