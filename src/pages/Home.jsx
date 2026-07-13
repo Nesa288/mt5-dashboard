@@ -387,6 +387,7 @@ export default function Home() {
         gap: 40,
         position: 'relative',
         background: 'var(--bg-2)',
+        overflow: 'hidden',
       }}>
         {/* BG glows */}
         <div style={{ position: 'absolute', top: 0, right: 0, width: 520, height: '100%', background: 'radial-gradient(ellipse at 80% 50%, rgba(109,40,217,0.10) 0%, rgba(139,92,246,0.04) 40%, transparent 75%)', pointerEvents: 'none' }} />
@@ -432,10 +433,11 @@ export default function Home() {
 
         {/* Right: sitting bull image */}
         <div className="mindset-img" style={{
-          flex: '0 0 38%',
+          flex: '0 0 auto',
+          width: 'calc(38% + 40px)',
           position: 'relative',
           alignSelf: 'flex-start',
-          paddingTop: 25,
+          marginRight: -40,
         }}>
           <img
             src={`${import.meta.env.BASE_URL}whitebull2.png`}
