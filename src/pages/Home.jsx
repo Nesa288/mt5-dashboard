@@ -388,8 +388,9 @@ export default function Home() {
         position: 'relative',
         background: 'var(--bg-2)',
       }}>
-        {/* BG glow */}
-        <div style={{ position: 'absolute', top: 40, left: '45%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        {/* BG glows */}
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 520, height: '100%', background: 'radial-gradient(ellipse at 80% 50%, rgba(109,40,217,0.18) 0%, rgba(139,92,246,0.08) 40%, transparent 75%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '50%', right: '10%', transform: 'translateY(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Left: text */}
         <div className="mindset-text" style={{ flex: '1 1 52%', minWidth: 0, paddingTop: 25, paddingBottom: 25, textAlign: 'center', alignSelf: 'center' }}>
@@ -443,11 +444,11 @@ export default function Home() {
             style={{
               width: '100%', height: 'auto', display: 'block',
               mixBlendMode: 'screen',
-              maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%), linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%), linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%), linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%)',
               maskComposite: 'intersect',
               WebkitMaskComposite: 'source-in',
-              filter: 'brightness(1.05) saturate(0.8)',
+              filter: 'sepia(0.65) hue-rotate(220deg) saturate(1.4) brightness(1.15)',
             }}
           />
         </div>
