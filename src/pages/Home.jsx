@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IcoGold, IcoAIMentor, IcoJournal, IcoAcademy } from '../components/Icons'
 import { useLanguage } from '../context/LanguageContext'
@@ -280,6 +281,40 @@ export default function Home() {
   const navigate = useNavigate()
   const { t } = useLanguage()
 
+  const line1 = t('home.heroLine1')
+  const line2 = t('home.heroLine2')
+  const [typed1, setTyped1] = useState('')
+  const [typed2, setTyped2] = useState('')
+  const [twPhase, setTwPhase] = useState('line1') // 'line1' | 'line2' | 'done'
+  const [cursorOn, setCursorOn] = useState(true)
+
+  useEffect(() => {
+    setTyped1(''); setTyped2(''); setTwPhase('line1')
+    let cancelled = false
+    const SPEED = 48
+    const type = (text, setter, onDone) => {
+      let i = 0
+      const tick = () => {
+        if (cancelled) return
+        setter(text.slice(0, ++i))
+        if (i < text.length) setTimeout(tick, SPEED)
+        else setTimeout(onDone, 200)
+      }
+      setTimeout(tick, SPEED)
+    }
+    type(line1, setTyped1, () => {
+      if (cancelled) return
+      setTwPhase('line2')
+      type(line2, setTyped2, () => { if (!cancelled) setTwPhase('done') })
+    })
+    return () => { cancelled = true }
+  }, [line1, line2])
+
+  useEffect(() => {
+    const id = setInterval(() => setCursorOn(v => !v), 530)
+    return () => clearInterval(id)
+  }, [])
+
   return (
     <div className="home-root">
 
@@ -334,8 +369,15 @@ export default function Home() {
             fontSize: 'clamp(34px, 3.8vw, 56px)', fontWeight: 800, lineHeight: 1.1,
             letterSpacing: '-0.03em', marginBottom: 20,
           }}>
-            {t('home.heroLine1')}<br />
-            <span style={{ color: 'var(--gold)' }}>{t('home.heroLine2')}</span>
+            <span>
+              {typed1}
+              {twPhase === 'line1' && <span style={{ opacity: cursorOn ? 1 : 0, fontWeight: 200, marginLeft: 2 }}>|</span>}
+            </span>
+            <br />
+            <span style={{ color: 'var(--gold)' }}>
+              {typed2}
+              {twPhase === 'line2' && <span style={{ opacity: cursorOn ? 1 : 0, fontWeight: 200, marginLeft: 2 }}>|</span>}
+            </span>
           </h1>
 
           <p style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.75, maxWidth: 430, marginBottom: 38 }}>
