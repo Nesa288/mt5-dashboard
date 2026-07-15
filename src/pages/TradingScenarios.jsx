@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { scenarios } from '../data/mockData'
 import { IcoArrowUp, IcoArrowDown, IcoTarget, IcoShield, IcoAlert } from '../components/Icons'
+import { useLiveLevels } from '../hooks/useLiveLevels'
 
 function ScenarioProbabilityArc({ value, color }) {
   const [animated, setAnimated] = useState(false)
@@ -47,6 +48,21 @@ function ScenarioRow({ label, value, color }) {
 
 export default function TradingScenarios() {
   const { t } = useLanguage()
+  const lvls = useLiveLevels()
+
+  const entryLow  = Math.round((lvls.support + lvls.dayRange * 0.15) / 5) * 5
+  const entryHigh = Math.round((lvls.support + lvls.dayRange * 0.35) / 5) * 5
+  const bullEntry = `$${entryLow.toLocaleString()} – $${entryHigh.toLocaleString()}`
+  const bullT1    = `$${lvls.resistance.toLocaleString()}`
+  const bullT2    = `$${lvls.target.toLocaleString()}`
+  const bullInv   = `$${lvls.invalidation.toLocaleString()}`
+
+  const bearEntryLow  = Math.round((lvls.resistance - lvls.dayRange * 0.05) / 5) * 5
+  const bearEntryHigh = Math.round((lvls.resistance + lvls.dayRange * 0.15) / 5) * 5
+  const bearEntry = `$${bearEntryLow.toLocaleString()} – $${bearEntryHigh.toLocaleString()} (short from resistance)`
+  const bearT1    = `$${Math.round((lvls.support + lvls.dayRange * 0.3) / 5) * 5}`
+  const bearT2    = `$${Math.round((lvls.support - lvls.dayRange * 0.1) / 5) * 5}`
+  const bearInv   = `$${lvls.target.toLocaleString()}`
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -77,13 +93,13 @@ export default function TradingScenarios() {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
             <div style={{ padding: '6px 16px', background: 'rgba(0,212,160,0.15)', border: '1px solid rgba(0,212,160,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--green)' }}>
-              🟢 Target Zone: $3,265 – $3,285
+              🟢 Target Zone: {bullT1} – {bullT2}
             </div>
             <div style={{ padding: '6px 16px', background: 'rgba(139,92,246,0.1)', border: '1px solid var(--gold-border)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--gold)' }}>
-              🟡 Entry Zone: $3,235 – $3,248
+              🟡 Entry Zone: {bullEntry}
             </div>
             <div style={{ padding: '6px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--red)' }}>
-              🔴 Invalidation: $3,215
+              🔴 Invalidation: {bullInv}
             </div>
           </div>
           <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-3)' }}>📊 Chart zones shown are DEMO — connect live backend for real analysis</div>
@@ -107,10 +123,10 @@ export default function TradingScenarios() {
               <div style={{ fontSize: 9, color: 'var(--green)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{t('scenarios.condition')}</div>
               <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.5 }}>{scenarios.bullish.condition}</div>
             </div>
-            <ScenarioRow label={t('scenarios.entryZone')} value={scenarios.bullish.entry} color="var(--gold)" />
-            <ScenarioRow label={t('scenarios.target1')} value={scenarios.bullish.target1} color="var(--green)" />
-            <ScenarioRow label={t('scenarios.target2')} value={scenarios.bullish.target2} color="var(--green)" />
-            <ScenarioRow label={t('scenarios.invalidation')} value={scenarios.bullish.invalidation} color="var(--red)" />
+            <ScenarioRow label={t('scenarios.entryZone')} value={bullEntry} color="var(--gold)" />
+            <ScenarioRow label={t('scenarios.target1')} value={bullT1} color="var(--green)" />
+            <ScenarioRow label={t('scenarios.target2')} value={bullT2} color="var(--green)" />
+            <ScenarioRow label={t('scenarios.invalidation')} value={bullInv} color="var(--red)" />
           </div>
 
           <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(0,0,0,0.2)', borderRadius: 10, border: '1px solid rgba(0,212,160,0.15)' }}>
@@ -125,7 +141,7 @@ export default function TradingScenarios() {
             <ScenarioProbabilityArc value={scenarios.bearish.probability} color="var(--red)" />
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--red)' }}>🔴 {t('scenarios.bearish')}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>Inactive • If $3,215 breaks</div>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>Inactive • If {bullInv} breaks</div>
             </div>
           </div>
 
@@ -134,10 +150,10 @@ export default function TradingScenarios() {
               <div style={{ fontSize: 9, color: 'var(--red)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{t('scenarios.condition')}</div>
               <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.5 }}>{scenarios.bearish.condition}</div>
             </div>
-            <ScenarioRow label={t('scenarios.entryZone')} value={scenarios.bearish.entry} color="var(--gold)" />
-            <ScenarioRow label={t('scenarios.target1')} value={scenarios.bearish.target1} color="var(--red)" />
-            <ScenarioRow label={t('scenarios.target2')} value={scenarios.bearish.target2} color="var(--red)" />
-            <ScenarioRow label={t('scenarios.invalidation')} value={scenarios.bearish.invalidation} color="var(--green)" />
+            <ScenarioRow label={t('scenarios.entryZone')} value={bearEntry} color="var(--gold)" />
+            <ScenarioRow label={t('scenarios.target1')} value={bearT1} color="var(--red)" />
+            <ScenarioRow label={t('scenarios.target2')} value={bearT2} color="var(--red)" />
+            <ScenarioRow label={t('scenarios.invalidation')} value={bearInv} color="var(--green)" />
           </div>
 
           <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(0,0,0,0.2)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.15)' }}>

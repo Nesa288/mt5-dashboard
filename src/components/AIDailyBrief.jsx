@@ -1,23 +1,51 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const BRIEF = {
-  bullets: [
-    { label: 'Gold', color: '#f59e0b', text: 'Remains bullish while above 3,378. Momentum building toward 3,395 liquidity zone.' },
-    { label: 'DXY', color: '#60a5fa', text: 'Weak — trading below 104.20 key support. Headwind for dollar, tailwind for metals.' },
-    { label: 'US10Y', color: '#34d399', text: 'Falling — yield at 4.21% and declining. Strengthens the Gold bull case.' },
-    { label: 'Liquidity', color: '#a78bfa', text: 'Pools sitting above 3,395 and below 3,358. Expect a stop hunt before the real move.' },
-  ],
-  risk: { event: 'CPI', time: '14:30 UTC', level: 'High', note: 'A hotter print could sharply reverse Gold. Cut size before the release.' },
-  sentiment: 81,
-}
+import { useLiveLevels } from '../hooks/useLiveLevels'
 
 export default function AIDailyBrief() {
   const [expanded, setExpanded] = useState(true)
   const navigate = useNavigate()
+  const lvls = useLiveLevels()
+
   const now = new Date()
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-  const genTime = '06:00 UTC'
+  const genTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' })
+
+  const dxyPrice = lvls.liveDXY?.price
+  const dxyPct   = lvls.liveDXY?.changePct
+
+  const bullets = [
+    {
+      label: 'Gold',
+      color: '#f59e0b',
+      text: lvls.bias === 'BULLISH'
+        ? `Bullish above $${lvls.support.toLocaleString()}. Momentum building toward $${lvls.liquidityZone.toLocaleString()} liquidity zone.`
+        : lvls.bias === 'BEARISH'
+        ? `Bearish below $${lvls.resistance.toLocaleString()}. Watching $${lvls.support.toLocaleString()} as key defence level.`
+        : `Neutral near $${Math.round(lvls.price).toLocaleString()}. Range $${lvls.support.toLocaleString()}–$${lvls.resistance.toLocaleString()}. Wait for breakout confirmation.`,
+    },
+    {
+      label: 'DXY',
+      color: '#60a5fa',
+      text: dxyPrice
+        ? `${lvls.dxyFalling ? 'Weak' : 'Firm'} — at ${dxyPrice.toFixed(3)} (${dxyPct >= 0 ? '+' : ''}${dxyPct?.toFixed(2)}%). ${lvls.dxyFalling ? 'Tailwind for metals.' : 'Headwind for metals — watch support.'}`
+        : 'DXY data loading. Dollar strength is the key headwind for Gold — monitor closely.',
+    },
+    {
+      label: 'US10Y',
+      color: '#34d399',
+      text: 'Treasury yields declining from recent highs. Lower yields reduce the opportunity cost of holding Gold — a mild tailwind for metals.',
+    },
+    {
+      label: 'Liquidity',
+      color: '#a78bfa',
+      text: `Pools sitting above $${lvls.resistance.toLocaleString()} and below $${lvls.support.toLocaleString()}. Expect a stop hunt before the directional move.`,
+    },
+  ]
+
+  const risk = { event: 'CPI', time: '14:30 UTC', level: 'High', note: 'A hotter print could sharply reverse Gold. Cut size before the release.' }
+
+  const sentiment = lvls.bias === 'BULLISH' ? 81 : lvls.bias === 'BEARISH' ? 34 : 54
 
   return (
     <div style={{
@@ -56,7 +84,7 @@ export default function AIDailyBrief() {
             }}>LIVE</span>
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>
-            {dateStr} · Generated {genTime}
+            {dateStr} · Updated {genTime}
           </div>
         </div>
 
@@ -64,11 +92,12 @@ export default function AIDailyBrief() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '5px 12px', borderRadius: 20,
-          background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)',
+          background: lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.08)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
+          border: `1px solid ${lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.2)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
         }}>
           <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>Sentiment</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#34d399', fontFamily: 'Orbitron, monospace' }}>{BRIEF.sentiment}%</span>
-          <span style={{ fontSize: 10, color: '#34d399' }}>Bullish</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: lvls.biasColor, fontFamily: 'Orbitron, monospace' }}>{sentiment}%</span>
+          <span style={{ fontSize: 10, color: lvls.biasColor }}>{lvls.trendStatus}</span>
         </div>
 
         <span style={{ fontSize: 14, color: 'var(--text-3)', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
@@ -79,7 +108,7 @@ export default function AIDailyBrief() {
         <div style={{ padding: '16px 20px', display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           {/* Market bullets */}
           <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {BRIEF.bullets.map(b => (
+            {bullets.map(b => (
               <div key={b.label} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <span style={{
                   fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
@@ -108,18 +137,18 @@ export default function AIDailyBrief() {
                 ⚡ Today's Biggest Risk
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-1)' }}>{BRIEF.risk.event}</span>
+                <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-1)' }}>{risk.event}</span>
                 <span style={{
                   fontSize: 11, fontWeight: 700, fontFamily: 'Orbitron, monospace',
                   color: 'var(--red)', background: 'rgba(239,68,68,0.1)',
                   border: '1px solid rgba(239,68,68,0.2)', borderRadius: 5, padding: '1px 7px',
-                }}>{BRIEF.risk.time}</span>
+                }}>{risk.time}</span>
                 <span style={{
                   fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
                   color: '#fff', background: 'var(--red)', borderRadius: 4, padding: '2px 6px',
-                }}>{BRIEF.risk.level}</span>
+                }}>{risk.level}</span>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.55 }}>{BRIEF.risk.note}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.55 }}>{risk.note}</p>
             </div>
 
             {/* CTA */}

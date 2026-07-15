@@ -6,6 +6,7 @@ import {
 } from '../data/mockData'
 import { GoldChart } from '../components/TradingViewWidget'
 import { useLiveMarket } from '../context/LiveMarketContext'
+import { useLiveLevels } from '../hooks/useLiveLevels'
 
 const TABS = [
   { id: 'trend',       icon: '📈', label: 'Trend' },
@@ -213,57 +214,6 @@ function TrendPanel() {
 }
 
 // ─── LIVE LEVELS — all key price levels computed from live market data ─────────
-function useLiveLevels() {
-  const { market, status } = useLiveMarket()
-  const liveG   = market?.gold
-  const liveDXY = market?.dxy
-
-  const price     = liveG?.price     ?? goldData.price
-  const high      = liveG?.high      ?? goldData.high
-  const low       = liveG?.low       ?? goldData.low
-  const change    = liveG?.change    ?? goldData.change
-  const changePct = liveG?.changePct ?? goldData.changePercent
-
-  const dayRange = Math.max(high - low, 20)
-
-  // Round to nearest $25 for clean institutional levels
-  const resistance    = Math.ceil((Math.max(high, price) + 3) / 25) * 25
-  const support       = Math.floor((Math.min(low, price) - 3) / 25) * 25
-  const target        = Math.round((resistance + dayRange * 0.5) / 5) * 5
-  const invalidation  = Math.round((support - dayRange * 0.25) / 5) * 5
-  const liquidityZone = Math.round((price + resistance) / 2 / 5) * 5
-  const manipHigh     = Math.round((support + (resistance - support) * 0.72) / 5) * 5
-  const manipLow      = Math.round((support + (resistance - support) * 0.28) / 5) * 5
-
-  const dxyFalling  = (liveDXY?.changePct ?? -0.1) < 0
-  const bias        = changePct > 0.15 ? 'BULLISH' : changePct < -0.15 ? 'BEARISH' : 'NEUTRAL'
-  const biasColor   = bias === 'BULLISH' ? '#34d399' : bias === 'BEARISH' ? '#ef4444' : '#f59e0b'
-  const trendStatus = bias === 'BULLISH' ? 'Bullish' : bias === 'BEARISH' ? 'Bearish' : 'Neutral'
-
-  let conf = 62
-  if (price > (support + resistance) / 2) conf += 8
-  if (dxyFalling)                         conf += 7
-  if (changePct > 0.3)                    conf += 5
-  if (changePct < -0.3)                   conf -= 10
-  if (price >= resistance - dayRange * 0.12) conf += 5
-  const confidence = Math.max(25, Math.min(92, Math.round(conf)))
-
-  const e1 = Math.round((support + dayRange * 0.2) / 5) * 5
-  const aiDailyPlan = bias === 'BULLISH'
-    ? `Look for longs on pullbacks to $${e1}–$${support.toFixed(0)}. First target: $${resistance.toFixed(0)}. Extended: $${target.toFixed(0)}. Stop below $${invalidation.toFixed(0)}. Avoid 30 min before major news. Keep risk at 1%.`
-    : bias === 'BEARISH'
-    ? `Watch for rejections near $${resistance.toFixed(0)}. Short entries targeting $${support.toFixed(0)}. Stop above $${Math.round((resistance + dayRange * 0.2) / 5) * 5}. Reduce size ahead of data releases. Keep risk at 1%.`
-    : `Range-bound near $${Math.round(price)}. Wait for a clear break of $${support.toFixed(0)} or $${resistance.toFixed(0)} before committing. Avoid trading the middle of the range. Keep risk below 0.5%.`
-
-  return {
-    price, high, low, change, changePct, dayRange, status,
-    resistance, support, target, invalidation, liquidityZone,
-    asianHigh: high, asianLow: low,
-    manipHigh, manipLow,
-    bias, biasColor, confidence, trendStatus, dxyFalling,
-    aiDailyPlan, liveDXY,
-  }
-}
 
 // ─── BIAS ─────────────────────────────────────────────────────────────────────
 function BiasPanel() {
@@ -1513,8 +1463,8 @@ export default function Gold() {
             { label: 'ASK',  value: ask.toFixed(2),         color: 'var(--text-2)' },
             { label: 'HIGH', value: sessionHigh.toFixed(2), color: '#34d399' },
             { label: 'LOW',  value: sessionLow.toFixed(2),  color: '#ef4444' },
-            { label: 'OPEN', value: goldData.open.toFixed(2), color: 'var(--text-2)' },
-            { label: 'VOL',  value: goldData.volume,          color: 'var(--text-2)' },
+            { label: 'OPEN', value: (liveG?.open ?? goldData.open).toFixed(2), color: 'var(--text-2)' },
+            { label: 'VOL',  value: goldData.volume,                           color: 'var(--text-2)' },
             { label: 'RNG',  value: `${(sessionHigh - sessionLow).toFixed(1)} pts`, color: 'var(--amber)' },
             { label: 'VOLA', value: sessionHigh > sessionLow && price > 0 ? (((sessionHigh - sessionLow) / price) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
             // Live correlated instruments
@@ -1553,7 +1503,7 @@ export default function Gold() {
 
         {/* Data source note */}
         <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>Live price: Bybit · TradingView · OKX · goldprice.org · Yahoo Finance · BTC: CoinCap · DXY: Frankfurter (ECB) · Refreshes every 5s</span>
+          <span>Live price: TradingView (single source) · BTC: Binance WebSocket · News: Yahoo Finance · Refreshes every 5s</span>
         </div>
       </div>
 

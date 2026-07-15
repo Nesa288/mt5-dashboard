@@ -50,6 +50,7 @@
 
   --sidebar-w: 218px;
   --topbar-h: 58px;
+  --ticker-h: 42px;
   --radius: 14px;
   --radius-sm: 9px;
   --radius-xs: 6px;
@@ -89,7 +90,7 @@ h1, h2, h3 {
 .app-shell {
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr;
-  grid-template-rows: var(--topbar-h) 1fr;
+  grid-template-rows: var(--topbar-h) var(--ticker-h) 1fr;
   height: 100vh;
   width: 100%;
   overflow: hidden;
@@ -97,7 +98,7 @@ h1, h2, h3 {
 
 .sidebar {
   grid-column: 1;
-  grid-row: 1 / 3;
+  grid-row: 1 / 4;
   height: 100vh;
   background: linear-gradient(180deg, rgba(8,8,16,0.99) 0%, rgba(6,6,12,0.99) 100%);
   border-right: 1px solid var(--border);
@@ -126,16 +127,24 @@ h1, h2, h3 {
 
 .page-area {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 3;
   overflow-y: auto;
   overflow-x: hidden;
-  background: linear-gradient(135deg, var(--bg-0) 0%, var(--bg-1) 100%);
+  background: transparent;
   position: relative;
 }
 
 .page-inner {
   padding: 24px;
   min-height: 100%;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-transition {
+  animation: pageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ─── GLASS CARDS ───────────────────────────── */
@@ -712,14 +721,136 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   50% { box-shadow: 0 0 20px rgba(0,212,160,0.6); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); opacity: 0.5; }
-  50% { transform: translateY(-18px); opacity: 0.9; }
+@keyframes floatA {
+  0%         { transform: translate(0px, 0px);    opacity: 0.2; }
+  25%        { transform: translate(32px, -44px); opacity: 0.85; }
+  50%        { transform: translate(60px, -18px); opacity: 0.45; }
+  75%        { transform: translate(18px, -58px); opacity: 0.9; }
+  100%       { transform: translate(0px, 0px);    opacity: 0.2; }
+}
+@keyframes floatB {
+  0%         { transform: translate(0px, 0px);      opacity: 0.25; }
+  30%        { transform: translate(-40px, -30px);  opacity: 0.8; }
+  65%        { transform: translate(24px, -54px);   opacity: 0.5; }
+  100%       { transform: translate(0px, 0px);      opacity: 0.25; }
+}
+@keyframes floatC {
+  0%         { transform: translate(0px, 0px);      opacity: 0.1; }
+  35%        { transform: translate(-26px, -46px);  opacity: 0.65; }
+  70%        { transform: translate(16px, -70px);   opacity: 0.35; }
+  100%       { transform: translate(0px, 0px);      opacity: 0.1; }
+}
+@keyframes twinkle {
+  0%, 100%   { opacity: 0.04; transform: scale(0.5); }
+  50%        { opacity: 1;    transform: scale(1.4); }
 }
 
 @keyframes dotPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
+}
+
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes gridScroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 64px 64px; }
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─── PRICE TICKER ───────────────────────── */
+.ticker-wrap {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  overflow: hidden;
+  height: var(--ticker-h);
+  background: rgba(255,255,255,0.03);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+}
+.ticker-track {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: tickerScroll 38s linear infinite;
+  will-change: transform;
+}
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+}
+.ticker-sym  { font-size: 11px; font-weight: 700; color: var(--text-1); letter-spacing: 0.06em; }
+.ticker-label { font-size: 10px; color: var(--text-3); }
+.ticker-price  { font-size: 12px; font-weight: 600; color: var(--text-1); font-family: 'Space Grotesk', monospace; min-width: 72px; display: inline-block; text-align: right; }
+.ticker-change { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; min-width: 62px; display: inline-block; text-align: right; }
+.ticker-sep { color: rgba(255,255,255,0.12); font-size: 16px; margin-left: 4px; }
+.ticker-fade-l,
+.ticker-fade-r {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 80px;
+  pointer-events: none;
+  z-index: 1;
+}
+.ticker-fade-l { left: 0;  background: linear-gradient(to right, var(--bg-0), transparent); }
+.ticker-fade-r { right: 0; background: linear-gradient(to left,  var(--bg-0), transparent); }
+
+/* ─── FEATURES SHOWCASE ──────────────────── */
+.features-showcase {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 32px;
+  align-items: start;
+}
+.features-tabs { display: flex; flex-direction: column; gap: 8px; }
+.features-tab {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 18px; border-radius: 14px;
+  cursor: pointer; border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+  background: transparent;
+}
+.features-tab:hover  { background: rgba(255,255,255,0.04); }
+.features-tab.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.features-tab-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.features-tab-body h3 { font-size: 15px; font-weight: 700; color: var(--text-1); margin-bottom: 5px; }
+.features-tab-body p  { font-size: 12.5px; color: var(--text-3); line-height: 1.6; margin: 0; }
+.features-preview-wrap {
+  position: sticky; top: 24px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  padding: 24px;
+  min-height: 320px;
+}
+
+/* ─── TESTIMONIALS ───────────────────────── */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.testimonial-card {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Tab content fade-slide in */
@@ -1044,12 +1175,25 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .home-hero {
   position: relative;
   z-index: 1;
-  background: var(--bg-2);
+  background: transparent;
   padding: 28px 40px 20px;
   display: flex;
   align-items: center;
   gap: 40px;
   overflow: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(139,92,246,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.10) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: gridScroll 22s linear infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .home-hero-left {
@@ -1099,6 +1243,15 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
   .home-hero { padding: 32px 20px 28px; gap: 20px; }
   .home-hero-right { display: none; }
 
+  .hiw-steps { flex-direction: column !important; }
+  .hiw-steps > * { flex: none !important; width: 100% !important; flex-direction: row !important; text-align: left !important; align-items: center !important; gap: 16px !important; padding: 20px !important; }
+  .hiw-steps > * > span { display: none !important; }
+  .hiw-text { flex: 1; min-width: 0; }
+  .testimonials-grid { grid-template-columns: 1fr !important; }
+  .testimonial-card { padding: 24px !important; }
+  .hiw-connector { display: none !important; }
+  .features-showcase { grid-template-columns: 1fr !important; }
+  .features-preview-wrap { position: static !important; }
   .mindset-banner { flex-direction: column !important; padding: 16px 20px 0 !important; gap: 0 !important; }
   .mindset-text { flex: 1 1 100% !important; padding-top: 16px !important; padding-bottom: 0 !important; }
   .mindset-img { flex: 0 0 auto !important; width: calc(100% + 40px) !important; margin: 8px -20px 0 !important; padding-top: 0 !important; }
@@ -1131,7 +1284,9 @@ button { font-family: inherit; cursor: pointer; border: none; outline: none; }
 .particle {
   position: absolute;
   border-radius: 50%;
-  animation: float linear infinite;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
 }
 
 /* ─── TRADINGVIEW CONTAINER ──────────────────── */

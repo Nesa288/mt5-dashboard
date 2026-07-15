@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { goldData, instruments, news, calendarEvents, sentiment, journalStats, journalTrades, botGroups } from '../data/mockData'
+import { useLiveLevels } from '../hooks/useLiveLevels'
 
 const QUICK = [
   { icon: '📈', text: "Today's trend?" },
@@ -11,7 +12,7 @@ const QUICK = [
 const RISK_COLORS = { High: '#ef4444', Medium: '#f59e0b', Low: '#34d399' }
 
 // ─── Data aggregator (mirrors AIMentor) ──────────────────────────────────────
-function buildContext() {
+function buildContext(liveLevels) {
   const utcHour = new Date().getUTCHours()
   let activeSession = 'Off-hours'
   if (utcHour >= 23 || utcHour < 8) activeSession = 'Asian'
@@ -33,12 +34,13 @@ function buildContext() {
     const v = parseFloat(b.pnl.replace(/[+$]/g, ''))
     return sum + (isNaN(v) ? 0 : v)
   }, 0)
-  const tfList = [goldData.dailyTrend, goldData.h4Trend, goldData.h1Trend, goldData.m15Trend]
+  const liveTrend = liveLevels?.trendStatus ?? (goldData.aiOutlook === 'BULLISH' ? 'Bullish' : goldData.aiOutlook === 'BEARISH' ? 'Bearish' : 'Neutral')
+  const tfList = [liveTrend, liveTrend, liveTrend, goldData.m15Trend]
   const bullishTF = tfList.filter(t => t === 'Bullish').length
   const bearishTF = tfList.filter(t => t === 'Bearish').length
 
   let confidence = 52
-  if (goldData.aiOutlook === 'BULLISH') confidence += 18
+  if ((liveLevels?.bias ?? goldData.aiOutlook) === 'BULLISH') confidence += 18
   if (dxy?.trend === 'Bearish') confidence += 10
   if (bullishTF >= 3) confidence += 10
   if (bullishTF === 4) confidence += 7
@@ -46,11 +48,32 @@ function buildContext() {
   if (highImpactToday.length > 0) confidence -= 10
   if (avoidEvents.length > 0) confidence -= 8
   if (goldData.volatility === 'High') confidence -= 5
+  if (liveLevels?.confidence) confidence = Math.round((confidence + liveLevels.confidence) / 2)
   if (sentiment.smartMoney.long > 65) confidence += 7
   confidence = Math.min(Math.max(Math.round(confidence), 38), 95)
 
+  const gold = liveLevels ? {
+    ...goldData,
+    price:            liveLevels.price,
+    change:           liveLevels.change,
+    resistance:       liveLevels.resistance,
+    support:          liveLevels.support,
+    liquidityZone:    liveLevels.liquidityZone,
+    targetZone:       liveLevels.target,
+    invalidation:     liveLevels.invalidation,
+    asianHigh:        liveLevels.asianHigh,
+    asianLow:         liveLevels.asianLow,
+    aiOutlook:        liveLevels.bias,
+    dailyTrend:       liveLevels.trendStatus,
+    h4Trend:          liveLevels.trendStatus,
+    h1Trend:          liveLevels.changePct > 0 ? 'Bullish' : liveLevels.changePct < 0 ? 'Bearish' : 'Neutral',
+    manipulationZone: { high: liveLevels.manipHigh, low: liveLevels.manipLow },
+    aiDailyPlan:      liveLevels.aiDailyPlan,
+    aiSummaryText:    liveLevels.aiDailyPlan,
+  } : goldData
+
   return {
-    utcHour, activeSession, dxy, gold: goldData,
+    utcHour, activeSession, dxy, gold,
     todayEvents, highImpactToday, avoidEvents,
     bullishNews, highImpactNews,
     journal: { stats: journalStats, trades: journalTrades, recentLosses, recentWins, mistakes },
@@ -186,14 +209,6 @@ function generateResponse(question, ctx) {
   }
 }
 
-const _ctx0 = buildContext()
-const INITIAL_DATA = {
-  trend: _ctx0.gold.dailyTrend,
-  confidence: _ctx0.confidence,
-  keyLevels: [_ctx0.gold.resistance, _ctx0.gold.liquidityZone, _ctx0.gold.support],
-  news: toNewsItems(_ctx0, 2),
-  conclusion: _ctx0.gold.aiSummaryText + ' Ask me anything about markets, levels, or your journal.',
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function CopilotCard({ data }) {
@@ -296,9 +311,19 @@ function TypingIndicator() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function FloatingCopilot() {
+  const lvls = useLiveLevels()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState([{ id: 1, type: 'bot', data: INITIAL_DATA }])
+  const [messages, setMessages] = useState(() => {
+    const ctx0 = buildContext(null)
+    return [{ id: 1, type: 'bot', data: {
+      trend: ctx0.gold.dailyTrend,
+      confidence: ctx0.confidence,
+      keyLevels: [ctx0.gold.resistance, ctx0.gold.liquidityZone, ctx0.gold.support],
+      news: toNewsItems(ctx0, 2),
+      conclusion: ctx0.gold.aiSummaryText + ' Ask me anything about markets, levels, or your journal.',
+    }}]
+  })
   const [isTyping, setIsTyping] = useState(false)
   const navigate = useNavigate()
   const bottomRef = useRef(null)
@@ -327,7 +352,7 @@ export default function FloatingCopilot() {
     setInput('')
     setIsTyping(true)
     await new Promise(r => setTimeout(r, 1100 + Math.random() * 600))
-    const ctx = buildContext()
+    const ctx = buildContext(lvls)
     const data = generateResponse(text, ctx)
     setIsTyping(false)
     setMessages(p => [...p, { id: Date.now() + 1, type: 'bot', data }])

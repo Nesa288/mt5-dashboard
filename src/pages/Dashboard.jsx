@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useLiveMarket } from '../context/LiveMarketContext'
+import { useLiveLevels } from '../hooks/useLiveLevels'
 import { goldData, news, calendarEvents, scenarios, sentiment, instruments } from '../data/mockData'
 import { GoldMiniChart } from '../components/TradingViewWidget'
 import { IcoArrowUp, IcoArrowDown, IcoAlert, IcoInfo, IcoChevronRight, IcoTarget, IcoShield } from '../components/Icons'
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const { market, status: liveStatus } = useLiveMarket()
+  const lvls = useLiveLevels()
   const liveG = market?.gold
   const goldPrice      = liveG?.price     ?? goldData.price
   const goldChange     = liveG?.change    ?? goldData.change
@@ -141,10 +143,10 @@ export default function Dashboard() {
           {/* AI Stats Row */}
           <div className="g-4" style={{ gap: 10 }}>
             {[
-              { label: t('dashboard.hero.aiOutlook'), value: goldData.aiOutlook, color: 'var(--gold)' },
-              { label: t('dashboard.hero.trend'), value: goldData.trendStatus, color: 'var(--green)' },
-              { label: t('dashboard.hero.targetZone'), value: `$${goldData.targetZone}`, color: 'var(--green)' },
-              { label: t('dashboard.hero.invalidation'), value: `$${goldData.invalidation}`, color: 'var(--red)' },
+              { label: t('dashboard.hero.aiOutlook'), value: lvls.bias, color: 'var(--gold)' },
+              { label: t('dashboard.hero.trend'), value: lvls.trendStatus, color: lvls.biasColor },
+              { label: t('dashboard.hero.targetZone'), value: `$${lvls.target.toLocaleString()}`, color: 'var(--green)' },
+              { label: t('dashboard.hero.invalidation'), value: `$${lvls.invalidation.toLocaleString()}`, color: 'var(--red)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>{label}</div>
@@ -214,9 +216,9 @@ export default function Dashboard() {
           <div className="section-label">{t('dashboard.trend.title')}</div>
           <div className="g-3" style={{ gap: 10 }}>
             {[
-              { tf: t('dashboard.trend.daily'), trend: goldData.dailyTrend, sub: 'Price above all MAs' },
-              { tf: t('dashboard.trend.h4'), trend: goldData.h4Trend, sub: 'Strong bullish momentum' },
-              { tf: t('dashboard.trend.h1'), trend: goldData.h1Trend, sub: 'Consolidating at $3,248' },
+              { tf: t('dashboard.trend.daily'), trend: lvls.trendStatus, sub: 'Price above key support' },
+              { tf: t('dashboard.trend.h4'), trend: lvls.trendStatus, sub: `Bias: ${lvls.trendStatus}` },
+              { tf: t('dashboard.trend.h1'), trend: lvls.trendStatus, sub: `Near $${Math.round(goldPrice).toLocaleString()}` },
             ].map(({ tf, trend, sub }) => (
               <div key={tf} style={{
                 padding: '14px 12px',
@@ -241,11 +243,11 @@ export default function Dashboard() {
           </div>
           <div className="g-2" style={{ gap: 10 }}>
             {[
-              { label: t('dashboard.keyLevels.support'), value: `$${goldData.support.toLocaleString()}`, color: 'var(--green)', Icon: IcoShield },
-              { label: t('dashboard.keyLevels.resistance'), value: `$${goldData.resistance.toLocaleString()}`, color: 'var(--red)', Icon: IcoTarget },
-              { label: t('dashboard.keyLevels.liquidity'), value: `$${goldData.liquidityZone.toLocaleString()}`, color: 'var(--amber)', Icon: IcoInfo },
-              { label: t('dashboard.keyLevels.asianHigh'), value: `$${goldData.asianHigh.toLocaleString()}`, color: 'var(--blue)', Icon: IcoArrowUp },
-              { label: t('dashboard.keyLevels.asianLow'), value: `$${goldData.asianLow.toLocaleString()}`, color: 'var(--purple)', Icon: IcoArrowDown },
+              { label: t('dashboard.keyLevels.support'), value: `$${lvls.support.toLocaleString()}`, color: 'var(--green)', Icon: IcoShield },
+              { label: t('dashboard.keyLevels.resistance'), value: `$${lvls.resistance.toLocaleString()}`, color: 'var(--red)', Icon: IcoTarget },
+              { label: t('dashboard.keyLevels.liquidity'), value: `$${lvls.liquidityZone.toLocaleString()}`, color: 'var(--amber)', Icon: IcoInfo },
+              { label: t('dashboard.keyLevels.asianHigh'), value: `$${lvls.asianHigh.toLocaleString()}`, color: 'var(--blue)', Icon: IcoArrowUp },
+              { label: t('dashboard.keyLevels.asianLow'), value: `$${lvls.asianLow.toLocaleString()}`, color: 'var(--purple)', Icon: IcoArrowDown },
             ].map(({ label, value, color, Icon }) => (
               <div key={label} style={{
                 display: 'flex', alignItems: 'center', gap: 10,

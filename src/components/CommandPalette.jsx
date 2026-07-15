@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  instruments, news as SITE_NEWS, calendarEvents,
+  instruments as mockInstruments, news as SITE_NEWS, calendarEvents,
   academyCourses, journalTrades,
 } from '../data/mockData'
+import { useLiveMarket } from '../context/LiveMarketContext'
 
 // ── Pages ─────────────────────────────────────────────────────────────────────
 const PAGES = [
@@ -51,7 +52,7 @@ function textMatch(text, s) {
   return words.some(w => t.includes(w))
 }
 
-function buildGroups(q) {
+function buildGroups(q, instruments) {
   if (!q.trim()) return null
   const s = q.toLowerCase().trim()
 
@@ -242,8 +243,18 @@ export default function CommandPalette() {
   const inputRef = useRef(null)
   const listRef  = useRef(null)
   const navigate = useNavigate()
+  const { instruments: liveInstr } = useLiveMarket()
 
-  const groups    = query.trim() ? (buildGroups(query) || []) : null
+  // Patch mock instruments with live prices from TradingView context
+  const SYM_MAP = { XAGUSD: 'SILVER', SPX500: 'SP500' }
+  const instruments = useMemo(() => mockInstruments.map(inst => {
+    const ctxSym = SYM_MAP[inst.symbol] ?? inst.symbol
+    const live = liveInstr?.[ctxSym]
+    if (!live) return inst
+    return { ...inst, price: live.price, changePct: parseFloat(live.changePct.toFixed(2)) }
+  }), [liveInstr])
+
+  const groups    = query.trim() ? (buildGroups(query, instruments) || []) : null
   const showPages = !query.trim()
   const displayGroups = showPages
     ? [{ type: 'pages', label: 'Quick Access', items: PAGES }]

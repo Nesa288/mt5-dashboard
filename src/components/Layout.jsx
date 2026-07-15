@@ -5,12 +5,12 @@ import Topbar from './Topbar'
 import ParticleBackground from './ParticleBackground'
 import CommandPalette from './CommandPalette'
 import FloatingCopilot from './FloatingCopilot'
+import PriceTicker from './PriceTicker'
 
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const location = useLocation()
-
-  // Auto-hide topbar on scroll down, reveal on scroll up
+// Auto-hide topbar on scroll down, reveal on scroll up
   useEffect(() => {
     const pageArea = document.querySelector('.page-area')
     if (!pageArea) return
@@ -118,7 +118,7 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
-      <CommandPalette />
+<CommandPalette />
       <FloatingCopilot />
       <ParticleBackground />
       <div
@@ -128,8 +128,9 @@ export default function Layout() {
       <Sidebar />
       <Sidebar mobile drawerOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <Topbar onMenuOpen={() => setDrawerOpen(true)} />
+      <PriceTicker />
       <main className="page-area">
-        <div className="page-inner">
+        <div key={location.key} className="page-inner page-transition">
           <Outlet />
         </div>
       </main>

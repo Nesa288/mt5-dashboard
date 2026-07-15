@@ -30,18 +30,16 @@ export default function Markets() {
   const { t } = useLanguage()
   const [filter, setFilter] = useState('all')
   const [favs, setFavs] = useState(() => new Set(instruments.filter(i => i.isFav).map(i => i.symbol)))
-  const { market } = useLiveMarket()
+  const { instruments: liveInstr } = useLiveMarket()
 
-  // Patch live prices into the instruments list for the 4 instruments we have live data for
-  const livePatches = {}
-  if (market?.gold)   livePatches['XAUUSD'] = { price: market.gold.price,   changePct: market.gold.changePct }
-  if (market?.silver) livePatches['XAGUSD'] = { price: market.silver.price, changePct: market.silver.changePct }
-  if (market?.btc)    livePatches['BTCUSD'] = { price: market.btc.price,    changePct: market.btc.changePct }
-  if (market?.dxy)    livePatches['DXY']    = { price: market.dxy.price,    changePct: market.dxy.changePct }
-
-  const patchedInstruments = instruments.map(i =>
-    livePatches[i.symbol] ? { ...i, ...livePatches[i.symbol] } : i
-  )
+  // mockData uses XAGUSD + SPX500; context uses SILVER + SP500
+  const SYM_MAP = { XAGUSD: 'SILVER', SPX500: 'SP500' }
+  const patchedInstruments = instruments.map(inst => {
+    const ctxSym = SYM_MAP[inst.symbol] ?? inst.symbol
+    const live = liveInstr?.[ctxSym]
+    if (!live) return inst
+    return { ...inst, price: live.price, changePct: live.changePct }
+  })
 
   const toggleFav = (symbol, e) => {
     e.stopPropagation()

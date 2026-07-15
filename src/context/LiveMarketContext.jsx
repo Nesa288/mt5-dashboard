@@ -6,117 +6,56 @@ function sig() {
   try { return { signal: AbortSignal.timeout(5000) } } catch (_) { return {} }
 }
 
-// ─── GOLD SOURCES — raced in parallel, first valid price wins ─────────────────
+// Single source of truth — TradingView scanner for every instrument
+const TV_MAP = [
+  { sym: 'XAUUSD', tv: 'TVC:GOLD',       decimals: 2 },
+  { sym: 'SILVER', tv: 'TVC:SILVER',      decimals: 3 },
+  { sym: 'DXY',    tv: 'TVC:DXY',         decimals: 3 },
+  { sym: 'EURUSD', tv: 'FX_IDC:EURUSD',   decimals: 4 },
+  { sym: 'GBPUSD', tv: 'FX_IDC:GBPUSD',   decimals: 4 },
+  { sym: 'USDJPY', tv: 'FX_IDC:USDJPY',   decimals: 2 },
+  { sym: 'USDCAD', tv: 'FX_IDC:USDCAD',   decimals: 4 },
+  { sym: 'AUDUSD', tv: 'FX_IDC:AUDUSD',   decimals: 4 },
+  { sym: 'BTCUSD', tv: 'COINBASE:BTCUSD', decimals: 1 },
+  { sym: 'ETHUSD', tv: 'COINBASE:ETHUSD', decimals: 2 },
+  { sym: 'NAS100', tv: 'NASDAQ:NDX',      decimals: 1 },
+  { sym: 'SP500',  tv: 'SP:SPX',          decimals: 2 },
+  { sym: 'USOIL',  tv: 'NYMEX:CL1!',       decimals: 2 },
+]
 
-// 1. Bybit XAUUSDT perpetual — crypto exchange, always CORS-enabled, most reliable
-async function src_bybit() {
-  const r = await fetch('https://api.bybit.com/v5/market/tickers?category=linear&symbol=XAUUSDT', sig())
-  const d = await r.json()
-  if (d.retCode !== 0) throw new Error('bybit')
-  const item = d.result?.list?.[0]
-  const price = parseFloat(item?.lastPrice)
-  if (!(price > 100)) throw new Error('bybit-range')
-  return { gold: price, silver: null, high: parseFloat(item.highPrice24h) || price, low: parseFloat(item.lowPrice24h) || price }
-}
+const TV_COLS   = ['close', 'change', 'change_abs', 'high', 'low', 'open']
+const POLL_MS   = 8_000
+const NEWS_MS   = 600_000
+const HIST_MAX  = 40
 
-// 2. TradingView scanner — same data source the TV chart uses
-async function src_tradingview() {
-  const r = await fetch(
-    'https://scanner.tradingview.com/symbol?symbol=TVC%3AGOLD&fields=close%2Cchange%2Cchange_abs%2Chigh%2Clow&no_404=1',
-    sig()
-  )
-  const d = await r.json()
-  const price = parseFloat(d.close)
-  if (!(price > 100)) throw new Error('tv-range')
-  return { gold: price, silver: null, high: parseFloat(d.high) || price, low: parseFloat(d.low) || price }
-}
-
-// 3. OKX XAU-USDT swap — second crypto exchange fallback, CORS-enabled
-async function src_okx() {
-  const r = await fetch('https://www.okx.com/api/v5/market/ticker?instId=XAU-USDT-SWAP', sig())
-  const d = await r.json()
-  const item = d.data?.[0]
-  const price = parseFloat(item?.last)
-  if (!(price > 100)) throw new Error('okx-range')
-  return { gold: price, silver: null, high: parseFloat(item.high24h) || price, low: parseFloat(item.low24h) || price }
-}
-
-// 4. goldprice.org widget API — CORS-enabled (powers their embeddable widgets)
-async function src_goldpriceorg() {
-  const r = await fetch('https://data-asg.goldprice.org/dbXRates/USD', sig())
-  const d = await r.json()
-  const item = d.items?.[0]
-  if (!(item?.xauPrice > 100)) throw new Error('gpo-range')
-  return { gold: item.xauPrice, silver: item.xagPrice || null }
-}
-
-// 5 & 6. Yahoo Finance SPOT gold (XAUUSD=X, not futures GC=F) via two proxies
-async function src_yahoo_ao() {
-  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/XAUUSD%3DX?interval=1m&range=1d&includePrePost=false'
-  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, sig())
-  const d = await r.json()
-  const meta = d.chart?.result?.[0]?.meta
-  const price = parseFloat(meta?.regularMarketPrice)
-  if (!(price > 100)) throw new Error('yf-ao-range')
-  return { gold: price, silver: null, high: parseFloat(meta.regularMarketDayHigh) || price, low: parseFloat(meta.regularMarketDayLow) || price }
-}
-
-async function src_yahoo_cp() {
-  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/XAUUSD%3DX?interval=1m&range=1d&includePrePost=false'
-  const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, sig())
-  const d = await r.json()
-  const meta = d.chart?.result?.[0]?.meta
-  const price = parseFloat(meta?.regularMarketPrice)
-  if (!(price > 100)) throw new Error('yf-cp-range')
-  return { gold: price, silver: null, high: parseFloat(meta.regularMarketDayHigh) || price, low: parseFloat(meta.regularMarketDayLow) || price }
-}
-
-async function fetchMetals() {
-  // Race all 6 — whichever responds first with a valid price wins
-  return await Promise.any([
-    src_bybit(),
-    src_tradingview(),
-    src_okx(),
-    src_goldpriceorg(),
-    src_yahoo_ao(),
-    src_yahoo_cp(),
-  ])
-}
-
-// ─── BTC ─────────────────────────────────────────────────────────────────────
-
-async function fetchBTC() {
-  try {
-    const r = await fetch('https://api.coincap.io/v2/assets/bitcoin', sig())
-    if (r.ok) {
-      const { data } = await r.json()
-      return { price: parseFloat(data.priceUsd), changePct: parseFloat(data.changePercent24Hr) }
+// One batch POST → all 13 instruments in a single request (13× fewer API calls)
+async function fetchAllTV() {
+  const r = await fetch('https://scanner.tradingview.com/global/scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbols: { tickers: TV_MAP.map(s => s.tv) }, columns: TV_COLS }),
+    ...sig(),
+  })
+  if (!r.ok) throw new Error(`scan:${r.status}`)
+  const { data = [] } = await r.json()
+  const fresh = {}
+  data.forEach(({ s, d }) => {
+    const entry = TV_MAP.find(m => m.tv === s)
+    if (!entry || !d) return
+    const [close, change, changeAbs, high, low, open] = d
+    const price = parseFloat(close)
+    if (!(price > 0)) return
+    fresh[entry.sym] = {
+      price,
+      change:    parseFloat(changeAbs ?? 0),
+      changePct: parseFloat(change    ?? 0),
+      high:      parseFloat(high  ?? close),
+      low:       parseFloat(low   ?? close),
+      open:      parseFloat(open  ?? close),
     }
-  } catch (_) {}
-  const r = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', sig())
-  const { data } = await r.json()
-  return { price: parseFloat(data.amount), changePct: 0 }
+  })
+  return fresh
 }
-
-// ─── DXY via ECB FX rates ─────────────────────────────────────────────────────
-
-async function fetchDXY() {
-  const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,JPY,GBP,CAD,SEK,CHF', sig())
-  if (!r.ok) throw new Error('fx')
-  const { rates } = await r.json()
-  const { EUR, JPY, GBP, CAD, SEK, CHF } = rates
-  const dxy =
-    50.14348112 *
-    Math.pow(1 / EUR, -0.576) *
-    Math.pow(JPY,      0.136) *
-    Math.pow(1 / GBP, -0.119) *
-    Math.pow(CAD,      0.091) *
-    Math.pow(SEK,      0.042) *
-    Math.pow(CHF,      0.036)
-  return { dxy, eur: 1 / EUR, gbp: 1 / GBP, jpy: JPY, cad: CAD }
-}
-
-// ─── Gold news ────────────────────────────────────────────────────────────────
 
 async function fetchGoldNews() {
   const rss = 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F'
@@ -138,8 +77,6 @@ async function fetchGoldNews() {
   }))
 }
 
-// ─── Sessions ─────────────────────────────────────────────────────────────────
-
 function computeSessions() {
   const now = new Date()
   const h = now.getUTCHours()
@@ -158,74 +95,40 @@ function computeSessions() {
   }
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
-const POLL_MS = 5_000     // 5-second price refresh
-const NEWS_MS = 600_000
-const HIST_MAX = 40
-
 export function LiveMarketProvider({ children }) {
-  const [market, setMarket]         = useState(null)
-  const [status, setStatus]         = useState('loading')
-  const [lastUpdate, setLastUpdate] = useState(null)
-  const [news, setNews]             = useState([])
-  const [sessions, setSessions]     = useState(computeSessions)
+  const [instruments, setInstruments] = useState({})
+  const [status, setStatus]           = useState('loading')
+  const [lastUpdate, setLastUpdate]   = useState(null)
+  const [news, setNews]               = useState([])
+  const [sessions, setSessions]       = useState(computeSessions)
 
-  const openRef    = useRef({})
-  const hiloRef    = useRef({})
-  const historyRef = useRef([])
+  // WS real-time overrides — written without triggering re-renders
+  const wsRef   = useRef({})
+  const histRef = useRef([])
 
   const poll = useCallback(async () => {
-    const [metals, btc, dxyRes] = await Promise.allSettled([
-      fetchMetals(), fetchBTC(), fetchDXY(),
-    ])
-
-    const out = {}
-
-    if (metals.status === 'fulfilled' && metals.value?.gold > 100) {
-      const p   = metals.value.gold
-      const ext = metals.value
-      if (!openRef.current.gold) openRef.current.gold = p
-      const exH = ext.high && ext.high > p ? ext.high : p
-      const exL = ext.low  && ext.low  < p ? ext.low  : p
-      hiloRef.current.goldH = Math.max(hiloRef.current.goldH ?? exH, exH)
-      hiloRef.current.goldL = Math.min(hiloRef.current.goldL ?? exL, exL)
-      const open = openRef.current.gold
-      historyRef.current.push({ price: p, time: new Date() })
-      if (historyRef.current.length > HIST_MAX) historyRef.current.shift()
-      out.gold = {
-        price: p,
-        change: p - open,
-        changePct: ((p - open) / open) * 100,
-        high: hiloRef.current.goldH,
-        low:  hiloRef.current.goldL,
-        bid:  p - 0.20,
-        ask:  p + 0.20,
-        history: [...historyRef.current],
-      }
-      if (ext.silver > 0) {
-        const sp = ext.silver
-        if (!openRef.current.silver) openRef.current.silver = sp
-        out.silver = { price: sp, changePct: ((sp - openRef.current.silver) / openRef.current.silver) * 100 }
-      }
-    }
-
-    if (btc.status === 'fulfilled') out.btc = btc.value
-
-    if (dxyRes.status === 'fulfilled') {
-      const { dxy: p, eur, gbp, jpy, cad } = dxyRes.value
-      if (!openRef.current.dxy) openRef.current.dxy = p
-      out.dxy   = { price: p, changePct: ((p - openRef.current.dxy) / openRef.current.dxy) * 100 }
-      out.forex = { eur, gbp, jpy, cad }
-    }
-
-    if (Object.keys(out).length > 0) {
-      setMarket(prev => ({ ...prev, ...out }))
-      setStatus('live')
-      setLastUpdate(Date.now())
-    } else {
+    let fresh
+    try {
+      fresh = await fetchAllTV()
+    } catch (_) {
       setStatus(s => s === 'loading' ? 'error' : s)
+      return
     }
+
+    if (Object.keys(fresh).length === 0) {
+      setStatus(s => s === 'loading' ? 'error' : s)
+      return
+    }
+
+    if (fresh.XAUUSD) {
+      histRef.current.push({ price: fresh.XAUUSD.price, time: new Date() })
+      if (histRef.current.length > HIST_MAX) histRef.current.shift()
+      fresh.XAUUSD = { ...fresh.XAUUSD, history: [...histRef.current] }
+    }
+
+    setInstruments(prev => ({ ...prev, ...fresh }))
+    setStatus('live')
+    setLastUpdate(Date.now())
   }, [])
 
   useEffect(() => {
@@ -233,6 +136,24 @@ export function LiveMarketProvider({ children }) {
     const id = setInterval(poll, POLL_MS)
     return () => clearInterval(id)
   }, [poll])
+
+  // Binance WebSocket — real-time BTC + ETH (ref-only, no re-render)
+  useEffect(() => {
+    let ws
+    try {
+      ws = new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@aggTrade/ethusdt@aggTrade')
+      ws.onmessage = (e) => {
+        try {
+          const { stream, data } = JSON.parse(e.data)
+          const p = parseFloat(data.p)
+          if (p > 0) wsRef.current[stream.startsWith('btc') ? 'BTCUSD' : 'ETHUSD'] = p
+        } catch (_) {}
+      }
+      ws.onerror = () => {}
+    } catch (_) {}
+    return () => ws?.close()
+  }, [])
+
 
   useEffect(() => {
     fetchGoldNews().then(setNews).catch(() => {})
@@ -245,8 +166,35 @@ export function LiveMarketProvider({ children }) {
     return () => clearInterval(id)
   }, [])
 
+  // Backward-compat `market` object — recomputed every 8 s when setInstruments fires
+  const xau     = instruments.XAUUSD
+  const liveBtc = wsRef.current.BTCUSD ?? instruments.BTCUSD?.price
+
+  const market = xau ? {
+    gold: {
+      price:     xau.price,
+      change:    xau.change,
+      changePct: xau.changePct,
+      high:      xau.high,
+      low:       xau.low,
+      open:      xau.open,
+      bid:       xau.price - 0.20,
+      ask:       xau.price + 0.20,
+      history:   xau.history ?? [],
+    },
+    btc:    instruments.BTCUSD ? { price: liveBtc, changePct: instruments.BTCUSD.changePct } : null,
+    silver: instruments.SILVER ? { price: instruments.SILVER.price, changePct: instruments.SILVER.changePct } : null,
+    dxy:    instruments.DXY    ? { price: instruments.DXY.price,    changePct: instruments.DXY.changePct    } : null,
+    forex: {
+      eur: instruments.EURUSD?.price,
+      gbp: instruments.GBPUSD?.price,
+      jpy: instruments.USDJPY?.price,
+      cad: instruments.USDCAD?.price,
+    },
+  } : null
+
   return (
-    <Ctx.Provider value={{ market, status, lastUpdate, poll, news, sessions }}>
+    <Ctx.Provider value={{ market, instruments, wsRef, status, lastUpdate, poll, news, sessions }}>
       {children}
     </Ctx.Provider>
   )

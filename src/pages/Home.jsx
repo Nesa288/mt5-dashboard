@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { IcoGold, IcoAIMentor, IcoJournal, IcoAcademy } from '../components/Icons'
+import { IcoGold, IcoAIMentor, IcoJournal, IcoAcademy, IcoLogin, IcoScenarios, IcoTrendUp } from '../components/Icons'
+import FeaturesShowcase from '../components/FeaturesShowcase'
 import { useLanguage } from '../context/LanguageContext'
 
 const FEATURE_KEYS = [
@@ -392,6 +393,9 @@ export default function Home() {
             <button className="btn btn-ghost" onClick={() => navigate('/dashboard')} style={{ padding: '14px 28px', fontSize: 14 }}>
               {t('home.exploreFeatures')}
             </button>
+            <button className="btn btn-ghost" onClick={() => navigate('/premium')} style={{ padding: '14px 28px', fontSize: 14, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}>
+              👑 View Plans
+            </button>
           </div>
 
           <div style={{ display: 'flex', gap: 40 }}>
@@ -420,6 +424,239 @@ export default function Home() {
         }} />
       </section>
 
+
+      {/* ── HOW IT WORKS ───────────────────────── */}
+      <section style={{ padding: '60px 40px 64px', position: 'relative', overflow: 'hidden' }}>
+
+        {/* bg glow */}
+        <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', width: 700, height: 300, background: 'radial-gradient(ellipse, rgba(109,40,217,0.09) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* heading */}
+        <div style={{ textAlign: 'center', marginBottom: 52 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 18,
+            padding: '4px 16px', borderRadius: 20,
+            background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)',
+          }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>HOW IT WORKS</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
+            3 Steps to Smarter Trading
+          </h2>
+          <p style={{ fontSize: 15, color: 'var(--text-3)', maxWidth: 440, margin: '0 auto' }}>
+            Get up and running in minutes — no experience required.
+          </p>
+        </div>
+
+        {/* steps */}
+        <div className="hiw-steps" style={{ display: 'flex', gap: 16, alignItems: 'stretch', position: 'relative' }}>
+
+
+          {[
+            {
+              n: '01', Icon: IcoLogin, color: '#8B5CF6',
+              title: 'Connect',
+              desc: 'Create your account and link your MT5 platform. Everything syncs automatically in seconds.',
+            },
+            {
+              n: '02', Icon: IcoScenarios, color: '#3B82F6',
+              title: 'Analyze',
+              desc: 'AI scans live markets 24/7, identifies high-probability setups, and flags key levels for you.',
+            },
+            {
+              n: '03', Icon: IcoTrendUp, color: '#F59E0B',
+              title: 'Execute',
+              desc: 'Act on AI-powered signals with precision. Log trades, review performance, and keep improving.',
+            },
+          ].map(({ n, Icon, color, title, desc }) => (
+            <div key={n} className="card" style={{
+              flex: 1, padding: '32px 28px 28px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+              position: 'relative', overflow: 'hidden', gap: 0,
+              transition: 'border-color 0.25s, transform 0.25s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}55`; e.currentTarget.style.transform = 'translateY(-4px)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.transform = '' }}
+            >
+              {/* faded step number */}
+              <span style={{
+                position: 'absolute', top: 12, right: 18,
+                fontSize: 64, fontWeight: 900, lineHeight: 1,
+                color: `${color}12`,
+                fontFamily: "'Space Grotesk', sans-serif",
+                userSelect: 'none', pointerEvents: 'none',
+              }}>{n}</span>
+
+              {/* icon circle */}
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%',
+                background: `${color}18`,
+                border: `1px solid ${color}40`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 20, flexShrink: 0,
+                boxShadow: `0 0 20px ${color}22`,
+              }}>
+                <Icon size={24} color={color} />
+              </div>
+
+              <div className="hiw-text">
+                <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 10, color: 'var(--text-1)' }}>{title}</h3>
+                <p style={{ fontSize: 13.5, color: 'var(--text-3)', lineHeight: 1.7, margin: 0 }}>{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* premium CTA below steps */}
+        <div style={{ textAlign: 'center', marginTop: 36 }}>
+          <button className="btn btn-ghost" onClick={() => navigate('/premium')} style={{ padding: '12px 28px', fontSize: 13, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}>
+            👑 View Premium Plans →
+          </button>
+        </div>
+
+      </section>
+
+      {/* ── IMAGE BANNER ───────────────────────── */}
+      <section style={{ position: 'relative', height: 400, overflow: 'hidden' }}>
+        <img
+          src={`${import.meta.env.BASE_URL}TRADING%20TRADING%20TRADING%20TRADING%20TRADING.png`}
+          alt=""
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '115%',
+            top: '-7.5%',
+            objectFit: 'cover',
+          }}
+        />
+        {/* gradient overlays for blend */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--bg-0) 0%, transparent 18%, transparent 82%, var(--bg-0) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,8,15,0.45)', pointerEvents: 'none' }} />
+        {/* optional overlay text */}
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div style={{ fontSize: 'clamp(22px, 2.8vw, 38px)', fontWeight: 800, letterSpacing: '-0.03em', color: '#fff', textShadow: '0 2px 24px rgba(0,0,0,0.7)', textAlign: 'center', lineHeight: 1.15 }}>
+            Markets move fast.<br />
+            <span style={{ color: 'var(--gold)' }}>SEVORA moves faster.</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES SHOWCASE ──────────────────── */}
+      <section style={{ padding: '60px 40px 64px', position: 'relative', overflow: 'hidden' }}>
+
+        {/* bg glow */}
+        <div style={{ position: 'absolute', top: '50%', right: '10%', transform: 'translateY(-50%)', width: 500, height: 400, background: 'radial-gradient(ellipse, rgba(59,130,246,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* heading */}
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 18, padding: '4px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>PLATFORM FEATURES</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
+            Everything You Need to Trade Smarter
+          </h2>
+          <p style={{ fontSize: 15, color: 'var(--text-3)', maxWidth: 440, margin: '0 auto' }}>
+            AI-powered tools that work together — analysis, journaling, mentorship, and alerts in one place.
+          </p>
+        </div>
+
+        <FeaturesShowcase />
+
+        {/* bottom divider */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.25) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.25) 80%, transparent 100%)', boxShadow: '0 0 8px 2px rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
+      </section>
+
+      {/* ── TESTIMONIALS ───────────────────────── */}
+      <section style={{ padding: '60px 40px 64px', position: 'relative', overflow: 'hidden' }}>
+
+        {/* top divider */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.25) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.25) 80%, transparent 100%)', boxShadow: '0 0 8px 2px rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
+
+        {/* bg glow */}
+        <div style={{ position: 'absolute', top: '50%', left: '30%', transform: 'translate(-50%,-50%)', width: 500, height: 300, background: 'radial-gradient(ellipse, rgba(109,40,217,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* heading */}
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 18, padding: '4px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>WHAT TRADERS SAY</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
+            Trusted by Traders Worldwide
+          </h2>
+          <p style={{ fontSize: 15, color: 'var(--text-3)', maxWidth: 420, margin: '0 auto' }}>
+            Real results from real people using SEVORA every day.
+          </p>
+        </div>
+
+        {/* cards grid */}
+        <div className="testimonials-grid">
+          {[
+            {
+              name: 'Alex R.', role: 'Gold Day Trader', initials: 'AR', color: '#8B5CF6',
+              stars: 5,
+              quote: 'SEVORA\'s AI alerts changed how I trade gold. Three months of consistent profits and I\'ve finally stopped second-guessing every setup.',
+            },
+            {
+              name: 'Maria K.', role: 'Forex Swing Trader', initials: 'MK', color: '#3B82F6',
+              stars: 5,
+              quote: 'The mindset academy alone is worth it. I stopped revenge trading after week two. My drawdowns are half what they used to be.',
+            },
+            {
+              name: 'James T.', role: 'Multi-Asset Trader', initials: 'JT', color: '#00D4A0',
+              stars: 5,
+              quote: 'Best platform I\'ve used in 6 years of trading. The AI mentor catches setups I\'d normally miss and explains the reasoning clearly.',
+            },
+            {
+              name: 'Sofia M.', role: 'Crypto & Indices', initials: 'SM', color: '#F59E0B',
+              stars: 5,
+              quote: 'Session tracking and real-time signals in one place. I went from 3 losing months in a row to my best quarter ever.',
+            },
+          ].map(({ name, role, initials, color, stars, quote }) => (
+            <div key={name} className="card testimonial-card"
+              onMouseEnter={e => { e.currentTarget.style.borderColor = `${color}55`; e.currentTarget.style.transform = 'translateY(-4px)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.transform = '' }}
+              style={{ transition: 'border-color 0.25s, transform 0.25s' }}
+            >
+              {/* stars */}
+              <div style={{ display: 'flex', gap: 3, marginBottom: 16 }}>
+                {Array.from({ length: stars }).map((_, i) => (
+                  <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill="#F59E0B">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                ))}
+              </div>
+
+              {/* quote */}
+              <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.75, marginBottom: 24, flex: 1 }}>
+                "{quote}"
+              </p>
+
+              {/* author */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: `${color}22`, border: `1px solid ${color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color }}>{initials}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* premium CTA below testimonials */}
+        <div style={{ textAlign: 'center', marginTop: 36 }}>
+          <button className="btn btn-ghost" onClick={() => navigate('/premium')} style={{ padding: '12px 28px', fontSize: 13, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}>
+            👑 View Premium Plans →
+          </button>
+        </div>
+
+        {/* bottom divider */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.25) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.25) 80%, transparent 100%)', boxShadow: '0 0 8px 2px rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
+      </section>
+
       {/* ── MINDSET BANNER ─────────────────────── */}
       <section className="mindset-banner" style={{
         margin: '0',
@@ -428,7 +665,7 @@ export default function Home() {
         alignItems: 'flex-start',
         gap: 40,
         position: 'relative',
-        background: 'var(--bg-2)',
+        background: 'transparent',
         overflow: 'hidden',
       }}>
         {/* BG glows */}
@@ -463,14 +700,23 @@ export default function Home() {
             Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
           </p>
           {/* CTA */}
-          <button
-            className="btn btn-gold"
-            onClick={() => navigate('/academy')}
-            style={{ padding: '14px 30px', fontSize: 14, gap: 10 }}
-          >
-            <IcoAcademy size={15} />
-            {t('home.startLearning')}
-          </button>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-gold"
+              onClick={() => navigate('/academy')}
+              style={{ padding: '14px 30px', fontSize: 14, gap: 10 }}
+            >
+              <IcoAcademy size={15} />
+              {t('home.startLearning')}
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => navigate('/premium')}
+              style={{ padding: '14px 24px', fontSize: 14, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}
+            >
+              👑 View Plans
+            </button>
+          </div>
         </div>
 
         {/* Right: sitting bull image */}

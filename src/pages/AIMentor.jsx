@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { goldData, instruments, news, calendarEvents, sentiment, journalStats, journalTrades, botGroups } from '../data/mockData'
+import { useLiveMarket } from '../context/LiveMarketContext'
 
 const SUGGESTED = [
   { icon: '📈', text: 'Why is Gold going up?' },
@@ -12,38 +13,10 @@ const SUGGESTED = [
 
 const RISK_COLORS = { High: '#ef4444', Medium: '#f59e0b', Low: '#34d399' }
 
-// ─── Static snapshots derived from imports (computed once at module load) ────
-const _dxy = instruments.find(i => i.symbol === 'DXY')
-const _btc = instruments.find(i => i.symbol === 'BTCUSD')
-const SNAPSHOT = [
-  {
-    label: 'Gold',
-    value: `$${goldData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-    change: `${goldData.changePercent >= 0 ? '+' : ''}${goldData.changePercent}%`,
-    up: goldData.changePercent >= 0,
-  },
-  {
-    label: 'DXY',
-    value: (_dxy?.price ?? 104.23).toFixed(2),
-    change: `${(_dxy?.changePct ?? -0.30) >= 0 ? '+' : ''}${(_dxy?.changePct ?? -0.30).toFixed(2)}%`,
-    up: (_dxy?.changePct ?? -0.30) >= 0,
-  },
-  {
-    label: 'US10Y',
-    value: '4.82%',
-    change: '+0.06%',
-    up: true,
-  },
-  {
-    label: 'BTC',
-    value: `$${(_btc?.price ?? 68420).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-    change: `${(_btc?.changePct ?? 1.85) >= 0 ? '+' : ''}${(_btc?.changePct ?? 1.85).toFixed(2)}%`,
-    up: (_btc?.changePct ?? 1.85) >= 0,
-  },
-]
+// SNAPSHOT is now computed dynamically inside the component from live context
 
 // ─── Data aggregator ─────────────────────────────────────────────────────────
-function buildContext() {
+function buildContext(livePrices) {
   const utcHour = new Date().getUTCHours()
 
   let activeSession = 'Off-hours'
@@ -52,7 +25,7 @@ function buildContext() {
   else if (utcHour >= 8 && utcHour < 17) activeSession = 'London'
   else if (utcHour >= 13 && utcHour < 22) activeSession = 'New York'
 
-  const dxy = instruments.find(i => i.symbol === 'DXY')
+  const dxy = livePrices?.dxy ?? instruments.find(i => i.symbol === 'DXY')
 
   const todayEvents = calendarEvents.filter(e => e.date === 'today')
   const highImpactToday = todayEvents.filter(e => e.impact >= 4).sort((a, b) => b.impact - a.impact)
@@ -90,7 +63,7 @@ function buildContext() {
 
   return {
     utcHour, activeSession, dxy,
-    gold: goldData,
+    gold: livePrices?.gold ?? goldData,
     todayEvents, highImpactToday, avoidEvents,
     bullishNews, highImpactNews,
     journal: { stats: journalStats, trades: journalTrades, recentLosses, recentWins, mistakes },
@@ -418,6 +391,39 @@ function TypingIndicator() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AIMentor() {
   const { t } = useLanguage()
+  const { instruments: liveInstr } = useLiveMarket()
+
+  // Live market snapshot — updates every 5 s from TradingView
+  const liveGold = liveInstr?.XAUUSD
+  const liveDxy  = liveInstr?.DXY
+  const liveBtc  = liveInstr?.BTCUSD
+  const SNAPSHOT = [
+    {
+      label: 'Gold',
+      value: liveGold ? `$${liveGold.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${goldData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      change: liveGold ? `${liveGold.changePct >= 0 ? '+' : ''}${liveGold.changePct.toFixed(2)}%` : `${goldData.changePercent >= 0 ? '+' : ''}${goldData.changePercent}%`,
+      up: liveGold ? liveGold.changePct >= 0 : goldData.changePercent >= 0,
+    },
+    {
+      label: 'DXY',
+      value: liveDxy ? liveDxy.price.toFixed(3) : '—',
+      change: liveDxy ? `${liveDxy.changePct >= 0 ? '+' : ''}${liveDxy.changePct.toFixed(2)}%` : '—',
+      up: liveDxy ? liveDxy.changePct >= 0 : true,
+    },
+    {
+      label: 'US10Y',
+      value: '4.82%',
+      change: '+0.06%',
+      up: true,
+    },
+    {
+      label: 'BTC',
+      value: liveBtc ? `$${liveBtc.price.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—',
+      change: liveBtc ? `${liveBtc.changePct >= 0 ? '+' : ''}${liveBtc.changePct.toFixed(2)}%` : '—',
+      up: liveBtc ? liveBtc.changePct >= 0 : true,
+    },
+  ]
+
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([
     { id: 1, type: 'bot', data: INITIAL_DATA },
@@ -438,7 +444,10 @@ export default function AIMentor() {
     setInput('')
     setIsTyping(true)
     await new Promise(r => setTimeout(r, 1100 + Math.random() * 600))
-    const ctx = buildContext()
+    const ctx = buildContext({
+      gold: liveGold ? { ...goldData, price: liveGold.price, changePct: liveGold.changePct, changePercent: liveGold.changePct, high: liveGold.high, low: liveGold.low, open: liveGold.open } : null,
+      dxy: liveDxy  ? { symbol: 'DXY', price: liveDxy.price, trend: liveDxy.changePct < 0 ? 'Bearish' : 'Bullish', changePct: liveDxy.changePct } : null,
+    })
     const data = generateResponse(text, ctx)
     setIsTyping(false)
     setMessages(p => [...p, { id: Date.now() + 1, type: 'bot', data }])
