@@ -86,7 +86,7 @@ export default function Login() {
           }}>
             SEVORA
           </div>
-          <div style={{ fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--text-3)' }}>AI Trading Platform</div>
+          <div style={{ fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{t('login.platformSubtitle')}</div>
 
           <div style={{ marginTop: 22 }}>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-1)', marginBottom: 4 }}>{t('login.title')}</h2>

@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLiveLevels } from '../hooks/useLiveLevels'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function AIDailyBrief() {
   const [expanded, setExpanded] = useState(true)
   const navigate = useNavigate()
   const lvls = useLiveLevels()
+  const { t, lang } = useLanguage()
 
   const now = new Date()
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  const dateLocale = lang === 'sr' ? 'sr-Latn-RS' : 'en-US'
+  const dateStr = now.toLocaleDateString(dateLocale, { weekday: 'long', month: 'long', day: 'numeric' })
   const genTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' })
 
   const dxyPrice = lvls.liveDXY?.price
@@ -19,27 +22,27 @@ export default function AIDailyBrief() {
       label: 'Gold',
       color: '#f59e0b',
       text: lvls.bias === 'BULLISH'
-        ? `Bullish above $${lvls.support.toLocaleString()}. Momentum building toward $${lvls.liquidityZone.toLocaleString()} liquidity zone.`
+        ? `${t('aiDailyBrief.bullishAbove')} $${lvls.support.toLocaleString()}. ${t('aiDailyBrief.momentumToward')} $${lvls.liquidityZone.toLocaleString()} ${t('aiDailyBrief.liquidityZoneSuffix')}.`
         : lvls.bias === 'BEARISH'
-        ? `Bearish below $${lvls.resistance.toLocaleString()}. Watching $${lvls.support.toLocaleString()} as key defence level.`
-        : `Neutral near $${Math.round(lvls.price).toLocaleString()}. Range $${lvls.support.toLocaleString()}–$${lvls.resistance.toLocaleString()}. Wait for breakout confirmation.`,
+        ? `${t('aiDailyBrief.bearishBelow')} $${lvls.resistance.toLocaleString()}. ${t('aiDailyBrief.watchingKey')} $${lvls.support.toLocaleString()} ${t('aiDailyBrief.keyDefence')}`
+        : `${t('aiDailyBrief.neutralNear')} $${Math.round(lvls.price).toLocaleString()}. ${t('aiDailyBrief.range')} $${lvls.support.toLocaleString()}–$${lvls.resistance.toLocaleString()}. ${t('aiDailyBrief.wait')}`,
     },
     {
       label: 'DXY',
       color: '#60a5fa',
       text: dxyPrice
-        ? `${lvls.dxyFalling ? 'Weak' : 'Firm'} — at ${dxyPrice.toFixed(3)} (${dxyPct >= 0 ? '+' : ''}${dxyPct?.toFixed(2)}%). ${lvls.dxyFalling ? 'Tailwind for metals.' : 'Headwind for metals — watch support.'}`
-        : 'DXY data loading. Dollar strength is the key headwind for Gold — monitor closely.',
+        ? `${lvls.dxyFalling ? t('aiDailyBrief.weak') : t('aiDailyBrief.firm')} — ${t('aiDailyBrief.at')} ${dxyPrice.toFixed(3)} (${dxyPct >= 0 ? '+' : ''}${dxyPct?.toFixed(2)}%). ${lvls.dxyFalling ? t('aiDailyBrief.tailwind') : t('aiDailyBrief.headwind')}`
+        : t('aiDailyBrief.dollarLoading'),
     },
     {
       label: 'US10Y',
       color: '#34d399',
-      text: 'Treasury yields declining from recent highs. Lower yields reduce the opportunity cost of holding Gold — a mild tailwind for metals.',
+      text: t('aiDailyBrief.yieldsDeclining'),
     },
     {
       label: 'Liquidity',
       color: '#a78bfa',
-      text: `Pools sitting above $${lvls.resistance.toLocaleString()} and below $${lvls.support.toLocaleString()}. Expect a stop hunt before the directional move.`,
+      text: `${t('aiDailyBrief.poolsAbove')} $${lvls.resistance.toLocaleString()} ${t('aiDailyBrief.andBelow')} $${lvls.support.toLocaleString()}. ${t('aiDailyBrief.liquidityPools')}`,
     },
   ]
 
@@ -74,17 +77,17 @@ export default function AIDailyBrief() {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
-              Today's AI Brief
+              {t('aiDailyBrief.title')}
             </span>
             <span style={{
               fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
               padding: '2px 7px', borderRadius: 20,
               background: 'rgba(139,92,246,0.12)', color: 'var(--gold)',
               border: '1px solid rgba(139,92,246,0.2)',
-            }}>LIVE</span>
+            }}>{t('aiDailyBrief.live')}</span>
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>
-            {dateStr} · Updated {genTime}
+            {dateStr} · {t('aiDailyBrief.updated')} {genTime}
           </div>
         </div>
 
@@ -95,7 +98,7 @@ export default function AIDailyBrief() {
           background: lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.08)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
           border: `1px solid ${lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.2)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
         }}>
-          <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>Sentiment</span>
+          <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>{t('aiDailyBrief.sentiment')}</span>
           <span style={{ fontSize: 13, fontWeight: 800, color: lvls.biasColor, fontFamily: 'Orbitron, monospace' }}>{sentiment}%</span>
           <span style={{ fontSize: 10, color: lvls.biasColor }}>{lvls.trendStatus}</span>
         </div>
@@ -134,7 +137,7 @@ export default function AIDailyBrief() {
               borderRadius: 10, padding: '12px 14px',
             }}>
               <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: 8 }}>
-                ⚡ Today's Biggest Risk
+                ⚡ {t('aiDailyBrief.biggestRisk')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-1)' }}>{risk.event}</span>
@@ -164,7 +167,7 @@ export default function AIDailyBrief() {
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.14)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.35)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.08)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.2)' }}
             >
-              🤖 Ask AI Copilot for full analysis →
+              🤖 {t('aiDailyBrief.askCopilot')}
             </button>
           </div>
         </div>

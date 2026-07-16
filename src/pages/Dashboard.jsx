@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useLiveMarket } from '../context/LiveMarketContext'
 import { useLiveLevels } from '../hooks/useLiveLevels'
-import { goldData, news, calendarEvents, scenarios, sentiment, instruments } from '../data/mockData'
+import { calendarEvents, scenarios, sentiment } from '../data/mockData'
 import { GoldMiniChart } from '../components/TradingViewWidget'
 import { IcoArrowUp, IcoArrowDown, IcoAlert, IcoInfo, IcoChevronRight, IcoTarget, IcoShield } from '../components/Icons'
 import AIDailyBrief from '../components/AIDailyBrief'
+
 
 function TrendBadge({ trend }) {
   const cls = trend === 'Bullish' ? 'badge-bull' : trend === 'Bearish' ? 'badge-bear' : 'badge-neutral'
@@ -61,15 +62,15 @@ function SessionBlock({ name, color, isActive, label }) {
 export default function Dashboard() {
   const { t } = useLanguage()
   const navigate = useNavigate()
-  const { market, status: liveStatus } = useLiveMarket()
+  const { market, status: liveStatus, news: liveNews } = useLiveMarket()
   const lvls = useLiveLevels()
   const liveG = market?.gold
-  const goldPrice      = liveG?.price     ?? goldData.price
-  const goldChange     = liveG?.change    ?? goldData.change
-  const goldChangePct  = liveG?.changePct ?? goldData.changePercent
-  const goldHigh       = liveG?.high      ?? goldData.high
-  const goldLow        = liveG?.low       ?? goldData.low
-  const todayNews = news.slice(0, 3)
+  const goldPrice      = liveG?.price
+  const goldChange     = liveG?.change
+  const goldChangePct  = liveG?.changePct
+  const goldHigh       = liveG?.high
+  const goldLow        = liveG?.low
+  const todayNews   = (liveNews ?? []).slice(0, 3)
   const todayEvents = calendarEvents.filter(e => e.date === 'today').slice(0, 4)
 
   const nowH = new Date().getUTCHours()
@@ -87,10 +88,6 @@ export default function Dashboard() {
           <h1 className="page-title">{t('dashboard.title')}</h1>
           <p className="page-subtitle">{t('dashboard.subtitle')}</p>
         </div>
-        <span className="badge badge-demo">
-          <IcoInfo size={10} />
-          AI zones: DEMO
-        </span>
       </div>
 
       {/* AI Daily Brief */}
@@ -118,19 +115,21 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-              <div className="price-lg">${goldPrice.toFixed(2)}</div>
+              <div className="price-lg">{goldPrice != null ? `$${goldPrice.toFixed(2)}` : '—'}</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end',
-                color: goldChange > 0 ? 'var(--green)' : 'var(--red)',
+                color: (goldChange ?? 0) > 0 ? 'var(--green)' : 'var(--red)',
                 fontSize: 16, fontWeight: 700, fontFamily: 'Orbitron, monospace',
               }}>
-                {goldChange > 0 ? <IcoArrowUp size={16} /> : <IcoArrowDown size={16} />}
-                {goldChange > 0 ? '+' : ''}${Math.abs(goldChange).toFixed(2)} ({goldChange > 0 ? '+' : ''}{goldChangePct.toFixed(2)}%)
+                {goldChange != null && (goldChange > 0 ? <IcoArrowUp size={16} /> : <IcoArrowDown size={16} />)}
+                {goldChange != null
+                  ? `${goldChange > 0 ? '+' : ''}$${Math.abs(goldChange).toFixed(2)} (${goldChange > 0 ? '+' : ''}${goldChangePct.toFixed(2)}%)`
+                  : '—'}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
-                H: ${goldHigh.toFixed(2)} &nbsp; L: ${goldLow.toFixed(2)}
+                {goldHigh != null ? `H: $${goldHigh.toFixed(2)}` : 'H: —'} &nbsp; {goldLow != null ? `L: $${goldLow.toFixed(2)}` : 'L: —'}
               </div>
             </div>
           </div>
@@ -172,7 +171,6 @@ export default function Dashboard() {
           <div className="glass p-4" style={{ flex: 1 }}>
             <div className="flex items-center justify-between mb-3">
               <div className="section-label" style={{ marginBottom: 0 }}>{t('dashboard.sentiment.title')}</div>
-              <span className="badge badge-demo" style={{ fontSize: 9 }}>{t('common.demo')}</span>
             </div>
 
             {/* Retail */}
@@ -218,7 +216,7 @@ export default function Dashboard() {
             {[
               { tf: t('dashboard.trend.daily'), trend: lvls.trendStatus, sub: 'Price above key support' },
               { tf: t('dashboard.trend.h4'), trend: lvls.trendStatus, sub: `Bias: ${lvls.trendStatus}` },
-              { tf: t('dashboard.trend.h1'), trend: lvls.trendStatus, sub: `Near $${Math.round(goldPrice).toLocaleString()}` },
+              { tf: t('dashboard.trend.h1'), trend: lvls.trendStatus, sub: goldPrice != null ? `Near $${Math.round(goldPrice).toLocaleString()}` : '' },
             ].map(({ tf, trend, sub }) => (
               <div key={tf} style={{
                 padding: '14px 12px',
@@ -331,7 +329,6 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="section-label" style={{ marginBottom: 0 }}>{t('dashboard.scenarios.title')}</div>
-          <span className="badge badge-demo" style={{ fontSize: 9 }}>{t('common.demo')}</span>
         </div>
         <div className="g-2">
           {/* Bullish */}
@@ -348,10 +345,10 @@ export default function Dashboard() {
             </div>
             <div className="g-2" style={{ gap: 8 }}>
               {[
-                { l: t('dashboard.scenarios.entry'), v: scenarios.bullish.entry },
-                { l: t('dashboard.scenarios.target1'), v: scenarios.bullish.target1 },
-                { l: t('dashboard.scenarios.target2'), v: scenarios.bullish.target2 },
-                { l: t('dashboard.scenarios.invalidation'), v: scenarios.bullish.invalidation },
+                { l: t('dashboard.scenarios.entry'),       v: lvls.support     != null ? `$${Math.round(lvls.support + (lvls.dayRange ?? 0) * 0.1).toLocaleString()}` : '—' },
+                { l: t('dashboard.scenarios.target1'),     v: lvls.resistance  != null ? `$${Math.round(lvls.resistance).toLocaleString()}` : '—' },
+                { l: t('dashboard.scenarios.target2'),     v: lvls.target      != null ? `$${Math.round(lvls.target).toLocaleString()}` : '—' },
+                { l: t('dashboard.scenarios.invalidation'),v: lvls.invalidation != null ? `$${Math.round(lvls.invalidation).toLocaleString()}` : '—' },
               ].map(({ l, v }) => (
                 <div key={l}>
                   <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{l}</div>
@@ -378,10 +375,10 @@ export default function Dashboard() {
             </div>
             <div className="g-2" style={{ gap: 8 }}>
               {[
-                { l: t('dashboard.scenarios.entry'), v: scenarios.bearish.entry },
-                { l: t('dashboard.scenarios.target1'), v: scenarios.bearish.target1 },
-                { l: t('dashboard.scenarios.target2'), v: scenarios.bearish.target2 },
-                { l: t('dashboard.scenarios.invalidation'), v: scenarios.bearish.invalidation },
+                { l: t('dashboard.scenarios.entry'),       v: lvls.resistance  != null ? `$${Math.round(lvls.resistance).toLocaleString()}` : '—' },
+                { l: t('dashboard.scenarios.target1'),     v: lvls.support     != null ? `$${Math.round(lvls.support).toLocaleString()}` : '—' },
+                { l: t('dashboard.scenarios.target2'),     v: lvls.invalidation != null ? `$${Math.round(lvls.invalidation).toLocaleString()}` : '—' },
+                { l: t('dashboard.scenarios.invalidation'),v: lvls.resistance  != null ? `$${Math.round(lvls.resistance + (lvls.dayRange ?? 0) * 0.3).toLocaleString()}` : '—' },
               ].map(({ l, v }) => (
                 <div key={l}>
                   <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{l}</div>

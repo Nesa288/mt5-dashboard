@@ -23,9 +23,10 @@ function ImpactBadge({ impact }) {
 }
 
 function RecommendationBadge({ rec }) {
-  if (rec === 'avoid') return <span className="badge badge-bear">⛔ Avoid Trading</span>
-  if (rec === 'watchBreakout') return <span className="badge badge-warn">👀 Watch Breakout</span>
-  return <span className="badge badge-neutral">✅ Normal</span>
+  const { t } = useLanguage()
+  if (rec === 'avoid') return <span className="badge badge-bear">⛔ {t('calendar.impacts.avoid')}</span>
+  if (rec === 'watchBreakout') return <span className="badge badge-warn">👀 {t('calendar.impacts.watchBreakout')}</span>
+  return <span className="badge badge-neutral">✅ {t('calendar.impacts.normal')}</span>
 }
 
 export default function Calendar() {
@@ -56,9 +57,9 @@ export default function Calendar() {
         <div className="alert-box alert-warn">
           <IcoAlert size={18} color="var(--amber)" style={{ flexShrink: 0 }} />
           <div>
-            <div style={{ fontWeight: 700, marginBottom: 2 }}>⚠️ {highImpactCount} High Impact Events Today</div>
+            <div style={{ fontWeight: 700, marginBottom: 2 }}>⚠️ {highImpactCount} {t('calendar.highImpactToday')}</div>
             <div style={{ fontSize: 12, opacity: 0.9 }}>
-              High impact USD news in 2h 15m — be careful with open XAUUSD positions.
+              {t('calendar.warning').replace('{time}', '2h 15m')}
             </div>
           </div>
         </div>
@@ -85,7 +86,7 @@ export default function Calendar() {
               <th className="col-cal-hide" style={{ textAlign: 'right' }}>{t('calendar.actual')}</th>
               <th className="col-cal-hide" style={{ textAlign: 'right' }}>{t('calendar.forecast')}</th>
               <th className="col-cal-hide" style={{ textAlign: 'right' }}>{t('calendar.previous')}</th>
-              <th className="col-cal-hide" style={{ textAlign: 'center' }}>Action</th>
+              <th className="col-cal-hide" style={{ textAlign: 'center' }}>{t('calendar.actionHeader')}</th>
             </tr>
           </thead>
           <tbody>
@@ -142,7 +143,7 @@ export default function Calendar() {
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                           <span style={{ fontSize: 18 }}>🤖</span>
                           <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)', marginBottom: 4 }}>AI INTERPRETATION</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)', marginBottom: 4 }}>{t('calendar.aiInterpretation')}</div>
                             <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>{ev.aiNote}</p>
                           </div>
                         </div>
@@ -155,15 +156,15 @@ export default function Calendar() {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-3)' }}>No events for this filter</div>
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-3)' }}>{t('calendar.noEvents')}</div>
         )}
       </div>
 
       {/* Live Calendar Link */}
       <div className="glass p-5" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <div className="section-label" style={{ marginBottom: 4 }}>Live Economic Calendar</div>
-          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>Full real-time economic events on TradingView</p>
+          <div className="section-label" style={{ marginBottom: 4 }}>{t('calendar.liveCalendar')}</div>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>{t('calendar.liveCalendarDesc')}</p>
         </div>
         <a
           href="https://www.tradingview.com/economic-calendar/"
@@ -172,7 +173,7 @@ export default function Calendar() {
           className="btn btn-gold"
           style={{ flexShrink: 0, textDecoration: 'none' }}
         >
-          Open Calendar ↗
+          {t('calendar.openCalendar')}
         </a>
       </div>
     </div>

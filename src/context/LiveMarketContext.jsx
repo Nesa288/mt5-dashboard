@@ -2,64 +2,70 @@ import { createContext, useContext, useState, useEffect, useRef, useCallback } f
 
 const Ctx = createContext(null)
 
-function sig() {
-  try { return { signal: AbortSignal.timeout(5000) } } catch (_) { return {} }
-}
+// ── Single source of truth: TradingView scanner API ───────────────────────────
+// Uses the EXACT same symbols as the TradingView chart widgets on this site.
+// TVC:GOLD → same price the chart shows. COINBASE:BTCUSD → same as crypto chart.
+// No other data source is used anywhere.
 
-// Single source of truth — TradingView scanner for every instrument
+const TV_SCANNER = 'https://scanner.tradingview.com/symbol'
+const TV_FIELDS  = 'close,change,change_abs,high,low,open'
+
+// Symbols MUST match what the chart widgets use (see TradingViewWidget.jsx)
 const TV_MAP = [
-  { sym: 'XAUUSD', tv: 'TVC:GOLD',       decimals: 2 },
-  { sym: 'SILVER', tv: 'TVC:SILVER',      decimals: 3 },
-  { sym: 'DXY',    tv: 'TVC:DXY',         decimals: 3 },
-  { sym: 'EURUSD', tv: 'FX_IDC:EURUSD',   decimals: 4 },
-  { sym: 'GBPUSD', tv: 'FX_IDC:GBPUSD',   decimals: 4 },
-  { sym: 'USDJPY', tv: 'FX_IDC:USDJPY',   decimals: 2 },
-  { sym: 'USDCAD', tv: 'FX_IDC:USDCAD',   decimals: 4 },
-  { sym: 'AUDUSD', tv: 'FX_IDC:AUDUSD',   decimals: 4 },
-  { sym: 'BTCUSD', tv: 'COINBASE:BTCUSD', decimals: 1 },
-  { sym: 'ETHUSD', tv: 'COINBASE:ETHUSD', decimals: 2 },
-  { sym: 'NAS100', tv: 'NASDAQ:NDX',      decimals: 1 },
-  { sym: 'SP500',  tv: 'SP:SPX',          decimals: 2 },
-  { sym: 'USOIL',  tv: 'NYMEX:CL1!',       decimals: 2 },
+  { sym: 'XAUUSD', tv: 'TVC:GOLD',         decimals: 2 },
+  { sym: 'SILVER', tv: 'TVC:SILVER',        decimals: 3 },
+  { sym: 'DXY',    tv: 'TVC:DXY',           decimals: 3 },
+  { sym: 'EURUSD', tv: 'FX:EURUSD',         decimals: 4 },
+  { sym: 'GBPUSD', tv: 'FX:GBPUSD',         decimals: 4 },
+  { sym: 'USDJPY', tv: 'FX:USDJPY',         decimals: 2 },
+  { sym: 'USDCAD', tv: 'FX:USDCAD',         decimals: 4 },
+  { sym: 'AUDUSD', tv: 'FX:AUDUSD',         decimals: 4 },
+  { sym: 'BTCUSD', tv: 'COINBASE:BTCUSD',   decimals: 1 },
+  { sym: 'ETHUSD', tv: 'COINBASE:ETHUSD',   decimals: 2 },
+  { sym: 'NAS100', tv: 'NASDAQ:NDX',         decimals: 1 },
+  { sym: 'SP500',  tv: 'SP:SPX',            decimals: 2 },
+  { sym: 'USOIL',  tv: 'NYMEX:CL1!',        decimals: 2 },
+  { sym: 'US10Y',  tv: 'TVC:US10Y',         decimals: 3 },
 ]
 
-const TV_COLS   = ['close', 'change', 'change_abs', 'high', 'low', 'open']
-const POLL_MS   = 8_000
-const NEWS_MS   = 600_000
-const HIST_MAX  = 40
+const POLL_MS  = 10_000
+const NEWS_MS  = 600_000
+const HIST_MAX = 40
 
-// One batch POST → all 13 instruments in a single request (13× fewer API calls)
-async function fetchAllTV() {
-  const r = await fetch('https://scanner.tradingview.com/global/scan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ symbols: { tickers: TV_MAP.map(s => s.tv) }, columns: TV_COLS }),
-    ...sig(),
-  })
-  if (!r.ok) throw new Error(`scan:${r.status}`)
-  const { data = [] } = await r.json()
-  const fresh = {}
-  data.forEach(({ s, d }) => {
-    const entry = TV_MAP.find(m => m.tv === s)
-    if (!entry || !d) return
-    const [close, change, changeAbs, high, low, open] = d
-    const price = parseFloat(close)
-    if (!(price > 0)) return
-    fresh[entry.sym] = {
-      price,
-      change:    parseFloat(changeAbs ?? 0),
-      changePct: parseFloat(change    ?? 0),
-      high:      parseFloat(high  ?? close),
-      low:       parseFloat(low   ?? close),
-      open:      parseFloat(open  ?? close),
-    }
-  })
-  return fresh
+function abortIn(ms) {
+  const ctrl = new AbortController()
+  const id = setTimeout(() => ctrl.abort(), ms)
+  ctrl.signal.addEventListener('abort', () => clearTimeout(id), { once: true })
+  return ctrl.signal
+}
+
+async function fetchTV(entry) {
+  const url = `${TV_SCANNER}?symbol=${encodeURIComponent(entry.tv)}&fields=${TV_FIELDS}`
+  const r = await fetch(url, { signal: abortIn(8000) })
+  if (!r.ok) throw new Error(`${entry.sym}:${r.status}`)
+  const d = await r.json()
+
+  // Scanner returns { close: N, change: N, change_abs: N, high: N, low: N, open: N }
+  const price = parseFloat(d.close)
+  if (!(price > 0)) throw new Error(`${entry.sym}:no-price`)
+
+  const changeAbs = parseFloat(d.change_abs ?? 0)
+  const changePct = parseFloat(d.change     ?? 0)
+
+  return {
+    price,
+    change:    changeAbs,
+    changePct,
+    high: parseFloat(d.high ?? price),
+    low:  parseFloat(d.low  ?? price),
+    open: parseFloat(d.open ?? (price - changeAbs)),
+  }
 }
 
 async function fetchGoldNews() {
   const rss = 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F'
-  const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=8`, sig())
+  const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}&count=8`
+  const r = await fetch(url, { signal: abortIn(8000) })
   if (!r.ok) throw new Error('news')
   const data = await r.json()
   if (data.status !== 'ok') throw new Error('news-status')
@@ -102,18 +108,16 @@ export function LiveMarketProvider({ children }) {
   const [news, setNews]               = useState([])
   const [sessions, setSessions]       = useState(computeSessions)
 
-  // WS real-time overrides — written without triggering re-renders
+  // wsRef kept for API compatibility with PriceTicker — no WebSocket used
   const wsRef   = useRef({})
   const histRef = useRef([])
 
   const poll = useCallback(async () => {
-    let fresh
-    try {
-      fresh = await fetchAllTV()
-    } catch (_) {
-      setStatus(s => s === 'loading' ? 'error' : s)
-      return
-    }
+    const settled = await Promise.allSettled(TV_MAP.map(entry => fetchTV(entry)))
+    const fresh = {}
+    settled.forEach((res, i) => {
+      if (res.status === 'fulfilled') fresh[TV_MAP[i].sym] = res.value
+    })
 
     if (Object.keys(fresh).length === 0) {
       setStatus(s => s === 'loading' ? 'error' : s)
@@ -137,24 +141,6 @@ export function LiveMarketProvider({ children }) {
     return () => clearInterval(id)
   }, [poll])
 
-  // Binance WebSocket — real-time BTC + ETH (ref-only, no re-render)
-  useEffect(() => {
-    let ws
-    try {
-      ws = new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@aggTrade/ethusdt@aggTrade')
-      ws.onmessage = (e) => {
-        try {
-          const { stream, data } = JSON.parse(e.data)
-          const p = parseFloat(data.p)
-          if (p > 0) wsRef.current[stream.startsWith('btc') ? 'BTCUSD' : 'ETHUSD'] = p
-        } catch (_) {}
-      }
-      ws.onerror = () => {}
-    } catch (_) {}
-    return () => ws?.close()
-  }, [])
-
-
   useEffect(() => {
     fetchGoldNews().then(setNews).catch(() => {})
     const id = setInterval(() => fetchGoldNews().then(setNews).catch(() => {}), NEWS_MS)
@@ -166,9 +152,8 @@ export function LiveMarketProvider({ children }) {
     return () => clearInterval(id)
   }, [])
 
-  // Backward-compat `market` object — recomputed every 8 s when setInstruments fires
-  const xau     = instruments.XAUUSD
-  const liveBtc = wsRef.current.BTCUSD ?? instruments.BTCUSD?.price
+  // `market` backward-compat object — recomputed when instruments updates
+  const xau = instruments.XAUUSD
 
   const market = xau ? {
     gold: {
@@ -182,7 +167,7 @@ export function LiveMarketProvider({ children }) {
       ask:       xau.price + 0.20,
       history:   xau.history ?? [],
     },
-    btc:    instruments.BTCUSD ? { price: liveBtc, changePct: instruments.BTCUSD.changePct } : null,
+    btc:    instruments.BTCUSD ? { price: instruments.BTCUSD.price, changePct: instruments.BTCUSD.changePct } : null,
     silver: instruments.SILVER ? { price: instruments.SILVER.price, changePct: instruments.SILVER.changePct } : null,
     dxy:    instruments.DXY    ? { price: instruments.DXY.price,    changePct: instruments.DXY.changePct    } : null,
     forex: {

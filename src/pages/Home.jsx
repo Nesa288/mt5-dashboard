@@ -394,7 +394,7 @@ export default function Home() {
               {t('home.exploreFeatures')}
             </button>
             <button className="btn btn-ghost" onClick={() => navigate('/premium')} style={{ padding: '14px 28px', fontSize: 14, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}>
-              👑 View Plans
+              👑 {t('home.viewPlans')}
             </button>
           </div>
 
@@ -438,13 +438,13 @@ export default function Home() {
             padding: '4px 16px', borderRadius: 20,
             background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)',
           }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>HOW IT WORKS</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>{t('home.howItWorksBadge')}</span>
           </div>
           <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
-            3 Steps to Smarter Trading
+            {t('home.howItWorksTitle')}
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-3)', maxWidth: 440, margin: '0 auto' }}>
-            Get up and running in minutes — no experience required.
+            {t('home.howItWorksDesc')}
           </p>
         </div>
 
@@ -453,21 +453,9 @@ export default function Home() {
 
 
           {[
-            {
-              n: '01', Icon: IcoLogin, color: '#8B5CF6',
-              title: 'Connect',
-              desc: 'Create your account and link your MT5 platform. Everything syncs automatically in seconds.',
-            },
-            {
-              n: '02', Icon: IcoScenarios, color: '#3B82F6',
-              title: 'Analyze',
-              desc: 'AI scans live markets 24/7, identifies high-probability setups, and flags key levels for you.',
-            },
-            {
-              n: '03', Icon: IcoTrendUp, color: '#F59E0B',
-              title: 'Execute',
-              desc: 'Act on AI-powered signals with precision. Log trades, review performance, and keep improving.',
-            },
+            { n: '01', Icon: IcoLogin, color: '#8B5CF6', title: t('home.steps.connect.title'), desc: t('home.steps.connect.desc') },
+            { n: '02', Icon: IcoScenarios, color: '#3B82F6', title: t('home.steps.analyze.title'), desc: t('home.steps.analyze.desc') },
+            { n: '03', Icon: IcoTrendUp, color: '#F59E0B', title: t('home.steps.execute.title'), desc: t('home.steps.execute.desc') },
           ].map(({ n, Icon, color, title, desc }) => (
             <div key={n} className="card" style={{
               flex: 1, padding: '32px 28px 28px',
@@ -510,7 +498,7 @@ export default function Home() {
         {/* premium CTA below steps */}
         <div style={{ textAlign: 'center', marginTop: 36 }}>
           <button className="btn btn-ghost" onClick={() => navigate('/premium')} style={{ padding: '12px 28px', fontSize: 13, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}>
-            👑 View Premium Plans →
+            👑 {t('home.viewPremiumPlans')}
           </button>
         </div>
 
@@ -536,8 +524,8 @@ export default function Home() {
         {/* optional overlay text */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <div style={{ fontSize: 'clamp(22px, 2.8vw, 38px)', fontWeight: 800, letterSpacing: '-0.03em', color: '#fff', textShadow: '0 2px 24px rgba(0,0,0,0.7)', textAlign: 'center', lineHeight: 1.15 }}>
-            Markets move fast.<br />
-            <span style={{ color: 'var(--gold)' }}>SEVORA moves faster.</span>
+            {t('home.marketsBanner1')}<br />
+            <span style={{ color: 'var(--gold)' }}>{t('home.marketsBanner2')}</span>
           </div>
         </div>
       </section>
@@ -551,13 +539,13 @@ export default function Home() {
         {/* heading */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 18, padding: '4px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)' }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>PLATFORM FEATURES</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>{t('home.platformBadge')}</span>
           </div>
           <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
-            Everything You Need to Trade Smarter
+            {t('home.platformTitle')}
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-3)', maxWidth: 440, margin: '0 auto' }}>
-            AI-powered tools that work together — analysis, journaling, mentorship, and alerts in one place.
+            {t('home.platformDesc')}
           </p>
         </div>
 
@@ -579,13 +567,13 @@ export default function Home() {
         {/* heading */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 18, padding: '4px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)' }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>WHAT TRADERS SAY</span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--gold)' }}>{t('home.testimonialsBadge')}</span>
           </div>
           <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
-            Trusted by Traders Worldwide
+            {t('home.testimonialsTitle')}
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-3)', maxWidth: 420, margin: '0 auto' }}>
-            Real results from real people using SEVORA every day.
+            {t('home.testimonialsDesc')}
           </p>
         </div>
 
@@ -649,7 +637,7 @@ export default function Home() {
         {/* premium CTA below testimonials */}
         <div style={{ textAlign: 'center', marginTop: 36 }}>
           <button className="btn btn-ghost" onClick={() => navigate('/premium')} style={{ padding: '12px 28px', fontSize: 13, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}>
-            👑 View Premium Plans →
+            👑 {t('home.viewPremiumPlans')}
           </button>
         </div>
 
@@ -697,7 +685,7 @@ export default function Home() {
             fontSize: 16, fontStyle: 'italic', color: 'var(--text-2)', lineHeight: 1.72,
             marginBottom: 32,
           }}>
-            Discipline today, freedom tomorrow.<br />The market rewards patience, not emotion.
+            {t('home.mindsetQuote1')}<br />{t('home.mindsetQuote2')}
           </p>
           {/* CTA */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -714,7 +702,7 @@ export default function Home() {
               onClick={() => navigate('/premium')}
               style={{ padding: '14px 24px', fontSize: 14, borderColor: 'rgba(139,92,246,0.45)', color: 'var(--gold)' }}
             >
-              👑 View Plans
+              👑 {t('home.viewPlans')}
             </button>
           </div>
         </div>

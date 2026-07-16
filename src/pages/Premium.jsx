@@ -78,16 +78,16 @@ export default function Premium() {
                 {/* Price */}
                 <div style={{ textAlign: 'center', marginBottom: 24 }}>
                   {isFree ? (
-                    <div style={{ fontSize: 36, fontWeight: 900, color, fontFamily: 'Orbitron, monospace' }}>FREE</div>
+                    <div style={{ fontSize: 36, fontWeight: 900, color, fontFamily: 'Orbitron, monospace' }}>{t('premium.free')}</div>
                   ) : (
                     <div>
                       <div style={{ fontSize: 40, fontWeight: 900, color, fontFamily: 'Orbitron, monospace' }}>
                         ${price}
-                        <span style={{ fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 500, color: 'var(--text-3)' }}>/mo</span>
+                        <span style={{ fontSize: 14, fontFamily: 'Inter, sans-serif', fontWeight: 500, color: 'var(--text-3)' }}>{t('premium.perMonth')}</span>
                       </div>
                       {billing === 'yearly' && (
                         <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
-                          Billed ${price * 12}/year · Save 20%
+                          {t('premium.billedYearly').replace('{amount}', `$${price * 12}`)}
                         </div>
                       )}
                     </div>
@@ -135,9 +135,9 @@ export default function Premium() {
       <div style={{ maxWidth: 720, margin: '0 auto', width: '100%' }}>
         <div className="glass p-5" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 10 }}>🛡️</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)', marginBottom: 6 }}>30-Day Money Back Guarantee</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-1)', marginBottom: 6 }}>{t('premium.guarantee.title')}</div>
           <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7 }}>
-            Not satisfied? We'll refund you, no questions asked. We're confident SEVORA will transform your trading.
+            {t('premium.guarantee.desc')}
           </p>
         </div>
       </div>

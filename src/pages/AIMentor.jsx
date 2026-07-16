@@ -394,15 +394,16 @@ export default function AIMentor() {
   const { instruments: liveInstr } = useLiveMarket()
 
   // Live market snapshot — updates every 5 s from TradingView
-  const liveGold = liveInstr?.XAUUSD
-  const liveDxy  = liveInstr?.DXY
-  const liveBtc  = liveInstr?.BTCUSD
+  const liveGold  = liveInstr?.XAUUSD
+  const liveDxy   = liveInstr?.DXY
+  const liveBtc   = liveInstr?.BTCUSD
+  const liveUs10y = liveInstr?.US10Y
   const SNAPSHOT = [
     {
       label: 'Gold',
-      value: liveGold ? `$${liveGold.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `$${goldData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: liveGold ? `${liveGold.changePct >= 0 ? '+' : ''}${liveGold.changePct.toFixed(2)}%` : `${goldData.changePercent >= 0 ? '+' : ''}${goldData.changePercent}%`,
-      up: liveGold ? liveGold.changePct >= 0 : goldData.changePercent >= 0,
+      value: liveGold ? `$${liveGold.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—',
+      change: liveGold ? `${liveGold.changePct >= 0 ? '+' : ''}${liveGold.changePct.toFixed(2)}%` : '—',
+      up: liveGold ? liveGold.changePct >= 0 : true,
     },
     {
       label: 'DXY',
@@ -412,9 +413,9 @@ export default function AIMentor() {
     },
     {
       label: 'US10Y',
-      value: '4.82%',
-      change: '+0.06%',
-      up: true,
+      value: liveUs10y ? liveUs10y.price.toFixed(3) + '%' : '—',
+      change: liveUs10y ? `${liveUs10y.changePct >= 0 ? '+' : ''}${liveUs10y.changePct.toFixed(2)}%` : '—',
+      up: liveUs10y ? liveUs10y.changePct >= 0 : true,
     },
     {
       label: 'BTC',
@@ -460,7 +461,6 @@ export default function AIMentor() {
           <h1 className="page-title">Trading Copilot</h1>
           <p className="page-subtitle">AI analysis powered by live site data — trend, calendar, news, journal, bots.</p>
         </div>
-        <span className="badge badge-demo">Data-Driven · Mock Mode</span>
       </div>
 
       {/* Main 2-column layout */}

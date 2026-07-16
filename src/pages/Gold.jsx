@@ -7,21 +7,7 @@ import {
 import { GoldChart } from '../components/TradingViewWidget'
 import { useLiveMarket } from '../context/LiveMarketContext'
 import { useLiveLevels } from '../hooks/useLiveLevels'
-
-const TABS = [
-  { id: 'trend',       icon: '📈', label: 'Trend' },
-  { id: 'bias',        icon: '🎯', label: 'Bias' },
-  { id: 'levels',      icon: '📏', label: 'Levels' },
-  { id: 'news',        icon: '📰', label: 'News' },
-  { id: 'scenarios',   icon: '⚡', label: 'Scenarios' },
-  { id: 'liquidity',   icon: '💧', label: 'Liquidity' },
-  { id: 'sessions',    icon: '🕐', label: 'Sessions' },
-  { id: 'alerts',      icon: '🔔', label: 'Alerts' },
-  { id: 'ai',          icon: '🤖', label: 'AI' },
-  { id: 'history',     icon: '📔', label: 'History' },
-  { id: 'correlation', icon: '🔗', label: 'Correlation' },
-  { id: 'sentiment',   icon: '💡', label: 'Sentiment' },
-]
+import { useLanguage } from '../context/LanguageContext'
 
 const TC = (t) => t === 'Bullish' ? '#34d399' : t === 'Bearish' ? '#ef4444' : '#94a3b8'
 const IMPACT_COLOR = { 5: '#ef4444', 4: '#f59e0b', 3: '#94a3b8' }
@@ -78,6 +64,7 @@ function useParallax(speed = 0.12) {
 
 // ─── TREND ───────────────────────────────────────────────────────────────────
 function TrendPanel() {
+  const { t } = useLanguage()
   const { market, status } = useLiveMarket()
   const liveG = market?.gold
   const livePrice = liveG?.price ?? goldData.price
@@ -101,17 +88,17 @@ function TrendPanel() {
 
   const tfs = [
     { tf: 'Daily', trend: dailyTrend,
-      detail: dailyTrend === 'Bullish' ? 'Bullish price action on session' : dailyTrend === 'Bearish' ? 'Bearish pressure on session' : 'Consolidating — no clear trend',
-      sub: dailyTrend === 'Bullish' ? `Up ${liveChangePct.toFixed(2)}% — momentum positive` : dailyTrend === 'Bearish' ? `Down ${Math.abs(liveChangePct).toFixed(2)}% — watch key supports` : 'Range-bound — wait for directional break' },
+      detail: dailyTrend === 'Bullish' ? t('gold.panel.trend.bullishSession') : dailyTrend === 'Bearish' ? t('gold.panel.trend.bearishSession') : t('gold.panel.trend.consolidating'),
+      sub: dailyTrend === 'Bullish' ? t('gold.panel.trend.upMomentum').replace('{pct}', liveChangePct.toFixed(2)) : dailyTrend === 'Bearish' ? t('gold.panel.trend.downSupports').replace('{pct}', Math.abs(liveChangePct).toFixed(2)) : t('gold.panel.trend.rangeBound') },
     { tf: 'H4',    trend: h4Trend,
-      detail: h4Trend === 'Bullish' ? 'Higher-highs / higher-lows' : h4Trend === 'Bearish' ? 'Lower-highs / lower-lows' : 'No momentum — flat',
-      sub: h4Trend === 'Bullish' ? 'Momentum confirms bullish structure' : h4Trend === 'Bearish' ? 'Momentum confirms bearish pressure' : 'Await a break' },
+      detail: h4Trend === 'Bullish' ? t('gold.panel.trend.higherHighs') : h4Trend === 'Bearish' ? t('gold.panel.trend.lowerHighs') : t('gold.panel.trend.noMomentum'),
+      sub: h4Trend === 'Bullish' ? t('gold.panel.trend.momentumBull') : h4Trend === 'Bearish' ? t('gold.panel.trend.momentumBear') : t('gold.panel.trend.awaitBreak') },
     { tf: 'H1',    trend: h1Trend,
-      detail: h1Trend === 'Bullish' ? 'Short-term upward move' : 'Short-term pullback',
-      sub: h1Trend === 'Bullish' ? 'Recent ticks trending higher' : 'Recent ticks pulling back' },
+      detail: h1Trend === 'Bullish' ? t('gold.panel.trend.shortTermUp') : t('gold.panel.trend.shortTermDown'),
+      sub: h1Trend === 'Bullish' ? t('gold.panel.trend.ticksUp') : t('gold.panel.trend.ticksDown') },
     { tf: 'M15',   trend: m15Trend,
-      detail: m15Trend === 'Bullish' ? 'Micro bullish flow' : 'Micro bearish flow',
-      sub: 'Based on most recent tick data' },
+      detail: m15Trend === 'Bullish' ? t('gold.panel.trend.microBullish') : t('gold.panel.trend.microBearish'),
+      sub: t('gold.panel.trend.recentTick') },
   ]
   const bullCount = tfs.filter(t => t.trend === 'Bullish').length
   const bearCount = tfs.filter(t => t.trend === 'Bearish').length
@@ -123,7 +110,7 @@ function TrendPanel() {
       {/* Top: alignment bars + overall signal */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 14 }}>
         <div className="glass p-4">
-          <div className="section-label mb-3">Timeframe Analysis</div>
+          <div className="section-label mb-3">{t('gold.panel.trend.title')}</div>
           {tfs.map(row => {
             const c = TC(row.trend)
             return (
@@ -141,15 +128,15 @@ function TrendPanel() {
           })}
           <div style={{ marginTop: 14, padding: '14px', background: `${sc}10`, border: `1px solid ${sc}25`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: 9, color: 'var(--text-3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>Alignment Signal</div>
+              <div style={{ fontSize: 9, color: 'var(--text-3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>{t('gold.panel.trend.alignmentSignal')}</div>
               <span style={{ fontSize: 22, fontWeight: 900, color: sc, fontFamily: 'Orbitron, monospace' }}>{signal}</span>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 11, color: '#34d399' }}>{bullCount} Bullish TF</div>
-              <div style={{ fontSize: 11, color: '#ef4444', marginTop: 2 }}>{bearCount} Bearish TF</div>
+              <div style={{ fontSize: 11, color: '#34d399' }}>{bullCount} {t('gold.panel.trend.bullishTF')}</div>
+              <div style={{ fontSize: 11, color: '#ef4444', marginTop: 2 }}>{bearCount} {t('gold.panel.trend.bearishTF')}</div>
               {momentum !== null && (
                 <div style={{ fontSize: 10, color: momentum >= 0 ? '#34d399' : '#ef4444', marginTop: 3 }}>
-                  Momentum: {momentum >= 0 ? '+' : ''}{momentum.toFixed(2)}
+                  {t('gold.panel.trend.momentum')}: {momentum >= 0 ? '+' : ''}{momentum.toFixed(2)}
                 </div>
               )}
             </div>
@@ -159,7 +146,7 @@ function TrendPanel() {
         {/* Right: visual arrows */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div className="glass p-4" style={{ flex: 1 }}>
-            <div className="section-label mb-3">Visual Alignment</div>
+            <div className="section-label mb-3">{t('gold.panel.trend.visualAlignment')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {tfs.map(row => {
                 const c = TC(row.trend)
@@ -176,7 +163,7 @@ function TrendPanel() {
           </div>
           <div className="glass p-3">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Session Range</div>
+              <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>{t('gold.panel.trend.sessionRange')}</div>
               {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
             </div>
             <div style={{ position: 'relative', height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 3, marginBottom: 6 }}>
@@ -197,10 +184,10 @@ function TrendPanel() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 200 }}>
           {[
-            { label: 'Day Range', value: (liveHigh - liveLow).toFixed(1), unit: 'pts', color: 'var(--amber)' },
-            { label: 'Volatility', value: liveHigh > liveLow && livePrice > 0 ? (((liveHigh - liveLow) / livePrice) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
-            { label: 'Volume', value: goldData.volume, color: 'var(--text-1)' },
-            { label: 'Spread', value: liveSpread, unit: 'pts', color: 'var(--text-2)' },
+            { label: t('gold.panel.trend.dayRange'), value: (liveHigh - liveLow).toFixed(1), unit: 'pts', color: 'var(--amber)' },
+            { label: t('gold.panel.trend.volatility'), value: liveHigh > liveLow && livePrice > 0 ? (((liveHigh - liveLow) / livePrice) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
+            { label: t('gold.panel.trend.volume'), value: goldData.volume, color: 'var(--text-1)' },
+            { label: t('gold.panel.trend.spread'), value: liveSpread, unit: 'pts', color: 'var(--text-2)' },
           ].map(s => (
             <div key={s.label} className="glass p-3" style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{s.label}</div>
@@ -217,6 +204,7 @@ function TrendPanel() {
 
 // ─── BIAS ─────────────────────────────────────────────────────────────────────
 function BiasPanel() {
+  const { t } = useLanguage()
   const lvl = useLiveLevels()
   const { price, change, bias, biasColor, confidence, trendStatus,
           aiDailyPlan, target, invalidation, liveDXY, dxyFalling, status } = lvl
@@ -229,25 +217,25 @@ function BiasPanel() {
       <div className="glass p-5" style={{ background: `linear-gradient(135deg, ${biasColor}08, rgba(255,255,255,0.02))`, border: `1px solid ${biasColor}20` }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 8 }}>Today's Directional Bias</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 8 }}>{t('gold.panel.bias.todaysBias')}</div>
             <div className={biasFlash} style={{ fontSize: 48, fontWeight: 900, color: biasColor, fontFamily: 'Orbitron, monospace', lineHeight: 1, letterSpacing: '-0.02em', transition: 'color 0.5s ease', display: 'inline-block' }}>
               {bias === 'BULLISH' ? '↑' : bias === 'BEARISH' ? '↓' : '→'} {bias}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>Confidence: <span style={{ color: biasColor, fontWeight: 700 }}>{Math.round(animConf)}%</span></div>
+            <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>{t('gold.panel.bias.confidence')}: <span style={{ color: biasColor, fontWeight: 700 }}>{Math.round(animConf)}%</span></div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>AI Outlook</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 4 }}>{t('gold.panel.bias.aiOutlook')}</div>
             <div style={{ padding: '4px 14px', borderRadius: 20, background: `${biasColor}18`, border: `1px solid ${biasColor}35`, color: biasColor, fontSize: 12, fontWeight: 700, display: 'inline-block' }}>
               {trendStatus}
             </div>
-            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-3)' }}>Target: <span style={{ color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${target.toLocaleString()}</span></div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 3 }}>Invalidation: <span style={{ color: '#ef4444', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${invalidation.toLocaleString()}</span></div>
+            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-3)' }}>{t('gold.panel.bias.target')}: <span style={{ color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${target.toLocaleString()}</span></div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 3 }}>{t('gold.panel.bias.invalidation')}: <span style={{ color: '#ef4444', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>${invalidation.toLocaleString()}</span></div>
           </div>
         </div>
         {/* Confidence bar */}
         <div style={{ marginTop: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 10, color: 'var(--text-3)' }}>
-            <span>0%</span><span>Bias Strength</span><span>100%</span>
+            <span>0%</span><span>{t('gold.panel.bias.biasStrength')}</span><span>100%</span>
           </div>
           <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${animConf}%`, background: `linear-gradient(to right, ${biasColor}80, ${biasColor})`, borderRadius: 4, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }} />
@@ -258,7 +246,7 @@ function BiasPanel() {
       {/* AI Daily Plan */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div className="glass-gold p-4">
-          <div style={{ fontSize: 9, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, marginBottom: 10 }}>⚡ AI DAILY PLAN</div>
+          <div style={{ fontSize: 9, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, marginBottom: 10 }}>⚡ {t('gold.panel.bias.aiDailyPlan')}</div>
           <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{aiDailyPlan}</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -267,12 +255,12 @@ function BiasPanel() {
             const h4Trend = cp > 0 ? 'Bullish' : cp < 0 ? 'Bearish' : 'Neutral'
             const volPct = p > 0 ? (dayRange / p * 100).toFixed(2) + '%' : 'N/A'
             return [
-            { label: 'Daily Trend', value: trendStatus, positive: bias === 'BULLISH', neutral: bias === 'NEUTRAL' },
-            { label: 'H4 Trend',    value: h4Trend,     positive: h4Trend === 'Bullish', neutral: h4Trend === 'Neutral' },
-            { label: 'DXY', value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Weakening (+Gold)', positive: dxyFalling },
-            { label: 'Smart Money', value: `${sentiment.smartMoney.long}% Long`, positive: true },
-            { label: 'Momentum', value: change >= 0 ? `+${change.toFixed(2)}` : `${change.toFixed(2)}`, positive: change >= 0, neutral: Math.abs(change) < 1 },
-            { label: 'Volatility', value: volPct, positive: false, neutral: true },
+            { label: t('gold.panel.bias.dailyTrend'), value: trendStatus, positive: bias === 'BULLISH', neutral: bias === 'NEUTRAL' },
+            { label: t('gold.panel.bias.h4Trend'),    value: h4Trend,     positive: h4Trend === 'Bullish', neutral: h4Trend === 'Neutral' },
+            { label: t('gold.panel.bias.dxy'), value: liveDXY ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%)` : 'Weakening (+Gold)', positive: dxyFalling },
+            { label: t('gold.panel.bias.smartMoney'), value: `${sentiment.smartMoney.long}% Long`, positive: true },
+            { label: t('gold.panel.bias.momentum'), value: change >= 0 ? `+${change.toFixed(2)}` : `${change.toFixed(2)}`, positive: change >= 0, neutral: Math.abs(change) < 1 },
+            { label: t('gold.panel.bias.volatility'), value: volPct, positive: false, neutral: true },
             ]
           })().map(f => (
             <div key={f.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 8 }}>
@@ -283,18 +271,13 @@ function BiasPanel() {
         </div>
       </div>
 
-      {status === 'live' && (
-        <div style={{ padding: '10px 16px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite', flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: 'var(--text-2)' }}>Bias computed live from XAUUSD ${price.toFixed(2)} · refreshes every 5s</span>
-        </div>
-      )}
     </div>
   )
 }
 
 // ─── LEVELS ───────────────────────────────────────────────────────────────────
 function LevelsPanel() {
+  const { t } = useLanguage()
   const lvl = useLiveLevels()
   const { price, resistance, support, target, invalidation, liquidityZone,
           asianHigh, asianLow, manipHigh, manipLow, dayRange, status } = lvl
@@ -309,27 +292,27 @@ function LevelsPanel() {
   const approaching = (p) => Math.abs(price - p) < dayRange * 0.12
 
   const marks = [
-    { price: target,        label: 'Target Zone',    color: '#8B5CF6', dashed: true,  weight: 600 },
-    { price: resistance,    label: 'Resistance',     color: '#ef4444', dashed: false, weight: 700 },
-    { price: manipHigh,     label: 'Manip High',     color: '#f59e0b', dashed: true,  weight: 400 },
-    { price: asianHigh,     label: 'Day High',       color: '#f59e0b', dashed: false, weight: 500 },
-    { price: liquidityZone, label: 'Liquidity Zone', color: '#3b82f6', dashed: true,  weight: 500 },
+    { price: target,        label: t('gold.panel.levels.targetZone'),    color: '#8B5CF6', dashed: true,  weight: 600 },
+    { price: resistance,    label: t('gold.panel.levels.resistance'),     color: '#ef4444', dashed: false, weight: 700 },
+    { price: manipHigh,     label: t('gold.panel.levels.manipHigh'),     color: '#f59e0b', dashed: true,  weight: 400 },
+    { price: asianHigh,     label: t('gold.panel.levels.dayHigh'),       color: '#f59e0b', dashed: false, weight: 500 },
+    { price: liquidityZone, label: t('gold.panel.levels.liquidityZone'), color: '#3b82f6', dashed: true,  weight: 500 },
     { price: price,         label: '▶ XAUUSD',       color: '#ffffff', dashed: false, weight: 900, current: true },
-    { price: manipLow,      label: 'Manip Low',      color: '#f59e0b', dashed: true,  weight: 400 },
-    { price: asianLow,      label: 'Day Low',        color: '#f59e0b', dashed: false, weight: 500 },
-    { price: support,       label: 'Support',        color: '#34d399', dashed: false, weight: 700 },
-    { price: invalidation,  label: 'Invalidation',   color: '#ef4444', dashed: true,  weight: 400 },
+    { price: manipLow,      label: t('gold.panel.levels.manipLow'),      color: '#f59e0b', dashed: true,  weight: 400 },
+    { price: asianLow,      label: t('gold.panel.levels.dayLow'),        color: '#f59e0b', dashed: false, weight: 500 },
+    { price: support,       label: t('gold.panel.levels.support'),        color: '#34d399', dashed: false, weight: 700 },
+    { price: invalidation,  label: t('gold.panel.levels.invalidation'),   color: '#ef4444', dashed: true,  weight: 400 },
   ].sort((a, b) => b.price - a.price)
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 14 }}>
       {/* Price Ladder */}
       <div className="glass p-4">
-        <div className="section-label mb-4">Price Ladder — XAUUSD</div>
+        <div className="section-label mb-4">{t('gold.panel.levels.priceLadder')}</div>
         <div style={{ position: 'relative', height: 420, marginTop: 8 }}>
           {/* Manipulation zone band */}
           <div style={{ position: 'absolute', left: 88, right: 8, top: pos(manipHigh), bottom: `${(100 - parseFloat(pos(manipLow))).toFixed(2)}%`, background: 'rgba(245,158,11,0.06)', border: '1px dashed rgba(245,158,11,0.2)', borderRadius: 4, zIndex: 0 }}>
-            <span style={{ position: 'absolute', right: 8, top: 2, fontSize: 8, color: 'rgba(245,158,11,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Manipulation Zone</span>
+            <span style={{ position: 'absolute', right: 8, top: 2, fontSize: 8, color: 'rgba(245,158,11,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('gold.panel.levels.manipZone')}</span>
           </div>
 
           {marks.map((m, i) => {
@@ -349,15 +332,15 @@ function LevelsPanel() {
       {/* Right panel: level cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div className="section-label">Key Zones</div>
+          <div className="section-label">{t('gold.panel.levels.keyZones')}</div>
           {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
         </div>
         {[
-          { label: 'Resistance',   value: resistance,    color: '#ef4444', icon: '🔴', desc: 'Strong sell zone' },
-          { label: 'Target',       value: target,        color: '#8B5CF6', icon: '🎯', desc: 'Bullish objective' },
-          { label: 'Liquidity',    value: liquidityZone, color: '#3b82f6', icon: '💧', desc: 'Buy-side liquidity' },
-          { label: 'Support',      value: support,       color: '#34d399', icon: '🟢', desc: 'Buy zone' },
-          { label: 'Invalidation', value: invalidation,  color: '#ef4444', icon: '❌', desc: 'Short bias below' },
+          { label: t('gold.panel.levels.resistance'),   value: resistance,    color: '#ef4444', icon: '🔴', desc: t('gold.panel.levels.strongSellZone') },
+          { label: t('gold.panel.levels.target'),       value: target,        color: '#8B5CF6', icon: '🎯', desc: t('gold.panel.levels.bullishObjective') },
+          { label: t('gold.panel.levels.liquidity'),    value: liquidityZone, color: '#3b82f6', icon: '💧', desc: t('gold.panel.levels.buySideLiquidity') },
+          { label: t('gold.panel.levels.support'),      value: support,       color: '#34d399', icon: '🟢', desc: t('gold.panel.levels.buyZone') },
+          { label: t('gold.panel.levels.invalidation'), value: invalidation,  color: '#ef4444', icon: '❌', desc: t('gold.panel.levels.shortBiasBelow') },
         ].map(z => (
           <div key={z.label} className="stat-pill" style={{ padding: '12px 14px', background: approaching(z.value) ? `${z.color}16` : `${z.color}08`, border: `1px solid ${approaching(z.value) ? z.color + '55' : z.color + '22'}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -365,7 +348,7 @@ function LevelsPanel() {
               <div>
                 <div style={{ fontSize: 11, color: 'var(--text-2)', fontWeight: 600 }}>{z.label}</div>
                 <div style={{ fontSize: 10, color: approaching(z.value) ? z.color : 'var(--text-3)' }}>
-                  {approaching(z.value) ? '⚡ Approaching' : `${dist(z.value)} pts away`}
+                  {approaching(z.value) ? `⚡ ${t('gold.panel.levels.approaching')}` : `${dist(z.value)} ${t('gold.panel.levels.ptsAway')}`}
                 </div>
               </div>
             </div>
@@ -374,17 +357,17 @@ function LevelsPanel() {
         ))}
 
         <div style={{ padding: '12px 14px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 10 }}>
-          <div style={{ fontSize: 9, color: 'var(--amber)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Day Range</div>
+          <div style={{ fontSize: 9, color: 'var(--amber)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{t('gold.panel.levels.dayRange')}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-2)' }}>High</span>
+            <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{t('gold.panel.levels.high')}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)', fontFamily: 'Orbitron, monospace' }}>{asianHigh.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-2)' }}>Low</span>
+            <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{t('gold.panel.levels.low')}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--amber)', fontFamily: 'Orbitron, monospace' }}>{asianLow.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 5 }}>
-            <span style={{ fontSize: 10, color: 'var(--text-3)' }}>Range Width</span>
+            <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.levels.rangeWidth')}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', fontFamily: 'Orbitron, monospace' }}>{dayRange.toFixed(2)} pts</span>
           </div>
         </div>
@@ -395,6 +378,7 @@ function LevelsPanel() {
 
 // ─── NEWS ─────────────────────────────────────────────────────────────────────
 function NewsPanel() {
+  const { t } = useLanguage()
   const { news: liveNews } = useLiveMarket()
   const lvl = useLiveLevels()
   const { price: livePrice, resistance, support, target, invalidation, bias, biasColor, status } = lvl
@@ -419,19 +403,18 @@ function NewsPanel() {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10, alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {status === 'live' && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite', flexShrink: 0 }} />}
-          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Live context:</span>
+          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{t('gold.panel.news.liveContext')}:</span>
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, fontFamily: 'Orbitron, monospace', color: 'var(--gold)' }}>${livePrice.toFixed(2)}</span>
         <span style={{ fontSize: 11, color: biasColor, fontWeight: 700 }}>{bias}</span>
         <span style={{ fontSize: 11, color: 'var(--text-3)' }}>S: <b style={{ color: '#34d399', fontFamily: 'Orbitron, monospace' }}>${support.toFixed(0)}</b></span>
         <span style={{ fontSize: 11, color: 'var(--text-3)' }}>R: <b style={{ color: '#ef4444', fontFamily: 'Orbitron, monospace' }}>${resistance.toFixed(0)}</b></span>
         <span style={{ fontSize: 11, color: 'var(--text-3)' }}>Target: <b style={{ color: '#8B5CF6', fontFamily: 'Orbitron, monospace' }}>${target.toFixed(0)}</b></span>
-        <span style={{ fontSize: 9, color: 'var(--text-3)', marginLeft: 'auto' }}>Refreshes every 5s</span>
       </div>
 
       {/* Economic Calendar */}
       <div className="glass p-4">
-        <div className="section-label mb-3">📅 Economic Calendar — Today</div>
+        <div className="section-label mb-3">📅 {t('gold.panel.news.economicCalendar')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {todayEvents.map(ev => {
             const ic = IMPACT_COLOR[ev.impact] || '#94a3b8'
@@ -445,17 +428,17 @@ function NewsPanel() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{ev.event}</span>
                     <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: `${ic}18`, color: ic, border: `1px solid ${ic}30`, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
-                      {'★'.repeat(Math.min(ev.impact, 5))} Impact
+                      {'★'.repeat(Math.min(ev.impact, 5))} {t('gold.panel.news.impact')}
                     </span>
                     {ev.recommendation === 'avoid' && (
-                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.25)', fontWeight: 700, textTransform: 'uppercase' }}>AVOID</span>
+                      <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.25)', fontWeight: 700, textTransform: 'uppercase' }}>{t('gold.panel.news.avoid')}</span>
                     )}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 4 }}>{ev.aiNote}</div>
                   {(ev.forecast || ev.previous) && (
                     <div style={{ display: 'flex', gap: 12 }}>
-                      {ev.forecast && <span style={{ fontSize: 10, color: 'var(--text-3)' }}>Forecast: <b style={{ color: 'var(--text-2)' }}>{ev.forecast}</b></span>}
-                      {ev.previous && <span style={{ fontSize: 10, color: 'var(--text-3)' }}>Previous: <b style={{ color: 'var(--text-2)' }}>{ev.previous}</b></span>}
+                      {ev.forecast && <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.news.forecast')}: <b style={{ color: 'var(--text-2)' }}>{ev.forecast}</b></span>}
+                      {ev.previous && <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.news.previous')}: <b style={{ color: 'var(--text-2)' }}>{ev.previous}</b></span>}
                     </div>
                   )}
                 </div>
@@ -468,7 +451,7 @@ function NewsPanel() {
       {/* News feed */}
       <div className="glass p-4">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div className="section-label">📰 Market News — Gold Impact</div>
+          <div className="section-label">📰 {t('gold.panel.news.marketNews')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {isLive ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }}>
@@ -476,7 +459,7 @@ function NewsPanel() {
                 <span style={{ fontSize: 9, color: '#34d399', fontWeight: 700 }}>LIVE</span>
               </div>
             ) : (
-              <span style={{ fontSize: 9, color: 'var(--text-3)' }}>Sample data</span>
+              <span style={{ fontSize: 9, color: 'var(--text-3)' }}>{t('gold.panel.news.sampleData')}</span>
             )}
           </div>
         </div>
@@ -490,7 +473,7 @@ function NewsPanel() {
               </div>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.4, marginBottom: 6 }}>{n.title}</div>
               <div style={{ fontSize: 11, color: 'var(--text-3)', lineHeight: 1.5 }}>{n.aiSummary ?? n.summary}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 8 }}>Source: {n.source}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 8 }}>{t('gold.panel.news.source')}: {n.source}</div>
             </div>
           ))}
         </div>
@@ -501,6 +484,7 @@ function NewsPanel() {
 
 // ─── SCENARIOS ────────────────────────────────────────────────────────────────
 function ScenariosPanel() {
+  const { t } = useLanguage()
   const lvl = useLiveLevels()
   const { price, resistance, support, target, invalidation, dayRange, bias, status } = lvl
 
@@ -537,17 +521,17 @@ function ScenariosPanel() {
 
   function scenarioStatus(entryNum, t1Num, stopNum, isBull) {
     if (isBull) {
-      if (price >= t1Num)                               return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
-      if (price < stopNum)                              return { label: 'INVALIDATED',  color: '#ef4444' }
-      if (price >= entryNum)                            return { label: 'IN PROGRESS',  color: '#34d399' }
-      if (Math.abs(price - entryNum) < dayRange * 0.1) return { label: 'APPROACHING',  color: '#f59e0b' }
+      if (price >= t1Num)                               return { label: t('gold.panel.scenarios.target1Hit'), color: '#8B5CF6' }
+      if (price < stopNum)                              return { label: t('gold.panel.scenarios.invalidated'),  color: '#ef4444' }
+      if (price >= entryNum)                            return { label: t('gold.panel.scenarios.inProgress'),  color: '#34d399' }
+      if (Math.abs(price - entryNum) < dayRange * 0.1) return { label: t('gold.panel.scenarios.approaching'),  color: '#f59e0b' }
     } else {
-      if (price <= t1Num)                               return { label: 'TARGET 1 HIT', color: '#8B5CF6' }
-      if (price > stopNum)                              return { label: 'INVALIDATED',  color: '#ef4444' }
-      if (price <= entryNum)                            return { label: 'IN PROGRESS',  color: '#ef4444' }
-      if (Math.abs(price - entryNum) < dayRange * 0.1) return { label: 'APPROACHING',  color: '#f59e0b' }
+      if (price <= t1Num)                               return { label: t('gold.panel.scenarios.target1Hit'), color: '#8B5CF6' }
+      if (price > stopNum)                              return { label: t('gold.panel.scenarios.invalidated'),  color: '#ef4444' }
+      if (price <= entryNum)                            return { label: t('gold.panel.scenarios.inProgress'),  color: '#ef4444' }
+      if (Math.abs(price - entryNum) < dayRange * 0.1) return { label: t('gold.panel.scenarios.approaching'),  color: '#f59e0b' }
     }
-    return { label: 'WATCHING', color: '#94a3b8' }
+    return { label: t('gold.panel.scenarios.watching'), color: '#94a3b8' }
   }
 
   const bullStatus = scenarioStatus(bull._entryNum, bull._t1Num, bull._stopNum, true)
@@ -561,7 +545,7 @@ function ScenariosPanel() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 20 }}>🐂</span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#34d399' }}>BULLISH SCENARIO</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#34d399' }}>{t('gold.panel.scenarios.bullish')}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {status === 'live' && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${bullStatus.color}18`, border: `1px solid ${bullStatus.color}40`, color: bullStatus.color, fontWeight: 700, textTransform: 'uppercase' }}>{bullStatus.label}</span>}
@@ -576,10 +560,10 @@ function ScenariosPanel() {
           </div>
           <div style={{ fontSize: 11, color: 'rgba(52,211,153,0.8)', lineHeight: 1.5, marginBottom: 14 }}>{bull.condition}</div>
           {[
-            { label: 'Entry Zone', value: bull.entry, color: '#34d399' },
-            { label: 'Target 1', value: bull.target1, color: '#34d399' },
-            { label: 'Target 2', value: bull.target2, color: '#8B5CF6' },
-            { label: 'Stop Loss', value: bull.invalidation, color: '#ef4444' },
+            { label: t('gold.panel.scenarios.entryZone'), value: bull.entry, color: '#34d399' },
+            { label: t('gold.panel.scenarios.target1'), value: bull.target1, color: '#34d399' },
+            { label: t('gold.panel.scenarios.target2'), value: bull.target2, color: '#8B5CF6' },
+            { label: t('gold.panel.scenarios.stopLoss'), value: bull.invalidation, color: '#ef4444' },
           ].map(r => (
             <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(52,211,153,0.1)' }}>
               <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{r.label}</span>
@@ -587,7 +571,7 @@ function ScenariosPanel() {
             </div>
           ))}
           <div style={{ marginTop: 14, padding: '10px', background: 'rgba(52,211,153,0.06)', borderRadius: 8 }}>
-            <div style={{ fontSize: 9, color: 'rgba(52,211,153,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>AI Explanation</div>
+            <div style={{ fontSize: 9, color: 'rgba(52,211,153,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>{t('gold.panel.scenarios.aiExplanation')}</div>
             <p style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{bull.aiExplanation}</p>
           </div>
         </div>
@@ -597,7 +581,7 @@ function ScenariosPanel() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 20 }}>🐻</span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444' }}>BEARISH SCENARIO</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444' }}>{t('gold.panel.scenarios.bearish')}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {status === 'live' && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${bearStatus.color}18`, border: `1px solid ${bearStatus.color}40`, color: bearStatus.color, fontWeight: 700, textTransform: 'uppercase' }}>{bearStatus.label}</span>}
@@ -611,10 +595,10 @@ function ScenariosPanel() {
           </div>
           <div style={{ fontSize: 11, color: 'rgba(239,68,68,0.8)', lineHeight: 1.5, marginBottom: 14 }}>{bear.condition}</div>
           {[
-            { label: 'Entry Zone', value: bear.entry, color: '#ef4444' },
-            { label: 'Target 1', value: bear.target1, color: '#34d399' },
-            { label: 'Target 2', value: bear.target2, color: '#8B5CF6' },
-            { label: 'Stop Loss', value: bear.invalidation, color: '#ef4444' },
+            { label: t('gold.panel.scenarios.entryZone'), value: bear.entry, color: '#ef4444' },
+            { label: t('gold.panel.scenarios.target1'), value: bear.target1, color: '#34d399' },
+            { label: t('gold.panel.scenarios.target2'), value: bear.target2, color: '#8B5CF6' },
+            { label: t('gold.panel.scenarios.stopLoss'), value: bear.invalidation, color: '#ef4444' },
           ].map(r => (
             <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
               <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{r.label}</span>
@@ -622,7 +606,7 @@ function ScenariosPanel() {
             </div>
           ))}
           <div style={{ marginTop: 14, padding: '10px', background: 'rgba(239,68,68,0.05)', borderRadius: 8 }}>
-            <div style={{ fontSize: 9, color: 'rgba(239,68,68,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>AI Explanation</div>
+            <div style={{ fontSize: 9, color: 'rgba(239,68,68,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>{t('gold.panel.scenarios.aiExplanation')}</div>
             <p style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{bear.aiExplanation}</p>
           </div>
         </div>
@@ -630,22 +614,22 @@ function ScenariosPanel() {
 
       {/* Neutral — What to avoid */}
       <div style={{ padding: '20px', background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--amber)', marginBottom: 14 }}>⚠️ WHAT TO AVOID TODAY</div>
+        <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--amber)', marginBottom: 14 }}>⚠️ {t('gold.panel.scenarios.whatToAvoid')}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Times to Avoid</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{t('gold.panel.scenarios.timesToAvoid')}</div>
             {neutral.whenToAvoid.map((t, i) => (
               <div key={i} style={{ fontSize: 11, color: 'var(--text-2)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>• {t}</div>
             ))}
           </div>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>News to Avoid</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{t('gold.panel.scenarios.newsToAvoid')}</div>
             {neutral.newsToAvoid.map((n, i) => (
               <div key={i} style={{ display: 'inline-block', margin: '0 4px 4px 0', padding: '3px 10px', borderRadius: 20, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 11, color: '#ef4444', fontWeight: 700 }}>{n}</div>
             ))}
           </div>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Wait For</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{t('gold.panel.scenarios.waitFor')}</div>
             {neutral.zonesToWait.map((z, i) => (
               <div key={i} style={{ fontSize: 11, color: 'var(--text-2)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>✓ {z}</div>
             ))}
@@ -658,6 +642,7 @@ function ScenariosPanel() {
 
 // ─── LIQUIDITY ────────────────────────────────────────────────────────────────
 function LiquidityPanel() {
+  const { t } = useLanguage()
   const lvl = useLiveLevels()
   const { price: livePrice, resistance, support, target, invalidation, liquidityZone,
           asianHigh, asianLow, dayRange, status } = lvl
@@ -682,8 +667,8 @@ function LiquidityPanel() {
       {/* Sentiment bars */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: 'Smart Money', long: sm.long, short: sm.short, color: '#8B5CF6', icon: '🏦' },
-          { label: 'Retail Traders', long: rt.long, short: rt.short, color: '#94a3b8', icon: '👥' },
+          { label: t('gold.panel.liquidity.smartMoney'), long: sm.long, short: sm.short, color: '#8B5CF6', icon: '🏦' },
+          { label: t('gold.panel.liquidity.retail'), long: rt.long, short: rt.short, color: '#94a3b8', icon: '👥' },
         ].map(s => (
           <div key={s.label} className="glass p-4">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -707,8 +692,8 @@ function LiquidityPanel() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 28 }}>💡</span>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 3 }}>CONTRARIAN SIGNAL</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: '#34d399' }}>SMART MONEY vs RETAIL DIVERGENCE — BULLISH</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 3 }}>{t('gold.panel.liquidity.contrarian')}</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#34d399' }}>{t('gold.panel.liquidity.divergenceBullish')}</div>
             <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 4 }}>Retail is {rt.short}% SHORT while Smart Money is {sm.long}% LONG. Historical accuracy of this setup: ~73%. Bias: BUY DIPS.</div>
           </div>
         </div>
@@ -718,7 +703,7 @@ function LiquidityPanel() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div style={{ padding: '18px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.1em' }}>💚 Buy-Side Liquidity (above price)</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.1em' }}>💚 {t('gold.panel.liquidity.buySide')}</div>
             {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
           </div>
           {buySide.map((b, i) => (
@@ -728,16 +713,16 @@ function LiquidityPanel() {
                 <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.label}{status === 'live' ? ` · ${Math.abs(livePrice - b.level).toFixed(1)} pts` : ''}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {nearZone(b.level) && <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>⚡ NEAR</span>}
-                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(52,211,153,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#34d399' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely}</span>
+                {nearZone(b.level) && <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>⚡ {t('gold.panel.liquidity.near')}</span>}
+                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(52,211,153,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#34d399' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely === 'High' ? t('gold.panel.liquidity.high') : t('gold.panel.liquidity.medium')}</span>
               </div>
             </div>
           ))}
         </div>
         <div style={{ padding: '18px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em' }}>🔴 Sell-Side Liquidity (below price)</div>
-            {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>LIVE</span></div>}
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.1em' }}>🔴 {t('gold.panel.liquidity.sellSide')}</div>
+            {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}><div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} /><span style={{ fontSize: 8, color: '#34d399' }}>{t('gold.statusLive')}</span></div>}
           </div>
           {sellSide.map((b, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(239,68,68,0.1)', background: nearZone(b.level) ? 'rgba(239,68,68,0.04)' : 'transparent' }}>
@@ -746,8 +731,8 @@ function LiquidityPanel() {
                 <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{b.label}{status === 'live' ? ` · ${Math.abs(livePrice - b.level).toFixed(1)} pts` : ''}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {nearZone(b.level) && <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>⚡ NEAR</span>}
-                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#ef4444' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely}</span>
+                {nearZone(b.level) && <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>⚡ {t('gold.panel.liquidity.near')}</span>}
+                <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: b.likely === 'High' ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.1)', color: b.likely === 'High' ? '#ef4444' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase' }}>{b.likely === 'High' ? t('gold.panel.liquidity.high') : t('gold.panel.liquidity.medium')}</span>
               </div>
             </div>
           ))}
@@ -759,6 +744,7 @@ function LiquidityPanel() {
 
 // ─── SESSIONS ─────────────────────────────────────────────────────────────────
 function SessionsPanel() {
+  const { t } = useLanguage()
   const { sessions: liveSessions } = useLiveMarket()
   const now = liveSessions?.time ?? new Date()
   const utcH = liveSessions?.utcHour ?? now.getUTCHours()
@@ -786,8 +772,8 @@ function SessionsPanel() {
       {/* 24h timeline */}
       <div className="glass p-4">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div className="section-label">24h Session Map — UTC</div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>Current UTC: <span style={{ color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>{String(utcH).padStart(2,'0')}:{String(utcM).padStart(2,'0')}</span></div>
+          <div className="section-label">{t('gold.panel.sessions.mapTitle')}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{t('gold.panel.sessions.currentUtc')}: <span style={{ color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 700 }}>{String(utcH).padStart(2,'0')}:{String(utcM).padStart(2,'0')}</span></div>
         </div>
         {/* Hour labels */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -841,15 +827,15 @@ function SessionsPanel() {
               {isActive && <div style={{ position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: '50%', background: s.color, boxShadow: `0 0 8px ${s.color}`, animation: 'dotPulse 1.5s ease infinite' }} />}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <span style={{ fontSize: 13, fontWeight: 800, color: s.color }}>{s.label}</span>
-                {isActive && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${s.color}18`, color: s.color, fontWeight: 700, textTransform: 'uppercase' }}>ACTIVE</span>}
+                {isActive && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: `${s.color}18`, color: s.color, fontWeight: 700, textTransform: 'uppercase' }}>{t('gold.panel.sessions.active')}</span>}
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 8 }}>{s.open}:00 – {s.close}:00 UTC</div>
               <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.55, marginBottom: 10 }}>{s.desc}</div>
               <div style={{ padding: '8px 10px', background: `${s.color}08`, borderRadius: 7, borderLeft: `2px solid ${s.color}50` }}>
-                <div style={{ fontSize: 9, color: s.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Strategy</div>
+                <div style={{ fontSize: 9, color: s.color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>{t('gold.panel.sessions.strategy')}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5 }}>{s.strat}</div>
               </div>
-              <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-3)' }}>Best for: <span style={{ color: s.color, fontWeight: 600 }}>{s.best}</span></div>
+              <div style={{ marginTop: 8, fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.sessions.bestFor')}: <span style={{ color: s.color, fontWeight: 600 }}>{s.best}</span></div>
             </div>
           )
         })}
@@ -860,6 +846,7 @@ function SessionsPanel() {
 
 // ─── ALERTS ───────────────────────────────────────────────────────────────────
 function AlertsPanel() {
+  const { t } = useLanguage()
   const lvl = useLiveLevels()
   const { price: livePrice, resistance, support, target, invalidation, status } = lvl
   const initialized = useRef(false)
@@ -898,14 +885,14 @@ function AlertsPanel() {
       {/* Alert list */}
       <div className="glass p-4">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div className="section-label">Active Alerts — XAUUSD</div>
+          <div className="section-label">{t('gold.panel.alerts.title')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {livePrice !== null && <span style={{ fontSize: 11, fontFamily: 'Orbitron, monospace', color: 'var(--gold)', fontWeight: 700 }}>${livePrice.toFixed(2)}</span>}
-            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{alerts.filter(a => a.active).length} active</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{alerts.filter(a => a.active).length} {t('gold.panel.alerts.active')}</span>
           </div>
         </div>
         {alerts.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-3)', fontSize: 13 }}>No alerts set. Add one →</div>
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-3)', fontSize: 13 }}>{t('gold.panel.alerts.noAlerts')}</div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {alerts.map(a => {
@@ -916,16 +903,16 @@ function AlertsPanel() {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{a.label}</span>
-                  {triggered && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontWeight: 700 }}>🔴 TRIGGERED</span>}
+                  {triggered && <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontWeight: 700 }}>🔴 {t('gold.panel.alerts.triggered')}</span>}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
-                  Alert when price goes <span style={{ color: a.dir === 'above' ? '#34d399' : '#ef4444', fontWeight: 700 }}>{a.dir}</span> <span style={{ fontFamily: 'Orbitron, monospace', color: 'var(--gold)', fontWeight: 700 }}>${a.price.toLocaleString()}</span>
+                  {t('gold.panel.alerts.alertWhen')} <span style={{ color: a.dir === 'above' ? '#34d399' : '#ef4444', fontWeight: 700 }}>{a.dir}</span> <span style={{ fontFamily: 'Orbitron, monospace', color: 'var(--gold)', fontWeight: 700 }}>${a.price.toLocaleString()}</span>
                   {livePrice !== null && <span style={{ color: 'var(--text-3)' }}> · now ${livePrice.toFixed(2)}</span>}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => toggleAlert(a.id)} style={{ padding: '5px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-3)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {a.active ? 'Pause' : 'Enable'}
+                  {a.active ? t('gold.panel.alerts.pause') : t('gold.panel.alerts.enable')}
                 </button>
                 <button onClick={() => removeAlert(a.id)} style={{ padding: '5px 10px', borderRadius: 6, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>
                   ✕
@@ -939,14 +926,14 @@ function AlertsPanel() {
 
       {/* Add alert */}
       <div className="glass p-4">
-        <div className="section-label mb-4">+ New Alert</div>
+        <div className="section-label mb-4">+ {t('gold.panel.alerts.newAlert')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Price Level</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('gold.panel.alerts.priceLevel')}</div>
             <input className="form-input" type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="e.g. 3268" style={{ width: '100%', fontSize: 14 }} />
           </div>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Trigger Direction</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('gold.panel.alerts.direction')}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {['above', 'below'].map(d => (
                 <button key={d} onClick={() => setDir(d)} style={{ flex: 1, padding: '9px', borderRadius: 8, border: `1px solid ${dir === d ? 'rgba(139,92,246,0.4)' : 'var(--border)'}`, background: dir === d ? 'rgba(139,92,246,0.12)' : 'rgba(255,255,255,0.03)', color: dir === d ? 'var(--gold)' : 'var(--text-3)', fontSize: 12, fontWeight: dir === d ? 700 : 400, cursor: 'pointer', fontFamily: 'inherit', textTransform: 'capitalize' }}>
@@ -956,23 +943,23 @@ function AlertsPanel() {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Label (optional)</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('gold.panel.alerts.labelOptional')}</div>
             <input className="form-input" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Resistance break" style={{ width: '100%', fontSize: 13 }} />
           </div>
           <button onClick={addAlert} disabled={!price} className="btn btn-gold" style={{ width: '100%', padding: '12px', fontSize: 13 }}>
-            🔔 Set Alert
+            🔔 {t('gold.panel.alerts.setAlert')}
           </button>
         </div>
 
         {/* Suggested levels */}
         <div style={{ marginTop: 20 }}>
-          <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Quick Set — Key Levels</div>
+          <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>{t('gold.panel.alerts.quickSet')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {[
-              { price: resistance,   label: 'Resistance break', dir: 'above' },
-              { price: target,       label: 'Target reached',   dir: 'above' },
-              { price: support,      label: 'Support lost',     dir: 'below' },
-              { price: invalidation, label: 'Invalidation hit', dir: 'below' },
+              { price: resistance,   label: t('gold.panel.alerts.resistanceBreak'), dir: 'above' },
+              { price: target,       label: t('gold.panel.alerts.targetReached'),   dir: 'above' },
+              { price: support,      label: t('gold.panel.alerts.supportLost'),     dir: 'below' },
+              { price: invalidation, label: t('gold.panel.alerts.invalidationHit'), dir: 'below' },
             ].map(q => (
               <button key={q.price} onClick={() => { setPrice(q.price); setDir(q.dir); setLabel(q.label) }} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', justifyContent: 'space-between', textAlign: 'left' }}>
                 <span>{q.label}</span>
@@ -988,6 +975,7 @@ function AlertsPanel() {
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
 function AIPanel({ navigate }) {
+  const { t } = useLanguage()
   const lvl = useLiveLevels()
   const { price: goldPrice, changePct: goldChange, resistance, support, target, invalidation,
           bias, biasColor, aiDailyPlan, status, liveDXY } = lvl
@@ -1008,12 +996,12 @@ function AIPanel({ navigate }) {
   const aiSummaryText = `Gold (XAUUSD) is trading at $${goldPrice.toFixed(2)}, ${goldChange >= 0 ? 'up' : 'down'} ${Math.abs(goldChange).toFixed(2)}% on the session. ${bias === 'BULLISH' ? `Momentum is positive with price holding above the ${support.toFixed(0)} support zone. Institutional flow and DXY weakness continue to favour the bull case. Watch for a breakout above ${resistance.toFixed(0)} targeting ${target.toFixed(0)}.` : bias === 'BEARISH' ? `Bearish pressure is building with price failing to sustain above ${resistance.toFixed(0)}. Risk of a deeper pullback toward ${support.toFixed(0)}–${invalidation.toFixed(0)} if sellers maintain control.` : `Price is consolidating between ${support.toFixed(0)} and ${resistance.toFixed(0)}. Wait for a decisive break before committing directionally. Range-bound conditions favour scalp strategies with tight stops.`} A daily close below ${invalidation.toFixed(0)} would flip the bias bearish.`
 
   const pillars = [
-    { icon: '📈', title: 'Trend Alignment', value: `${bias} bias — price ${goldChange >= 0 ? 'above' : 'below'} key levels`, color: biasColor, pos: bias !== 'BEARISH' },
-    { icon: '🏦', title: 'Smart Money', value: `${sm.long}% institutional long positioning`, color: '#8B5CF6', pos: true },
-    { icon: '📉', title: 'DXY', value: dxyStr, color: (liveDXY?.changePct ?? -0.3) < 0 ? '#34d399' : '#ef4444', pos: (liveDXY?.changePct ?? -0.3) < 0 },
-    { icon: '⚠️', title: 'Event Risk', value: 'Watch economic calendar — reduce size near releases', color: '#f59e0b', pos: false },
-    { icon: '🎯', title: 'BTC Correlation', value: btcStr, color: '#34d399', pos: true },
-    { icon: '🐻', title: 'Bear Trigger', value: `Break below ${invalidation.toFixed(0)} flips bias bearish`, color: '#ef4444', pos: false },
+    { icon: '📈', title: t('gold.panel.ai.trendAlignment'), value: `${bias} bias — price ${goldChange >= 0 ? 'above' : 'below'} key levels`, color: biasColor, pos: bias !== 'BEARISH' },
+    { icon: '🏦', title: t('gold.panel.ai.smartMoney'), value: `${sm.long}% institutional long positioning`, color: '#8B5CF6', pos: true },
+    { icon: '📉', title: t('gold.panel.ai.dxy'), value: dxyStr, color: (liveDXY?.changePct ?? -0.3) < 0 ? '#34d399' : '#ef4444', pos: (liveDXY?.changePct ?? -0.3) < 0 },
+    { icon: '⚠️', title: t('gold.panel.ai.eventRisk'), value: 'Watch economic calendar — reduce size near releases', color: '#f59e0b', pos: false },
+    { icon: '🎯', title: t('gold.panel.ai.btcCorrelation'), value: btcStr, color: '#34d399', pos: true },
+    { icon: '🐻', title: t('gold.panel.ai.bearTrigger'), value: `Break below ${invalidation.toFixed(0)} flips bias bearish`, color: '#ef4444', pos: false },
   ]
 
   return (
@@ -1023,10 +1011,10 @@ function AIPanel({ navigate }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #6D28D9, #8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🤖</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)' }}>SEVORA AI — Gold Analysis</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)' }}>{t('gold.panel.ai.title')}</div>
             <div style={{ fontSize: 11, color: '#34d399', display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.5s ease infinite' }} />
-              Online · Reading site data · {new Date().toUTCString().slice(0, 25)} UTC
+              {t('gold.panel.ai.online')} · {new Date().toUTCString().slice(0, 25)} UTC
             </div>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
@@ -1056,7 +1044,7 @@ function AIPanel({ navigate }) {
       {/* CTA */}
       <div style={{ display: 'flex', gap: 12 }}>
         <button onClick={() => navigate('/ai-mentor')} className="btn btn-gold" style={{ flex: 1, padding: '14px', fontSize: 14 }}>
-          🤖 Open Full AI Mentor — Chat with AI about Gold
+          🤖 {t('gold.panel.ai.openMentor')}
         </button>
       </div>
     </div>
@@ -1065,6 +1053,7 @@ function AIPanel({ navigate }) {
 
 // ─── HISTORY ──────────────────────────────────────────────────────────────────
 function HistoryPanel() {
+  const { t } = useLanguage()
   const goldTrades = journalTrades.filter(t => t.instrument === 'XAUUSD')
   const wins = goldTrades.filter(t => t.status === 'win').length
   const losses = goldTrades.filter(t => t.status === 'loss').length
@@ -1075,10 +1064,10 @@ function HistoryPanel() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
-          { label: 'Gold Trades', value: goldTrades.length, color: 'var(--text-1)' },
-          { label: 'Win Rate', value: `${wr}%`, color: wr >= 60 ? '#34d399' : wr >= 50 ? '#f59e0b' : '#ef4444' },
-          { label: 'Wins', value: wins, color: '#34d399' },
-          { label: 'Losses', value: losses, color: '#ef4444' },
+          { label: t('gold.panel.history.goldTrades'), value: goldTrades.length, color: 'var(--text-1)' },
+          { label: t('gold.panel.history.winRate'), value: `${wr}%`, color: wr >= 60 ? '#34d399' : wr >= 50 ? '#f59e0b' : '#ef4444' },
+          { label: t('gold.panel.history.wins'), value: wins, color: '#34d399' },
+          { label: t('gold.panel.history.losses'), value: losses, color: '#ef4444' },
         ].map(s => (
           <div key={s.label} className="glass p-4" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>{s.label}</div>
@@ -1089,9 +1078,9 @@ function HistoryPanel() {
 
       {/* Trade list */}
       <div className="glass p-4">
-        <div className="section-label mb-3">XAUUSD Trade History</div>
+        <div className="section-label mb-3">{t('gold.panel.history.tradeHistory')}</div>
         {goldTrades.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-3)' }}>No Gold trades in journal yet.</div>
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-3)' }}>{t('gold.panel.history.noTrades')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {goldTrades.map(t => {
@@ -1127,59 +1116,64 @@ function HistoryPanel() {
 
 // ─── CORRELATION ──────────────────────────────────────────────────────────────
 function CorrelationPanel() {
-  const { market, status } = useLiveMarket()
-  const staticDxy = instruments.find(i => i.symbol === 'DXY')
-  const staticBtc = instruments.find(i => i.symbol === 'BTCUSD')
-  const staticSilver = instruments.find(i => i.symbol === 'XAGUSD')
+  const { t } = useLanguage()
+  const { market, instruments: liveInstr, status } = useLiveMarket()
 
-  const liveDxyCh = market?.dxy?.changePct ?? staticDxy?.changePct ?? -0.3
-  const liveDxyPr = market?.dxy?.price ?? staticDxy?.price ?? 104.2
-  const liveBtcCh = market?.btc?.changePct ?? staticBtc?.changePct ?? 1.2
-  const liveBtcPr = market?.btc?.price ?? staticBtc?.price ?? 67000
-  const liveSilverCh = market?.silver?.changePct ?? staticSilver?.changePct ?? 1.3
-  const liveSilverPr = market?.silver?.price ?? staticSilver?.price ?? 32.5
+  const liveDxyCh = market?.dxy?.changePct ?? null
+  const liveDxyPr = market?.dxy?.price ?? null
+  const liveBtcCh = market?.btc?.changePct ?? null
+  const liveBtcPr = market?.btc?.price ?? null
+  const liveSilverCh = market?.silver?.changePct ?? null
+  const liveSilverPr = market?.silver?.price ?? null
+  const liveUs10y = liveInstr?.US10Y
 
   const liveLabel = status === 'live' ? ' ●' : ''
 
   const pairs = [
     {
       symbol: 'DXY' + liveLabel, name: 'US Dollar Index',
-      price: liveDxyPr.toFixed(2), change: `${liveDxyCh >= 0 ? '+' : ''}${liveDxyCh.toFixed(2)}%`,
-      trend: liveDxyCh < 0 ? 'Bearish' : 'Bullish',
-      corr: 'INVERSE', corrNum: -0.92,
+      price: liveDxyPr != null ? liveDxyPr.toFixed(2) : '—',
+      change: liveDxyCh != null ? `${liveDxyCh >= 0 ? '+' : ''}${liveDxyCh.toFixed(2)}%` : '—',
+      trend: liveDxyCh != null ? (liveDxyCh < 0 ? 'Bearish' : 'Bullish') : '—',
+      corr: t('gold.panel.correlation.inverse').toUpperCase(), corrNum: -0.92,
       impact: 'DXY bearish = Gold bullish. This is the #1 driver of Gold.',
-      signal: liveDxyCh < 0 ? '↑ Gold' : '↓ Gold',
-      signalColor: liveDxyCh < 0 ? '#34d399' : '#ef4444',
+      signal: liveDxyCh != null ? (liveDxyCh < 0 ? '↑ Gold' : '↓ Gold') : '—',
+      signalColor: liveDxyCh != null ? (liveDxyCh < 0 ? '#34d399' : '#ef4444') : '#94a3b8',
       color: '#ef4444',
     },
     {
-      symbol: 'US10Y', name: '10-Year Treasury',
-      price: '4.82%', change: '+0.06%',
-      trend: 'Rising',
-      corr: 'INVERSE', corrNum: -0.78,
-      impact: 'Higher yields increase opportunity cost of Gold. Current yield at 4.82% — mild headwind.',
-      signal: '↓ Pressure',
-      signalColor: '#f59e0b',
+      symbol: 'US10Y' + liveLabel, name: '10-Year Treasury',
+      price: liveUs10y != null ? liveUs10y.price.toFixed(3) + '%' : '—',
+      change: liveUs10y != null ? `${liveUs10y.changePct >= 0 ? '+' : ''}${liveUs10y.changePct.toFixed(2)}%` : '—',
+      trend: liveUs10y != null ? (liveUs10y.changePct > 0 ? 'Rising' : 'Falling') : '—',
+      corr: t('gold.panel.correlation.inverse').toUpperCase(), corrNum: -0.78,
+      impact: liveUs10y != null
+        ? `Higher yields increase opportunity cost of Gold. Current yield at ${liveUs10y.price.toFixed(2)}% — ${liveUs10y.changePct > 0 ? 'mild headwind' : 'easing pressure'}.`
+        : 'Higher yields increase opportunity cost of Gold.',
+      signal: liveUs10y != null ? (liveUs10y.changePct > 0 ? '↓ Pressure' : '↑ Easing') : '—',
+      signalColor: liveUs10y != null ? (liveUs10y.changePct > 0 ? '#f59e0b' : '#34d399') : '#94a3b8',
       color: '#f59e0b',
     },
     {
       symbol: 'BTCUSD' + liveLabel, name: 'Bitcoin',
-      price: `$${Math.round(liveBtcPr).toLocaleString()}`, change: `${liveBtcCh >= 0 ? '+' : ''}${liveBtcCh.toFixed(2)}%`,
-      trend: liveBtcCh > 0 ? 'Bullish' : 'Bearish',
-      corr: 'MODERATE', corrNum: 0.44,
+      price: liveBtcPr != null ? `$${Math.round(liveBtcPr).toLocaleString()}` : '—',
+      change: liveBtcCh != null ? `${liveBtcCh >= 0 ? '+' : ''}${liveBtcCh.toFixed(2)}%` : '—',
+      trend: liveBtcCh != null ? (liveBtcCh > 0 ? 'Bullish' : 'Bearish') : '—',
+      corr: t('gold.panel.correlation.moderate').toUpperCase(), corrNum: 0.44,
       impact: 'BTC and Gold both rising together signals dollar weakness and inflation hedge demand.',
-      signal: liveBtcCh > 0 ? '↑ Neutral' : '↓ Neutral',
+      signal: liveBtcCh != null ? (liveBtcCh > 0 ? '↑ Neutral' : '↓ Neutral') : '—',
       signalColor: '#94a3b8',
       color: '#f59e0b',
     },
     {
       symbol: 'XAGUSD' + liveLabel, name: 'Silver',
-      price: `$${liveSilverPr.toFixed(2)}`, change: `${liveSilverCh >= 0 ? '+' : ''}${liveSilverCh.toFixed(2)}%`,
-      trend: liveSilverCh > 0 ? 'Bullish' : 'Bearish',
-      corr: 'STRONG', corrNum: 0.87,
+      price: liveSilverPr != null ? `$${liveSilverPr.toFixed(2)}` : '—',
+      change: liveSilverCh != null ? `${liveSilverCh >= 0 ? '+' : ''}${liveSilverCh.toFixed(2)}%` : '—',
+      trend: liveSilverCh != null ? (liveSilverCh > 0 ? 'Bullish' : 'Bearish') : '—',
+      corr: t('gold.panel.correlation.strong').toUpperCase(), corrNum: 0.87,
       impact: 'Silver moves with Gold but amplified. Co-movement confirms metals rally direction.',
-      signal: liveSilverCh > 0 ? '↑ Confirms' : '↓ Weakens',
-      signalColor: liveSilverCh > 0 ? '#34d399' : '#ef4444',
+      signal: liveSilverCh != null ? (liveSilverCh > 0 ? '↑ Confirms' : '↓ Weakens') : '—',
+      signalColor: liveSilverCh != null ? (liveSilverCh > 0 ? '#34d399' : '#ef4444') : '#94a3b8',
       color: '#3b82f6',
     },
   ]
@@ -1202,7 +1196,7 @@ function CorrelationPanel() {
             {/* Correlation bar */}
             <div style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Correlation with Gold</span>
+                <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('gold.panel.correlation.correlationWith')}</span>
                 <span style={{ fontSize: 11, fontWeight: 800, color: p.corrNum < -0.5 ? '#ef4444' : p.corrNum > 0.5 ? '#34d399' : '#94a3b8', fontFamily: 'Orbitron, monospace' }}>{p.corrNum > 0 ? '+' : ''}{p.corrNum.toFixed(2)}</span>
               </div>
               {/* -1 to +1 bar */}
@@ -1217,8 +1211,8 @@ function CorrelationPanel() {
                 }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                <span style={{ fontSize: 8, color: 'var(--text-3)' }}>-1.0 (Inverse)</span>
-                <span style={{ fontSize: 8, color: 'var(--text-3)' }}>+1.0 (Positive)</span>
+                <span style={{ fontSize: 8, color: 'var(--text-3)' }}>-1.0 ({t('gold.panel.correlation.inverse')})</span>
+                <span style={{ fontSize: 8, color: 'var(--text-3)' }}>+1.0 ({t('gold.panel.correlation.positive')})</span>
               </div>
             </div>
             <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 7, borderLeft: `2px solid ${p.color}50`, marginBottom: 8 }}>
@@ -1226,7 +1220,7 @@ function CorrelationPanel() {
               <div style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5 }}>{p.impact}</div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 10, color: 'var(--text-3)' }}>Gold Signal:</span>
+              <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.correlation.goldSignal')}:</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: p.signalColor }}>{p.signal}</span>
             </div>
           </div>
@@ -1235,13 +1229,15 @@ function CorrelationPanel() {
 
       {/* Summary row */}
       <div style={{ padding: '16px 20px', background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>📊 Macro Correlation Summary</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>📊 {t('gold.panel.correlation.macroSummary')}</div>
         <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.7 }}>
-          DXY is <b style={{ color: liveDxyCh < 0 ? '#34d399' : '#ef4444' }}>{liveDxyCh < 0 ? 'weakening' : 'strengthening'}</b> ({liveDxyCh >= 0 ? '+' : ''}{liveDxyCh.toFixed(2)}%) → {liveDxyCh < 0 ? <b style={{ color: '#34d399' }}>bullish</b> : <b style={{ color: '#ef4444' }}>bearish</b>} for Gold.{' '}
-          Silver {liveSilverCh > 0 ? 'is up confirming the metals rally' : 'is down — mixed signal for metals'}.{' '}
-          Treasury yields at 4.82% create mild headwinds but are secondary to dollar direction.{' '}
-          BTC {liveBtcCh > 0 ? 'rising with Gold signals broad dollar weakness' : 'falling adds mixed signal'}.{' '}
-          Net macro read: <b style={{ color: liveDxyCh < 0 && liveSilverCh > 0 ? '#34d399' : '#f59e0b' }}>{liveDxyCh < 0 && liveSilverCh > 0 ? 'BULLISH GOLD' : 'CAUTIOUSLY BULLISH'}</b>.
+          {liveDxyCh != null
+            ? <>DXY is <b style={{ color: liveDxyCh < 0 ? '#34d399' : '#ef4444' }}>{liveDxyCh < 0 ? 'weakening' : 'strengthening'}</b> ({liveDxyCh >= 0 ? '+' : ''}{liveDxyCh.toFixed(2)}%) → {liveDxyCh < 0 ? <b style={{ color: '#34d399' }}>bullish</b> : <b style={{ color: '#ef4444' }}>bearish</b>} for Gold.</>
+            : `DXY ${t('gold.panel.correlation.loading')}.`}{' '}
+          {liveSilverCh != null ? `Silver ${liveSilverCh > 0 ? 'is up confirming the metals rally' : 'is down — mixed signal for metals'}.` : 'Silver loading.'}{' '}
+          Treasury yields {liveUs10y != null ? `at ${liveUs10y.price.toFixed(2)}%` : '(loading)'} create mild headwinds but are secondary to dollar direction.{' '}
+          {liveBtcCh != null ? `BTC ${liveBtcCh > 0 ? 'rising with Gold signals broad dollar weakness' : 'falling adds mixed signal'}.` : 'BTC loading.'}{' '}
+          Net macro read: <b style={{ color: liveDxyCh != null && liveDxyCh < 0 && liveSilverCh != null && liveSilverCh > 0 ? '#34d399' : '#f59e0b' }}>{liveDxyCh != null && liveDxyCh < 0 && liveSilverCh != null && liveSilverCh > 0 ? 'BULLISH GOLD' : 'CAUTIOUSLY BULLISH'}</b>.
         </div>
       </div>
     </div>
@@ -1250,6 +1246,7 @@ function CorrelationPanel() {
 
 // ─── SENTIMENT ────────────────────────────────────────────────────────────────
 function SentimentPanel() {
+  const { t } = useLanguage()
   const { market, status } = useLiveMarket()
   const liveG = market?.gold
   const liveChangePct = liveG?.changePct ?? 0
@@ -1288,18 +1285,18 @@ function SentimentPanel() {
         {/* Smart Money */}
         <div style={{ padding: '28px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🏦</div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>Smart Money / Institutions</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>{t('gold.panel.sentiment.smartMoneyTitle')}</div>
           <Ring pct={sm.long} color="#8B5CF6" size={120} />
-          <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>of positions are <span style={{ color: '#34d399' }}>LONG</span></div>
-          <div style={{ marginTop: 8, padding: '6px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', fontSize: 12, fontWeight: 700, color: '#8B5CF6' }}>BULLISH POSITIONING</div>
+          <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{t('gold.panel.sentiment.ofPositionsLong')}</div>
+          <div style={{ marginTop: 8, padding: '6px 16px', borderRadius: 20, background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', fontSize: 12, fontWeight: 700, color: '#8B5CF6' }}>{t('gold.panel.sentiment.bullishPositioning')}</div>
         </div>
         {/* Retail */}
         <div style={{ padding: '28px', background: 'rgba(148,163,184,0.04)', border: '1px solid rgba(148,163,184,0.15)', borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>👥</div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>Retail Traders</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>{t('gold.panel.sentiment.retailTitle')}</div>
           <Ring pct={rt.long} color="#94a3b8" size={120} />
-          <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>of positions are <span style={{ color: '#ef4444' }}>SHORT</span> biased</div>
-          <div style={{ marginTop: 8, padding: '6px 16px', borderRadius: 20, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, fontWeight: 700, color: '#ef4444' }}>BEARISH RETAIL CROWD</div>
+          <div style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{t('gold.panel.sentiment.shortBiased')}</div>
+          <div style={{ marginTop: 8, padding: '6px 16px', borderRadius: 20, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, fontWeight: 700, color: '#ef4444' }}>{t('gold.panel.sentiment.bearishCrowd')}</div>
         </div>
       </div>
 
@@ -1308,7 +1305,7 @@ function SentimentPanel() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ fontSize: 36 }}>💡</div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', marginBottom: 5 }}>CONTRARIAN BULLISH SIGNAL DETECTED</div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', marginBottom: 5 }}>{t('gold.panel.sentiment.contrarian')}</div>
             <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>
               When retail traders are {rt.short}% SHORT and Smart Money is {sm.long}% LONG,
               the market typically follows institutional positioning. This divergence historically
@@ -1324,7 +1321,7 @@ function SentimentPanel() {
         <div style={{ padding: '14px 18px', background: `${momentumColor}08`, border: `1px solid ${momentumColor}25`, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s infinite' }} />
-            <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Price-Action Momentum (Live)</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('gold.panel.sentiment.liveLabel')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 16, fontFamily: 'Orbitron, monospace', fontWeight: 900, color: momentumColor }}>
@@ -1337,7 +1334,7 @@ function SentimentPanel() {
 
       {/* Historical trend */}
       <div className="glass p-4">
-        <div className="section-label mb-4">Sentiment Trend — Last 5 Weeks</div>
+        <div className="section-label mb-4">{t('gold.panel.sentiment.sentimentTrend')}</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 100 }}>
           {history.map(h => (
             <div key={h.week} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -1350,8 +1347,8 @@ function SentimentPanel() {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(139,92,246,0.5)' }} /><span style={{ fontSize: 10, color: 'var(--text-3)' }}>Smart Money Long</span></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(148,163,184,0.35)' }} /><span style={{ fontSize: 10, color: 'var(--text-3)' }}>Retail Long</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(139,92,246,0.5)' }} /><span style={{ fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.sentiment.smLong')}</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(148,163,184,0.35)' }} /><span style={{ fontSize: 10, color: 'var(--text-3)' }}>{t('gold.panel.sentiment.retailLong')}</span></div>
         </div>
       </div>
     </div>
@@ -1364,6 +1361,22 @@ export default function Gold() {
   const navigate = useNavigate()
   const tabRef = useRef(null)
   const { market, status, lastUpdate } = useLiveMarket()
+  const { t } = useLanguage()
+
+  const TABS = [
+    { id: 'trend',       icon: '📈', label: t('gold.tabs.trend') },
+    { id: 'bias',        icon: '🎯', label: t('gold.tabs.bias') },
+    { id: 'levels',      icon: '📏', label: t('gold.tabs.levels') },
+    { id: 'news',        icon: '📰', label: t('gold.tabs.news') },
+    { id: 'scenarios',   icon: '⚡', label: t('gold.tabs.scenarios') },
+    { id: 'liquidity',   icon: '💧', label: t('gold.tabs.liquidity') },
+    { id: 'sessions',    icon: '🕐', label: t('gold.tabs.sessions') },
+    { id: 'alerts',      icon: '🔔', label: t('gold.tabs.alerts') },
+    { id: 'ai',          icon: '🤖', label: t('gold.tabs.ai') },
+    { id: 'history',     icon: '📔', label: t('gold.tabs.history') },
+    { id: 'correlation', icon: '🔗', label: t('gold.tabs.correlation') },
+    { id: 'sentiment',   icon: '💡', label: t('gold.tabs.sentiment') },
+  ]
 
   // Merge: live tick data over the static analysis/levels from mockData
   const liveG = market?.gold
@@ -1405,7 +1418,7 @@ export default function Gold() {
   }, [tab])
 
   const updatedStr = lastUpdate
-    ? elapsed < 5 ? 'just now' : `${elapsed}s ago`
+    ? elapsed < 5 ? t('gold.justNow') : `${elapsed}${t('gold.secsAgo')}`
     : null
 
   return (
@@ -1421,14 +1434,13 @@ export default function Gold() {
               {status === 'live' ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 20, background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)' }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', animation: 'dotPulse 1.2s ease infinite' }} />
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399', letterSpacing: '0.08em' }}>LIVE</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399', letterSpacing: '0.08em' }}>{t('gold.statusLive')}</span>
                 </div>
               ) : status === 'loading' ? (
-                <div style={{ fontSize: 9, color: 'var(--text-3)', padding: '2px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: 20 }}>Connecting…</div>
+                <div style={{ fontSize: 9, color: 'var(--text-3)', padding: '2px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: 20 }}>{t('gold.statusConnecting')}</div>
               ) : (
-                <div style={{ fontSize: 9, color: 'var(--amber)', padding: '2px 8px', background: 'rgba(245,158,11,0.1)', borderRadius: 20, border: '1px solid rgba(245,158,11,0.2)' }}>⚠ Offline — showing cached data</div>
+                <div style={{ fontSize: 9, color: 'var(--amber)', padding: '2px 8px', background: 'rgba(245,158,11,0.1)', borderRadius: 20, border: '1px solid rgba(245,158,11,0.2)' }}>⚠ {t('gold.statusOffline')}</div>
               )}
-              {updatedStr && <span style={{ fontSize: 9, color: 'var(--text-3)' }}>Updated {updatedStr}</span>}
             </div>
 
             {/* Price + change */}
@@ -1446,14 +1458,6 @@ export default function Gold() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ padding: '5px 14px', borderRadius: 20, background: `${liveBiasClr}20`, border: `1px solid ${liveBiasClr}50`, fontSize: 12, fontWeight: 800, color: liveBiasClr }}>
-              {isUp ? '▲' : '▼'} {liveBias}
-            </span>
-            <button className="btn btn-ghost btn-sm" onClick={() => setTab('alerts')}>🔔 Alert</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/journal')}>📔 Journal</button>
-            <button className="btn btn-gold btn-sm" onClick={() => setTab('ai')}>🤖 AI Plan</button>
-          </div>
         </div>
 
         {/* Stats row */}
@@ -1468,8 +1472,8 @@ export default function Gold() {
             { label: 'RNG',  value: `${(sessionHigh - sessionLow).toFixed(1)} pts`, color: 'var(--amber)' },
             { label: 'VOLA', value: sessionHigh > sessionLow && price > 0 ? (((sessionHigh - sessionLow) / price) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
             // Live correlated instruments
-            { label: 'DXY',  value: (liveDXY?.price ?? 104.23).toFixed(2), color: (liveDXY?.changePct ?? -0.30) >= 0 ? '#ef4444' : '#34d399' },
-            { label: 'BTC',  value: `$${((liveBTC?.price ?? 68420) / 1000).toFixed(1)}K`, color: (liveBTC?.changePct ?? 1.85) >= 0 ? '#34d399' : '#ef4444' },
+            { label: 'DXY',  value: liveDXY?.price != null ? liveDXY.price.toFixed(2) : '—', color: (liveDXY?.changePct ?? 0) >= 0 ? '#ef4444' : '#34d399' },
+            { label: 'BTC',  value: liveBTC?.price != null ? `$${(liveBTC.price / 1000).toFixed(1)}K` : '—', color: (liveBTC?.changePct ?? 0) >= 0 ? '#34d399' : '#ef4444' },
           ].map(s => (
             <div key={s.label} className="stat-pill" style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 7 }}>
               <span style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: 6 }}>{s.label}</span>
@@ -1501,10 +1505,6 @@ export default function Gold() {
           </div>
         )}
 
-        {/* Data source note */}
-        <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>Live price: TradingView (single source) · BTC: Binance WebSocket · News: Yahoo Finance · Refreshes every 5s</span>
-        </div>
       </div>
 
       {/* ── TAB NAV ── */}

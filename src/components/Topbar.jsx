@@ -116,7 +116,7 @@ export default function Topbar({ onMenuOpen }) {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(139,92,246,0.6)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
-        <span style={{ fontSize: 11, color: 'var(--text-3)', letterSpacing: '0.01em' }}>Search...</span>
+        <span style={{ fontSize: 11, color: 'var(--text-3)', letterSpacing: '0.01em' }}>{t('topbar.searchPlaceholder')}</span>
         <kbd style={{
           fontSize: 9, color: 'rgba(139,92,246,0.6)',
           background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.15)',

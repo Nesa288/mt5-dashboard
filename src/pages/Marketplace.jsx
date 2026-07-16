@@ -63,8 +63,8 @@ function ProductCard({ product }) {
           color: isFree ? 'var(--green)' : 'var(--text-1)',
           fontFamily: 'Orbitron, monospace',
         }}>
-          {isFree ? 'FREE' : product.price}
-          {!isFree && <span style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: 'var(--text-3)', marginLeft: 2 }}>/once</span>}
+          {isFree ? t('marketplace.free') : product.price}
+          {!isFree && <span style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: 'var(--text-3)', marginLeft: 2 }}>{t('marketplace.perOnce')}</span>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-ghost btn-sm">{t('marketplace.preview')}</button>
@@ -96,14 +96,14 @@ export default function Marketplace() {
           <div style={{ fontSize: 38 }}>🛒</div>
           <div className="marketplace-hero-stat">
             <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--green)', fontFamily: 'Orbitron, monospace', lineHeight: 1 }}>6</div>
-            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Products</div>
+            <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('marketplace.heroProducts')}</div>
           </div>
         </div>
         <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-1)', lineHeight: 1.3 }}>
-          Premium Trading Tools — Built by SEVORA
+          {t('marketplace.heroTitle')}
         </div>
         <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
-          Professional-grade indicators, AI tools, and templates trusted by traders worldwide.
+          {t('marketplace.heroDesc')}
         </p>
       </div>
 
@@ -124,8 +124,8 @@ export default function Marketplace() {
       {/* Coming Soon */}
       <div className="glass p-5" style={{ textAlign: 'center', borderStyle: 'dashed' }}>
         <div style={{ fontSize: 36, marginBottom: 10 }}>🔜</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-2)', marginBottom: 6 }}>More Products Coming Soon</div>
-        <p style={{ fontSize: 13, color: 'var(--text-3)' }}>SEVORA Prop Firm Tracker, Multi-Account Manager, Advanced Backtester and more...</p>
+        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-2)', marginBottom: 6 }}>{t('marketplace.comingSoon')}</div>
+        <p style={{ fontSize: 13, color: 'var(--text-3)' }}>{t('marketplace.comingSoonDesc')}</p>
       </div>
     </div>
   )

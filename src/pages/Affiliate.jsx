@@ -35,7 +35,7 @@ export default function Affiliate() {
           {t('affiliate.subtitle')}
         </h2>
         <p style={{ fontSize: 14, color: 'var(--text-2)', maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
-          Earn 30% commission on every subscription payment from your referred traders. No cap, no expiry.
+          {t('affiliate.earnDesc')}
         </p>
       </div>
 
@@ -44,12 +44,12 @@ export default function Affiliate() {
         <div className="stat-card glass-gold" style={{ textAlign: 'center' }}>
           <div className="stat-label">{t('affiliate.invitedUsers')}</div>
           <div className="stat-value text-gold">{affiliateData.invitedUsers}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>Registered this month</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>{t('affiliate.thisMonth')}</div>
         </div>
         <div className="stat-card" style={{ textAlign: 'center' }}>
           <div className="stat-label">{t('affiliate.totalEarnings')}</div>
           <div className="stat-value text-green">{affiliateData.totalEarnings}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>All time</div>
+          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>{t('affiliate.allTime')}</div>
         </div>
         <div className="stat-card" style={{ textAlign: 'center' }}>
           <div className="stat-label">{t('affiliate.paymentStatus')}</div>
@@ -106,7 +106,7 @@ export default function Affiliate() {
                   fontSize: 16,
                 }}>{icon}</div>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 2 }}>Step {step}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 2 }}>{t('affiliate.stepLabel')} {step}</div>
                   <div style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.5 }}>{text}</div>
                 </div>
               </div>

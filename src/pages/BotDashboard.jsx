@@ -44,7 +44,7 @@ export default function BotDashboard() {
       {/* Warning */}
       <div className="alert-box alert-warn">
         <IcoAlert size={16} color="var(--amber)" style={{ flexShrink: 0 }} />
-        <span>This is a <strong>DEMO frontend</strong>. No real trading occurs. MT5 connection and bot execution require backend integration.</span>
+        <span>{t('botDashboard.demoWarning')}</span>
       </div>
 
       {/* Stats Row */}
@@ -52,8 +52,8 @@ export default function BotDashboard() {
         {[
           { label: t('botDashboard.openTrades'), value: totalOpenTrades, color: 'var(--blue)' },
           { label: t('botDashboard.dailyPnl'), value: `+$${totalPnl.toFixed(2)}`, color: 'var(--green)' },
-          { label: 'Active Bots', value: groups.filter(g => g.enabled && g.status === 'running').length, color: 'var(--gold)' },
-          { label: 'Risk Per Trade', value: `${risk}%`, color: 'var(--amber)' },
+          { label: t('botDashboard.activeBots'), value: groups.filter(g => g.enabled && g.status === 'running').length, color: 'var(--gold)' },
+          { label: t('botDashboard.riskPerTrade'), value: `${risk}%`, color: 'var(--amber)' },
         ].map(({ label, value, color }) => (
           <div key={label} className="stat-card">
             <div className="stat-label">{label}</div>
@@ -83,7 +83,7 @@ export default function BotDashboard() {
               className={`btn ${connected ? 'btn-danger' : 'btn-gold'}`}
               onClick={() => setConnected(v => !v)}
             >
-              {connected ? '⬤ Disconnect' : '🔌 ' + t('botDashboard.connectBtn')}
+              {connected ? '⬤ ' + t('botDashboard.disconnect') : '🔌 ' + t('botDashboard.connectBtn')}
             </button>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function BotDashboard() {
             <div>
               <label className="form-label">{t('botDashboard.allowedSessions')}</label>
               <div style={{ display: 'flex', gap: 8 }}>
-                {['Asian', 'London', 'New York'].map(s => (
+                {[t('botDashboard.sessions.asian'), t('botDashboard.sessions.london'), t('botDashboard.sessions.newYork')].map(s => (
                   <label key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
                     <input type="checkbox" defaultChecked style={{ accentColor: 'var(--gold)' }} />
                     <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{s}</span>
@@ -153,7 +153,7 @@ export default function BotDashboard() {
                   <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>{g.desc}</div>
                 </div>
                 {g.status === 'upcoming'
-                  ? <span className="badge badge-demo" style={{ fontSize: 9 }}>COMING SOON</span>
+                  ? <span className="badge badge-demo" style={{ fontSize: 9 }}>{t('botDashboard.comingSoon')}</span>
                   : <label className="toggle">
                       <input type="checkbox" checked={g.enabled} onChange={() => toggleGroup(g.id)} />
                       <span className="toggle-slider" />
@@ -167,7 +167,7 @@ export default function BotDashboard() {
                   {[
                     { label: t('botDashboard.riskPct'), value: `${g.risk}%`, color: 'var(--amber)' },
                     { label: t('botDashboard.maxTradesLabel'), value: g.maxTrades, color: 'var(--text-2)' },
-                    { label: 'PnL', value: g.pnl, color: g.pnl.startsWith('+') ? 'var(--green)' : g.pnl === '$0' ? 'var(--text-3)' : 'var(--red)' },
+                    { label: t('botDashboard.pnlLabel'), value: g.pnl, color: g.pnl.startsWith('+') ? 'var(--green)' : g.pnl === '$0' ? 'var(--text-3)' : 'var(--red)' },
                   ].map(({ label, value, color }) => (
                     <div key={label} style={{ flex: 1, textAlign: 'center' }}>
                       <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{label}</div>

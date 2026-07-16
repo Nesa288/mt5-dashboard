@@ -317,11 +317,11 @@ export default function FloatingCopilot() {
   const [messages, setMessages] = useState(() => {
     const ctx0 = buildContext(null)
     return [{ id: 1, type: 'bot', data: {
-      trend: ctx0.gold.dailyTrend,
+      trend: 'Neutral',
       confidence: ctx0.confidence,
-      keyLevels: [ctx0.gold.resistance, ctx0.gold.liquidityZone, ctx0.gold.support],
+      keyLevels: [],
       news: toNewsItems(ctx0, 2),
-      conclusion: ctx0.gold.aiSummaryText + ' Ask me anything about markets, levels, or your journal.',
+      conclusion: 'Loading live market data... Ask me anything about markets, levels, or your journal.',
     }}]
   })
   const [isTyping, setIsTyping] = useState(false)
@@ -329,6 +329,7 @@ export default function FloatingCopilot() {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const isFirst = useRef(true)
+  const liveInitialized = useRef(false)
 
   useEffect(() => {
     if (isFirst.current) { isFirst.current = false; return }
@@ -345,6 +346,20 @@ export default function FloatingCopilot() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [open])
+
+  // Update initial greeting once live gold price arrives
+  useEffect(() => {
+    if (liveInitialized.current || !lvls.price) return
+    liveInitialized.current = true
+    const ctx = buildContext(lvls)
+    setMessages([{ id: 1, type: 'bot', data: {
+      trend: ctx.gold.dailyTrend,
+      confidence: ctx.confidence,
+      keyLevels: [ctx.gold.resistance, ctx.gold.liquidityZone, ctx.gold.support],
+      news: toNewsItems(ctx, 2),
+      conclusion: ctx.gold.aiDailyPlan + ' Ask me anything about markets, levels, or your journal.',
+    }}])
+  }, [lvls.price]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function send(text) {
     if (!text.trim() || isTyping) return

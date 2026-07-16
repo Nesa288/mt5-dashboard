@@ -53,7 +53,7 @@ export default function Sidebar({ mobile, drawerOpen, onClose }) {
             <div style={{
               fontSize: 9, fontWeight: 600, letterSpacing: '0.2em',
               textTransform: 'uppercase', color: 'var(--text-3)', marginTop: 2,
-            }}>AI Trading Platform</div>
+            }}>{t('sidebar.platformTitle')}</div>
           </NavLink>
           <button onClick={onClose} style={{
             background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
@@ -65,7 +65,7 @@ export default function Sidebar({ mobile, drawerOpen, onClose }) {
       ) : (
         <NavLink to="/" end className="sidebar-logo" style={{ textDecoration: 'none', display: 'block' }}>
           <div className="sidebar-logo-text">SEVORA</div>
-          <div className="sidebar-logo-sub">AI Trading Platform</div>
+          <div className="sidebar-logo-sub">{t('sidebar.platformTitle')}</div>
         </NavLink>
       )}
 
@@ -80,7 +80,7 @@ export default function Sidebar({ mobile, drawerOpen, onClose }) {
             onClick={onClose}
           >
             <IcoHome className="nav-icon" size={17} />
-            <span style={{ display: 'block' }}>Home</span>
+            <span style={{ display: 'block' }}>{t('sidebar.home')}</span>
           </NavLink>
         )}
         {NAV_ITEMS.map(({ path, key, Icon }) => (

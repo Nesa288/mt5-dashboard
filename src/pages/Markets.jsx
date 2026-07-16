@@ -9,6 +9,14 @@ import ScrollableTabs from '../components/ScrollableTabs'
 const FILTERS = ['all', 'favorites', 'forex', 'metals', 'crypto', 'indices', 'commodities']
 
 function HeatCell({ inst }) {
+  if (inst.changePct == null) {
+    return (
+      <div className="heatmap-cell" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="heatmap-sym" style={{ color: 'var(--text-3)' }}>{inst.symbol}</div>
+        <div className="heatmap-pct" style={{ color: 'var(--text-3)', fontFamily: 'Orbitron, monospace' }}>—</div>
+      </div>
+    )
+  }
   const isPos = inst.changePct >= 0
   const intensity = Math.min(Math.abs(inst.changePct) / 3, 1)
   const bg = isPos
@@ -37,8 +45,8 @@ export default function Markets() {
   const patchedInstruments = instruments.map(inst => {
     const ctxSym = SYM_MAP[inst.symbol] ?? inst.symbol
     const live = liveInstr?.[ctxSym]
-    if (!live) return inst
-    return { ...inst, price: live.price, changePct: live.changePct }
+    if (!live) return { ...inst, price: null, changePct: null, change: null }
+    return { ...inst, price: live.price, changePct: live.changePct, change: live.change }
   })
 
   const toggleFav = (symbol, e) => {
@@ -88,7 +96,7 @@ export default function Markets() {
           </thead>
           <tbody>
             {filtered.map(inst => {
-              const isPos = inst.changePct >= 0
+              const isPos = inst.changePct != null && inst.changePct >= 0
               return (
                 <tr key={inst.symbol} style={{ cursor: 'pointer' }}>
                   <td style={{ width: 36, cursor: 'pointer' }} onClick={e => toggleFav(inst.symbol, e)}>
@@ -101,7 +109,7 @@ export default function Markets() {
                   <td className="col-name" style={{ color: 'var(--text-2)', fontSize: 13 }}>{inst.name}</td>
                   <td style={{ textAlign: 'right' }}>
                     <span style={{ fontFamily: 'Orbitron, monospace', fontSize: 14, fontWeight: 700 }}>
-                      {typeof inst.price === 'number' && inst.price > 100 ? inst.price.toLocaleString() : inst.price.toFixed(4)}
+                      {inst.price == null ? '—' : inst.price > 100 ? inst.price.toLocaleString() : inst.price.toFixed(4)}
                     </span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
@@ -110,8 +118,7 @@ export default function Markets() {
                       color: isPos ? 'var(--green)' : 'var(--red)',
                       fontSize: 13, fontWeight: 600,
                     }}>
-                      {isPos ? <IcoArrowUp size={12} /> : <IcoArrowDown size={12} />}
-                      {isPos ? '+' : ''}{inst.changePct.toFixed(2)}%
+                      {inst.changePct == null ? '—' : <>{isPos ? <IcoArrowUp size={12} /> : <IcoArrowDown size={12} />}{isPos ? '+' : ''}{inst.changePct.toFixed(2)}%</>}
                     </span>
                   </td>
                   <td className="col-trend" style={{ textAlign: 'center' }}>

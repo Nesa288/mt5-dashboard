@@ -9,6 +9,7 @@ const CATEGORIES = ['all', 'gold', 'forex', 'crypto', 'economy', 'world']
 const AI_FILTERS = ['goldOnly', 'highImpact', 'bullish', 'bearish']
 
 function NewsCard({ item, large }) {
+  const { t } = useLanguage()
   const sentimentColor = item.sentiment === 'bullish' ? 'var(--green)' : item.sentiment === 'bearish' ? 'var(--red)' : 'var(--amber)'
   const SentimentIcon = item.sentiment === 'bullish' ? IcoArrowUp : item.sentiment === 'bearish' ? IcoArrowDown : IcoInfo
 
@@ -57,7 +58,7 @@ function NewsCard({ item, large }) {
       }}>
         <span style={{ fontSize: 14, flexShrink: 0 }}>🤖</span>
         <div>
-          <span style={{ fontSize: 9, color: 'var(--gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3, display: 'block' }}>AI Summary</span>
+          <span style={{ fontSize: 9, color: 'var(--gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3, display: 'block' }}>{t('news.aiSummary')}</span>
           <p style={{ fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5 }}>{item.aiSummary}</p>
         </div>
       </div>
@@ -68,7 +69,7 @@ function NewsCard({ item, large }) {
           <span style={{ fontSize: 11, fontWeight: 600, color: sentimentColor, textTransform: 'capitalize' }}>{item.sentiment}</span>
           <span style={{ fontSize: 11, color: 'var(--text-3)' }}>· {item.source}</span>
         </div>
-        <a href={`https://news.google.com/search?q=${encodeURIComponent(item.title)}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-xs" style={{ textDecoration: 'none' }}>Read more</a>
+        <a href={`https://news.google.com/search?q=${encodeURIComponent(item.title)}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-xs" style={{ textDecoration: 'none' }}>{t('news.readMore')}</a>
       </div>
     </div>
   )
@@ -139,7 +140,7 @@ export default function News() {
           {/* TradingView News — desktop only, moved to drawer on mobile */}
           <div className="news-tv-main glass" style={{ overflow: 'hidden' }}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
-              <div className="section-label" style={{ marginBottom: 0 }}>Live News Feed — TradingView</div>
+              <div className="section-label" style={{ marginBottom: 0 }}>{t('news.liveFeed')}</div>
             </div>
             <NewsTimelineWidget height={400} />
           </div>
@@ -173,11 +174,11 @@ export default function News() {
             </div>
           </div>
           <div className="glass p-4">
-            <div className="section-label mb-3">Impact Guide</div>
+            <div className="section-label mb-3">{t('news.impactGuide')}</div>
             {[
-              { color: 'var(--red)', label: 'High Impact', desc: 'Major market mover' },
-              { color: 'var(--amber)', label: 'Medium Impact', desc: 'Moderate volatility' },
-              { color: 'var(--green)', label: 'Low Impact', desc: 'Minor market reaction' },
+              { color: 'var(--red)', label: t('news.highImpact'), desc: t('news.highImpactDesc') },
+              { color: 'var(--amber)', label: t('news.mediumImpact'), desc: t('news.mediumImpactDesc') },
+              { color: 'var(--green)', label: t('news.lowImpact'), desc: t('news.lowImpactDesc') },
             ].map(({ color, label, desc }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
@@ -221,11 +222,11 @@ export default function News() {
             </div>
           </div>
           <div className="glass p-4">
-            <div className="section-label mb-3">Impact Guide</div>
+            <div className="section-label mb-3">{t('news.impactGuide')}</div>
             {[
-              { color: 'var(--red)', label: 'High Impact', desc: 'Major market mover' },
-              { color: 'var(--amber)', label: 'Medium Impact', desc: 'Moderate volatility' },
-              { color: 'var(--green)', label: 'Low Impact', desc: 'Minor market reaction' },
+              { color: 'var(--red)', label: t('news.highImpact'), desc: t('news.highImpactDesc') },
+              { color: 'var(--amber)', label: t('news.mediumImpact'), desc: t('news.mediumImpactDesc') },
+              { color: 'var(--green)', label: t('news.lowImpact'), desc: t('news.lowImpactDesc') },
             ].map(({ color, label, desc }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
@@ -238,7 +239,7 @@ export default function News() {
           </div>
           <div className="glass" style={{ overflow: 'hidden' }}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
-              <div className="section-label" style={{ marginBottom: 0 }}>Live News Feed — TradingView</div>
+              <div className="section-label" style={{ marginBottom: 0 }}>{t('news.liveFeed')}</div>
             </div>
             <NewsTimelineWidget height={360} />
           </div>

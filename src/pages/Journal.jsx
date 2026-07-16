@@ -5,6 +5,7 @@ import { IcoArrowUp, IcoArrowDown, IcoCheck, IcoX, IcoInfo } from '../components
 import ScrollableTabs from '../components/ScrollableTabs'
 
 function WinRateArc({ value }) {
+  const { t } = useLanguage()
   const [animated, setAnimated] = useState(false)
   useEffect(() => {
     const id = setTimeout(() => setAnimated(true), 100)
@@ -22,7 +23,7 @@ function WinRateArc({ value }) {
         style={{ filter: 'drop-shadow(0 0 8px var(--green))', transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)' }}
       />
       <text x="60" y="55" textAnchor="middle" fill="var(--green)" fontSize="22" fontWeight="800" fontFamily="Orbitron, monospace">{value}%</text>
-      <text x="60" y="74" textAnchor="middle" fill="var(--text-3)" fontSize="10">Win Rate</text>
+      <text x="60" y="74" textAnchor="middle" fill="var(--text-3)" fontSize="10">{t('journal.stats.winRate')}</text>
     </svg>
   )
 }
@@ -147,7 +148,7 @@ export default function Journal() {
             <p style={{ fontSize: 14, color: 'var(--text-1)', lineHeight: 1.7 }}>
               "{journalStats.commonMistake.includes('news') ? `Your biggest mistake this month is ${journalStats.commonMistake}. This has cost you 2 losing trades and reduced your win rate by approximately 8%. Consider disabling your trading platform 30 minutes before major news releases.` : `Your performance this month is solid. Keep maintaining your ${journalStats.winRate}% win rate and ${journalStats.profitFactor} profit factor.`}"
             </p>
-            <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-3)' }}>Based on {journalStats.totalTrades} logged trades • AI analysis is DEMO</div>
+            <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-3)' }}>{t('journal.aiReviewBased')} {journalStats.totalTrades} {t('journal.aiReviewLoggedTrades')} · {t('journal.aiReviewDemo')}</div>
           </div>
 
           {/* Stats Grid */}
@@ -168,15 +169,15 @@ export default function Journal() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Instrument</th>
-                <th>Dir</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>Entry</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>SL</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>TP</th>
-                <th style={{ textAlign: 'right' }}>Result</th>
-                <th className="col-jr-hide" style={{ textAlign: 'right' }}>R:R</th>
-                <th className="col-jr-hide">Reason</th>
-                <th className="col-jr-hide">Emotion</th>
+                <th>{t('journal.table.instrument')}</th>
+                <th>{t('journal.table.dir')}</th>
+                <th className="col-jr-hide" style={{ textAlign: 'right' }}>{t('journal.table.entry')}</th>
+                <th className="col-jr-hide" style={{ textAlign: 'right' }}>{t('journal.table.sl')}</th>
+                <th className="col-jr-hide" style={{ textAlign: 'right' }}>{t('journal.table.tp')}</th>
+                <th style={{ textAlign: 'right' }}>{t('journal.table.result')}</th>
+                <th className="col-jr-hide" style={{ textAlign: 'right' }}>{t('journal.table.rr')}</th>
+                <th className="col-jr-hide">{t('journal.table.reason')}</th>
+                <th className="col-jr-hide">{t('journal.table.emotion')}</th>
               </tr>
             </thead>
             <tbody>
@@ -240,7 +241,7 @@ export default function Journal() {
         <div className="g-2" style={{ gap: 20 }}>
           {/* Win Rate */}
           <div className="glass p-5">
-            <div className="section-label mb-4">Performance Overview</div>
+            <div className="section-label mb-4">{t('journal.performance')}</div>
             <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
                 <WinRateArc value={journalStats.winRate} />
@@ -262,7 +263,7 @@ export default function Journal() {
 
           {/* Trade Distribution */}
           <div className="glass p-5">
-            <div className="section-label mb-4">Trade Distribution</div>
+            <div className="section-label mb-4">{t('journal.tradeDistribution')}</div>
             {(() => {
               const wins = Math.round(journalStats.totalTrades * journalStats.winRate / 100)
               const losses = journalStats.totalTrades - wins
@@ -271,11 +272,11 @@ export default function Journal() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
                     <div>
-                      <div style={{ fontSize: 10, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Losing</div>
+                      <div style={{ fontSize: 10, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{t('journal.losing')}</div>
                       <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--red)', fontFamily: 'Orbitron, monospace' }}>{losses}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 10, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Winning</div>
+                      <div style={{ fontSize: 10, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{t('journal.winning')}</div>
                       <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', fontFamily: 'Orbitron, monospace' }}>{wins}</div>
                     </div>
                   </div>
@@ -290,7 +291,7 @@ export default function Journal() {
               )
             })()}
             <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(139,92,246,0.06)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
-              <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>MOST COMMON MISTAKE</div>
+              <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>{t('journal.mostCommonMistake')}</div>
               <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{journalStats.commonMistake}</div>
             </div>
           </div>
@@ -317,7 +318,7 @@ export default function Journal() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+              {[t('journal.days.mon'), t('journal.days.tue'), t('journal.days.wed'), t('journal.days.thu'), t('journal.days.fri'), t('journal.days.sat'), t('journal.days.sun')].map(d => (
                 <div key={d} style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-3)', fontWeight: 700, padding: '4px 0' }}>{d}</div>
               ))}
               {cells.map((day, i) => {
@@ -343,8 +344,8 @@ export default function Journal() {
             </div>
 
             <div style={{ display: 'flex', gap: 20, marginTop: 14, fontSize: 11, color: 'var(--text-3)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(0,212,160,0.4)' }} />Win day</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.35)' }} />Loss day</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(0,212,160,0.4)' }} />{t('journal.winDay')}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.35)' }} />{t('journal.lossDay')}</div>
             </div>
           </div>
         )

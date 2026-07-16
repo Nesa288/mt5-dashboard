@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { scenarios } from '../data/mockData'
-import { IcoArrowUp, IcoArrowDown, IcoTarget, IcoShield, IcoAlert } from '../components/Icons'
+import { IcoArrowUp, IcoArrowDown, IcoTarget, IcoShield } from '../components/Icons'
 import { useLiveLevels } from '../hooks/useLiveLevels'
 
 function ScenarioProbabilityArc({ value, color }) {
@@ -69,14 +69,6 @@ export default function TradingScenarios() {
       <div>
         <h1 className="page-title">{t('scenarios.title')}</h1>
         <p className="page-subtitle">{t('scenarios.subtitle')}</p>
-      </div>
-
-      {/* Demo + Disclaimer Banner */}
-      <div className="alert-box alert-info">
-        <IcoAlert size={16} color="var(--blue)" style={{ flexShrink: 0 }} />
-        <div>
-          <span style={{ fontWeight: 700 }}>DEMO — {t('scenarios.demoNote')}</span>
-        </div>
       </div>
 
       {/* Chart Zone Mockup */}
