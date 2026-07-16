@@ -201,7 +201,7 @@ export default function Dashboard() {
               <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${sentiment.smartMoney.long}%`, background: 'linear-gradient(90deg, var(--gold-2), var(--gold))' }} />
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6 }}>Smart money positions diverge from retail — institutions accumulating longs</div>
+              <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 6 }}>{t('dashboard.sentiment.smartDiverge')}</div>
             </div>
           </div>
         </div>
@@ -214,9 +214,9 @@ export default function Dashboard() {
           <div className="section-label">{t('dashboard.trend.title')}</div>
           <div className="g-3" style={{ gap: 10 }}>
             {[
-              { tf: t('dashboard.trend.daily'), trend: lvls.trendStatus, sub: 'Price above key support' },
+              { tf: t('dashboard.trend.daily'), trend: lvls.trendStatus, sub: t('dashboard.trend.priceAboveSupport') },
               { tf: t('dashboard.trend.h4'), trend: lvls.trendStatus, sub: `Bias: ${lvls.trendStatus}` },
-              { tf: t('dashboard.trend.h1'), trend: lvls.trendStatus, sub: goldPrice != null ? `Near $${Math.round(goldPrice).toLocaleString()}` : '' },
+              { tf: t('dashboard.trend.h1'), trend: lvls.trendStatus, sub: goldPrice != null ? `${t('dashboard.trend.nearPrice')} $${Math.round(goldPrice).toLocaleString()}` : '' },
             ].map(({ tf, trend, sub }) => (
               <div key={tf} style={{
                 padding: '14px 12px',

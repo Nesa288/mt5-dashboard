@@ -45,7 +45,7 @@ export default {
       viewChart: 'View Full Chart',
       demoNote: 'AI zones are DEMO until live feed connected',
     },
-    trend: { title: 'Trend Overview', daily: 'Daily', h4: 'H4', h1: 'H1' },
+    trend: { title: 'Trend Overview', daily: 'Daily', h4: 'H4', h1: 'H1', priceAboveSupport: 'Price above key support', nearPrice: 'Near' },
     keyLevels: {
       title: 'Key Levels',
       support: 'Support Zone',
@@ -76,6 +76,7 @@ export default {
       long: 'Long',
       short: 'Short',
       demoNote: 'DEMO data',
+      smartDiverge: 'Smart money positions diverge from retail — institutions accumulating longs',
     },
     sessions: {
       title: 'Session Tracker',
@@ -645,6 +646,7 @@ export default {
     updated: 'Updated',
     sentiment: 'Sentiment',
     biggestRisk: "Today's Biggest Risk",
+    riskNote: 'A hotter print could sharply reverse Gold. Cut size before the release.',
     askCopilot: 'Ask AI Copilot for full analysis →',
     bullishAbove: 'Bullish above',
     bearishBelow: 'Bearish below',

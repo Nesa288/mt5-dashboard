@@ -45,7 +45,7 @@ export default {
       viewChart: 'Vidi ceo grafikon',
       demoNote: 'AI zone su DEMO do povezivanja pravog feed-a',
     },
-    trend: { title: 'Pregled trenda', daily: 'Dnevni', h4: 'H4', h1: 'H1' },
+    trend: { title: 'Pregled trenda', daily: 'Dnevni', h4: 'H4', h1: 'H1', priceAboveSupport: 'Cijena iznad ključne podrške', nearPrice: 'Blizu' },
     keyLevels: {
       title: 'Ključni nivoi',
       support: 'Zona podrške',
@@ -76,6 +76,7 @@ export default {
       long: 'Long',
       short: 'Short',
       demoNote: 'DEMO podaci',
+      smartDiverge: 'Pozicije pametnog novca se razlikuju od retaila — institucije akumuliraju long pozicije',
     },
     sessions: {
       title: 'Praćenje sesija',
@@ -641,6 +642,7 @@ export default {
     updated: 'Ažurirano',
     sentiment: 'Sentiment',
     biggestRisk: 'Najveći rizik danas',
+    riskNote: 'Viši print može naglo preokrenuti zlato. Smanjite veličinu pozicije prije objave.',
     askCopilot: 'Pitajte AI kopilota za potpunu analizu →',
     bullishAbove: 'Uzlazno iznad',
     bearishBelow: 'Silazno ispod',

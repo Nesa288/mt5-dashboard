@@ -46,7 +46,7 @@ export default function AIDailyBrief() {
     },
   ]
 
-  const risk = { event: 'CPI', time: '14:30 UTC', level: 'High', note: 'A hotter print could sharply reverse Gold. Cut size before the release.' }
+  const risk = { event: 'CPI', time: '14:30 UTC', level: 'High', note: t('aiDailyBrief.riskNote') }
 
   const sentiment = lvls.bias === 'BULLISH' ? 81 : lvls.bias === 'BEARISH' ? 34 : 54
 
