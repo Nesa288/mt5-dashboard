@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { news } from '../data/mockData'
 import { NewsTimelineWidget } from '../components/TradingViewWidget'
@@ -192,72 +193,95 @@ export default function News() {
         </div>
       </div>
 
-      {/* Mobile: backdrop */}
-      {sidebarOpen && <div className="news-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+      {/* Mobile: backdrop + panel + toggle — portalled to body to escape page-transition stacking context */}
+      {createPortal(
+        <>
+          {sidebarOpen && <div className="news-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Mobile: slide-out panel */}
-      <div className={`news-sidebar-panel${sidebarOpen ? ' open' : ''}`}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '16px 14px' }}>
-          <div className="glass p-4">
-            <div className="section-label mb-3">📌 {t('news.topStories')}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {topStories.map((item, i) => (
-                <div key={item.id} style={{
-                  display: 'flex', gap: 10, alignItems: 'flex-start',
-                  padding: '10px 0', borderBottom: i < topStories.length - 1 ? '1px solid var(--border)' : 'none',
-                }}>
-                  <span style={{
-                    width: 24, height: 24, borderRadius: 6,
-                    background: 'rgba(139,92,246,0.15)', border: '1px solid var(--gold-border)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700, color: 'var(--gold)',
-                    flexShrink: 0,
-                  }}>{i + 1}</span>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)', lineHeight: 1.4, marginBottom: 3 }}>{item.title}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{item.time} · {item.source}</div>
-                  </div>
-                </div>
-              ))}
+          <div className={`news-sidebar-panel${sidebarOpen ? ' open' : ''}`}>
+            {/* Sticky header */}
+            <div style={{
+              position: 'sticky', top: 0, zIndex: 2,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 16px',
+              background: 'linear-gradient(135deg, rgba(139,92,246,0.12) 0%, var(--bg-1) 100%)',
+              borderBottom: '1px solid var(--border)',
+              flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--gold)', boxShadow: '0 0 6px rgba(245,158,11,0.6)' }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>{t('news.topStories')}</span>
+              </div>
+              <button onClick={() => setSidebarOpen(false)} style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                borderRadius: 8, color: 'var(--text-2)', cursor: 'pointer',
+                width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, lineHeight: 1,
+              }}>✕</button>
             </div>
-          </div>
-          <div className="glass p-4">
-            <div className="section-label mb-3">{t('news.impactGuide')}</div>
-            {[
-              { color: 'var(--red)', label: t('news.highImpact'), desc: t('news.highImpactDesc') },
-              { color: 'var(--amber)', label: t('news.mediumImpact'), desc: t('news.mediumImpactDesc') },
-              { color: 'var(--green)', label: t('news.lowImpact'), desc: t('news.lowImpactDesc') },
-            ].map(({ color, label, desc }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color }}>{label}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{desc}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '14px 14px 24px' }}>
+              <div className="glass p-4">
+                <div className="section-label mb-3">📌 {t('news.topStories')}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {topStories.map((item, i) => (
+                    <div key={item.id} style={{
+                      display: 'flex', gap: 10, alignItems: 'flex-start',
+                      padding: '10px 0', borderBottom: i < topStories.length - 1 ? '1px solid var(--border)' : 'none',
+                    }}>
+                      <span style={{
+                        width: 24, height: 24, borderRadius: 6,
+                        background: 'rgba(139,92,246,0.15)', border: '1px solid var(--gold-border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11, fontWeight: 700, color: 'var(--gold)',
+                        flexShrink: 0,
+                      }}>{i + 1}</span>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)', lineHeight: 1.4, marginBottom: 3 }}>{item.title}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{item.time} · {item.source}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="glass" style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
-              <div className="section-label" style={{ marginBottom: 0 }}>{t('news.liveFeed')}</div>
+              <div className="glass p-4">
+                <div className="section-label mb-3">{t('news.impactGuide')}</div>
+                {[
+                  { color: 'var(--red)', label: t('news.highImpact'), desc: t('news.highImpactDesc') },
+                  { color: 'var(--amber)', label: t('news.mediumImpact'), desc: t('news.mediumImpactDesc') },
+                  { color: 'var(--green)', label: t('news.lowImpact'), desc: t('news.lowImpactDesc') },
+                ].map(({ color, label, desc }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}`, flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color }}>{label}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="glass" style={{ overflow: 'hidden' }}>
+                <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
+                  <div className="section-label" style={{ marginBottom: 0 }}>{t('news.liveFeed')}</div>
+                </div>
+                <NewsTimelineWidget height={360} />
+              </div>
             </div>
-            <NewsTimelineWidget height={360} />
           </div>
-        </div>
-      </div>
 
-      {/* Mobile: toggle tab on right edge */}
-      <button
-        className={`news-sidebar-toggle${sidebarOpen ? ' open' : ''}`}
-        onClick={() => setSidebarOpen(v => !v)}
-        aria-label="Toggle sidebar"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          {sidebarOpen
-            ? <path d="M9 18l6-6-6-6" />
-            : <path d="M15 18l-6-6 6-6" />}
-        </svg>
-      </button>
+          <button
+            className={`news-sidebar-toggle${sidebarOpen ? ' open' : ''}`}
+            onClick={() => setSidebarOpen(v => !v)}
+            aria-label="Toggle sidebar"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              {sidebarOpen
+                ? <path d="M9 18l6-6-6-6" />
+                : <path d="M15 18l-6-6 6-6" />}
+            </svg>
+          </button>
+        </>,
+        document.body
+      )}
     </div>
   )
 }

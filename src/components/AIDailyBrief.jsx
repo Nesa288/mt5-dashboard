@@ -66,7 +66,7 @@ export default function AIDailyBrief() {
       <div style={{
         padding: '14px 20px',
         borderBottom: expanded ? '1px solid rgba(139,92,246,0.12)' : 'none',
-        display: 'flex', alignItems: 'center', gap: 12,
+        display: 'flex', alignItems: 'flex-start', gap: 12,
         cursor: 'pointer',
         userSelect: 'none',
       }} onClick={() => setExpanded(e => !e)}>
@@ -76,39 +76,41 @@ export default function AIDailyBrief() {
           background: 'var(--gold)',
           boxShadow: '0 0 8px 2px rgba(139,92,246,0.5)',
           animation: 'dotPulse 1.5s ease infinite',
-          flexShrink: 0,
+          flexShrink: 0, marginTop: 5,
         }} />
 
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Line 1: title + LIVE badge */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
               {t('aiDailyBrief.title')}
             </span>
             <span style={{
               fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
               padding: '2px 7px', borderRadius: 20,
               background: 'rgba(139,92,246,0.12)', color: 'var(--gold)',
-              border: '1px solid rgba(139,92,246,0.2)',
+              border: '1px solid rgba(139,92,246,0.2)', flexShrink: 0,
             }}>{t('aiDailyBrief.live')}</span>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 1 }}>
-            {dateStr} · {t('aiDailyBrief.updated')} {genTime}
+          {/* Line 2: date + sentiment pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>
+              {dateStr} · {t('aiDailyBrief.updated')} {genTime}
+            </span>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '3px 10px', borderRadius: 20, flexShrink: 0,
+              background: lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.08)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
+              border: `1px solid ${lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.2)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
+            }}>
+              <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>{t('aiDailyBrief.sentiment')}</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: lvls.biasColor, fontFamily: 'Orbitron, monospace' }}>{sentiment}%</span>
+              <span style={{ fontSize: 10, color: lvls.biasColor }}>{lvls.trendStatus}</span>
+            </div>
           </div>
         </div>
 
-        {/* Sentiment pill */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 7,
-          padding: '5px 12px', borderRadius: 20,
-          background: lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.08)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
-          border: `1px solid ${lvls.bias === 'BULLISH' ? 'rgba(52,211,153,0.2)' : lvls.bias === 'BEARISH' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
-        }}>
-          <span style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 600 }}>{t('aiDailyBrief.sentiment')}</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: lvls.biasColor, fontFamily: 'Orbitron, monospace' }}>{sentiment}%</span>
-          <span style={{ fontSize: 10, color: lvls.biasColor }}>{lvls.trendStatus}</span>
-        </div>
-
-        <span style={{ fontSize: 14, color: 'var(--text-3)', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+        <span style={{ fontSize: 14, color: 'var(--text-3)', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0, marginTop: 2 }}>▾</span>
       </div>
 
       {/* Body */}

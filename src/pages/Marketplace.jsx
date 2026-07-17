@@ -57,7 +57,7 @@ function ProductCard({ product }) {
       </div>
 
       {/* Price + CTA */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+      <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{
           fontSize: isFree ? 14 : 20, fontWeight: 800,
           color: isFree ? 'var(--green)' : 'var(--text-1)',
@@ -67,8 +67,8 @@ function ProductCard({ product }) {
           {!isFree && <span style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: 'var(--text-3)', marginLeft: 2 }}>{t('marketplace.perOnce')}</span>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-ghost btn-sm">{t('marketplace.preview')}</button>
-          <button className={`btn ${isFree ? 'btn-green' : ''}`} style={isFree ? { padding: '7px 16px', fontSize: 13 } : { padding: '7px 16px', fontSize: 13, background: '#000', color: '#fff', border: '1px solid rgba(255,140,0,0.7)', boxShadow: '0 0 10px rgba(255,120,0,0.5), 0 0 22px rgba(255,100,0,0.25), inset 0 0 6px rgba(255,120,0,0.08)' }}>
+          <button className="btn btn-ghost btn-sm" style={{ flex: 1 }}>{t('marketplace.preview')}</button>
+          <button className={`btn ${isFree ? 'btn-green' : ''}`} style={isFree ? { flex: 2, padding: '7px 16px', fontSize: 13 } : { flex: 2, padding: '7px 16px', fontSize: 13, background: '#000', color: '#fff', border: '1px solid rgba(255,140,0,0.7)', boxShadow: '0 0 10px rgba(255,120,0,0.5), 0 0 22px rgba(255,100,0,0.25), inset 0 0 6px rgba(255,120,0,0.08)' }}>
             {isFree ? <><span style={{ fontSize: 16 }}>↓</span> {t('marketplace.free')}</> : <><span style={{ fontSize: 16 }}>🛒</span> {t('marketplace.buyNow')}</>}
           </button>
         </div>

@@ -464,7 +464,7 @@ export default function AIMentor() {
       </div>
 
       {/* Main 2-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, alignItems: 'start' }}>
 
         {/* LEFT: Chat */}
         <div className="glass" style={{ display: 'flex', flexDirection: 'column', height: 640 }}>

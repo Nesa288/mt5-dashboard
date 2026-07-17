@@ -141,10 +141,10 @@ h1, h2, h3 {
 
 @keyframes pageEnter {
   from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
 .page-transition {
-  animation: pageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* ─── GLASS CARDS ───────────────────────────── */

@@ -81,8 +81,8 @@ export default function Markets() {
       </ScrollableTabs>
 
       {/* Instruments Table */}
-      <div className="glass" style={{ overflow: 'hidden' }}>
-        <table className="data-table">
+      <div className="glass" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table className="data-table" style={{ minWidth: 520 }}>
           <thead>
             <tr>
               <th></th>

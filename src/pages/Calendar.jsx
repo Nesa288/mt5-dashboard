@@ -75,8 +75,8 @@ export default function Calendar() {
       </ScrollableTabs>
 
       {/* Events Table */}
-      <div className="glass" style={{ overflow: 'hidden' }}>
-        <table className="data-table">
+      <div className="glass" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table className="data-table" style={{ minWidth: 300 }}>
           <thead>
             <tr>
               <th>{t('calendar.time')}</th>

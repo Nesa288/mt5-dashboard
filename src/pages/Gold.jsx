@@ -108,7 +108,7 @@ function TrendPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Top: alignment bars + overall signal */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
         <div className="glass p-4">
           <div className="section-label mb-3">{t('gold.panel.trend.title')}</div>
           {tfs.map(row => {
@@ -178,11 +178,11 @@ function TrendPanel() {
       </div>
 
       {/* Bottom: chart + stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
         <div className="glass" style={{ overflow: 'hidden' }}>
           <GoldChart height={320} interval="H4" />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 200 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
             { label: t('gold.panel.trend.dayRange'), value: (liveHigh - liveLow).toFixed(1), unit: 'pts', color: 'var(--amber)' },
             { label: t('gold.panel.trend.volatility'), value: liveHigh > liveLow && livePrice > 0 ? (((liveHigh - liveLow) / livePrice) * 100).toFixed(2) + '%' : '—', color: 'var(--amber)' },
@@ -244,7 +244,7 @@ function BiasPanel() {
       </div>
 
       {/* AI Daily Plan */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
         <div className="glass-gold p-4">
           <div style={{ fontSize: 9, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, marginBottom: 10 }}>⚡ {t('gold.panel.bias.aiDailyPlan')}</div>
           <p style={{ fontSize: 13, color: 'var(--text-1)', lineHeight: 1.8, margin: 0 }}>{aiDailyPlan}</p>
@@ -305,7 +305,7 @@ function LevelsPanel() {
   ].sort((a, b) => b.price - a.price)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
       {/* Price Ladder */}
       <div className="glass p-4">
         <div className="section-label mb-4">{t('gold.panel.levels.priceLadder')}</div>
@@ -315,17 +315,35 @@ function LevelsPanel() {
             <span style={{ position: 'absolute', right: 8, top: 2, fontSize: 8, color: 'rgba(245,158,11,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{t('gold.panel.levels.manipZone')}</span>
           </div>
 
-          {marks.map((m, i) => {
-            const displayPrice = m.current ? animP : m.price
-            return (
-            <div key={i} className="level-mark" style={{ position: 'absolute', top: pos(m.current ? animP : m.price), left: 0, right: 0, display: 'flex', alignItems: 'center', gap: 8, zIndex: 1, transform: 'translateY(-50%)', transition: m.current ? 'top 0.5s cubic-bezier(0.4,0,0.2,1)' : 'none' }}>
-              <span style={{ fontSize: 10, fontFamily: 'Orbitron, monospace', color: m.color, width: 82, textAlign: 'right', fontWeight: m.weight, flexShrink: 0 }}>{displayPrice.toFixed(2)}</span>
-              <div style={{ flex: 1, height: 0, borderTop: `${m.current ? 2 : 1}px ${m.dashed ? 'dashed' : 'solid'} ${m.color}`, opacity: m.current ? 1 : 0.65 }} />
-              <span style={{ fontSize: m.current ? 11 : 10, color: m.color, fontWeight: m.weight, flexShrink: 0 }}>{m.label}</span>
-              {m.current && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ffffff', flexShrink: 0, boxShadow: '0 0 8px rgba(255,255,255,0.9)', animation: 'dotPulse 1.5s ease infinite' }} />}
-            </div>
-            )
-          })}
+          {(() => {
+            // Deconflict: push labels apart when closer than MIN_GAP px
+            const LADDER_H = 420
+            const MIN_GAP = 18
+            const MIN_GAP_PCT = MIN_GAP / LADDER_H * 100
+            const withPos = marks.map(m => ({
+              ...m,
+              displayPrice: m.current ? animP : m.price,
+              adjPct: parseFloat(pos(m.current ? animP : m.price)),
+            })).sort((a, b) => a.adjPct - b.adjPct)
+            // Forward pass: push down
+            for (let i = 1; i < withPos.length; i++) {
+              if (withPos[i].adjPct - withPos[i - 1].adjPct < MIN_GAP_PCT)
+                withPos[i] = { ...withPos[i], adjPct: withPos[i - 1].adjPct + MIN_GAP_PCT }
+            }
+            // Backward pass: pull up anything pushed past 100%
+            for (let i = withPos.length - 2; i >= 0; i--) {
+              if (withPos[i + 1].adjPct - withPos[i].adjPct < MIN_GAP_PCT)
+                withPos[i] = { ...withPos[i], adjPct: withPos[i + 1].adjPct - MIN_GAP_PCT }
+            }
+            return withPos.map((m, i) => (
+              <div key={i} className="level-mark" style={{ position: 'absolute', top: `${Math.max(0, Math.min(100, m.adjPct)).toFixed(2)}%`, left: 0, right: 0, display: 'flex', alignItems: 'center', gap: 8, zIndex: 1, transform: 'translateY(-50%)', transition: m.current ? 'top 0.5s cubic-bezier(0.4,0,0.2,1)' : 'none' }}>
+                <span style={{ fontSize: 10, fontFamily: 'Orbitron, monospace', color: m.color, width: 82, textAlign: 'right', fontWeight: m.weight, flexShrink: 0 }}>{m.displayPrice.toFixed(2)}</span>
+                <div style={{ flex: 1, height: 0, borderTop: `${m.current ? 2 : 1}px ${m.dashed ? 'dashed' : 'solid'} ${m.color}`, opacity: m.current ? 1 : 0.65 }} />
+                <span style={{ fontSize: m.current ? 11 : 10, color: m.color, fontWeight: m.weight, flexShrink: 0 }}>{m.label}</span>
+                {m.current && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ffffff', flexShrink: 0, boxShadow: '0 0 8px rgba(255,255,255,0.9)', animation: 'dotPulse 1.5s ease infinite' }} />}
+              </div>
+            ))
+          })()}
         </div>
       </div>
 
@@ -463,7 +481,7 @@ function NewsPanel() {
             )}
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
           {enrichedNews.map(n => (
             <div key={n.id} className="news-row" style={{ padding: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -554,7 +572,7 @@ function ScenariosPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
         {/* Bullish */}
         <div style={{ padding: '20px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -630,7 +648,7 @@ function ScenariosPanel() {
       {/* Neutral — What to avoid */}
       <div style={{ padding: '20px', background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: 14 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--amber)', marginBottom: 14 }}>⚠️ {t('gold.panel.scenarios.whatToAvoid')}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
           <div>
             <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{t('gold.panel.scenarios.timesToAvoid')}</div>
             {[t('scenarios.avoidItem1'), t('scenarios.avoidItem2'), t('scenarios.avoidItem3'), t('scenarios.avoidItem4')].map((item, i) => (
@@ -680,7 +698,7 @@ function LiquidityPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Sentiment bars */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         {[
           { label: t('gold.panel.liquidity.smartMoney'), long: sm.long, short: sm.short, color: '#8B5CF6', icon: '🏦' },
           { label: t('gold.panel.liquidity.retail'), long: rt.long, short: rt.short, color: '#94a3b8', icon: '👥' },
@@ -715,7 +733,7 @@ function LiquidityPanel() {
       </div>
 
       {/* Buy-side & Sell-side liquidity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         <div style={{ padding: '18px', background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.18)', borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.1em' }}>💚 {t('gold.panel.liquidity.buySide')}</div>
@@ -834,7 +852,7 @@ function SessionsPanel() {
       </div>
 
       {/* Session cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
         {sessRows.map(s => {
           const isActive = activeSession === s.id || (s.id === 'london' && activeSession === 'overlap')
           return (
@@ -896,7 +914,7 @@ function AlertsPanel() {
   function toggleAlert(id) { setAlerts(p => p.map(a => a.id === id ? { ...a, active: !a.active } : a)) }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
       {/* Alert list */}
       <div className="glass p-4">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -1050,7 +1068,7 @@ function AIPanel({ navigate }) {
       </div>
 
       {/* AI pillars */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
         {pillars.map((p, i) => (
           <div key={i} style={{ padding: '14px', background: `${p.color}08`, border: `1px solid ${p.color}22`, borderRadius: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -1083,7 +1101,7 @@ function HistoryPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
         {[
           { label: t('gold.panel.history.goldTrades'), value: goldTrades.length, color: 'var(--text-1)' },
           { label: t('gold.panel.history.winRate'), value: `${wr}%`, color: wr >= 60 ? '#34d399' : wr >= 50 ? '#f59e0b' : '#ef4444' },
@@ -1103,7 +1121,8 @@ function HistoryPanel() {
         {goldTrades.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-3)' }}>{t('gold.panel.history.noTrades')}</div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 420 }}>
             {goldTrades.map(t => {
               const isWin = t.status === 'win'
               const c = isWin ? '#34d399' : '#ef4444'
@@ -1128,6 +1147,7 @@ function HistoryPanel() {
                 </div>
               )
             })}
+          </div>
           </div>
         )}
       </div>
@@ -1203,7 +1223,7 @@ function CorrelationPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         {pairs.map(p => (
           <div key={p.symbol} className="glass p-4">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -1304,7 +1324,7 @@ function SentimentPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Big sentiment display */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
         {/* Smart Money */}
         <div style={{ padding: '28px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🏦</div>
@@ -1464,7 +1484,7 @@ export default function Gold() {
             </div>
 
             {/* Price + change */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, transform: `translateY(${-parallax}px)`, transition: 'transform 0.05s linear', willChange: 'transform' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', transform: `translateY(${-parallax}px)`, transition: 'transform 0.05s linear', willChange: 'transform' }}>
               {status === 'loading' ? (
                 <div className="skeleton" style={{ width: 200, height: 44, borderRadius: 8 }} />
               ) : (
