@@ -1,7 +1,9 @@
 import { useLiveMarket } from '../context/LiveMarketContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export function useLiveLevels() {
   const { market, status } = useLiveMarket()
+  const { t } = useLanguage()
   const liveG   = market?.gold
   const liveDXY = market?.dxy
 
@@ -51,10 +53,21 @@ export function useLiveLevels() {
 
   const e1 = Math.round((support + dayRange * 0.2) / 5) * 5
   const aiDailyPlan = bias === 'BULLISH'
-    ? `Look for longs on pullbacks to $${e1.toLocaleString()}–$${support.toFixed(0)}. First target: $${resistance.toFixed(0)}. Extended: $${target.toFixed(0)}. Stop below $${invalidation.toFixed(0)}. Avoid 30 min before major news. Keep risk at 1%.`
+    ? t('gold.aiPlanBull')
+      .replace('{e1}', `$${e1.toLocaleString()}`)
+      .replace('{support}', `$${support.toFixed(0)}`)
+      .replace('{resistance}', `$${resistance.toFixed(0)}`)
+      .replace('{target}', `$${target.toFixed(0)}`)
+      .replace('{invalidation}', `$${invalidation.toFixed(0)}`)
     : bias === 'BEARISH'
-    ? `Watch for rejections near $${resistance.toFixed(0)}. Short entries targeting $${support.toFixed(0)}. Stop above $${Math.round((resistance + dayRange * 0.2) / 5) * 5}. Reduce size ahead of data releases. Keep risk at 1%.`
-    : `Range-bound near $${Math.round(price).toLocaleString()}. Wait for a clear break of $${support.toFixed(0)} or $${resistance.toFixed(0)} before committing. Avoid trading the middle of the range. Keep risk below 0.5%.`
+    ? t('gold.aiPlanBear')
+      .replace('{resistance}', `$${resistance.toFixed(0)}`)
+      .replace('{support}', `$${support.toFixed(0)}`)
+      .replace('{stopLevel}', `$${Math.round((resistance + dayRange * 0.2) / 5) * 5}`)
+    : t('gold.aiPlanNeutral')
+      .replace('{price}', `$${Math.round(price).toLocaleString()}`)
+      .replace('{support}', `$${support.toFixed(0)}`)
+      .replace('{resistance}', `$${resistance.toFixed(0)}`)
 
   return {
     price, high, low, change, changePct, dayRange, status,

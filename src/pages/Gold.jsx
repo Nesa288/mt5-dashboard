@@ -499,22 +499,37 @@ function ScenariosPanel() {
 
   const bull = {
     probability:   bullProb,
-    condition:     `Price holds above $${support.toFixed(0)} and bounces from $${bullEntryLow.toFixed(0)}–$${bullEntryHigh.toFixed(0)} entry zone`,
+    condition:     t('gold.panel.scenarios.bullCondition')
+      .replace('{support}', `$${support.toFixed(0)}`)
+      .replace('{entryLow}', `$${bullEntryLow.toFixed(0)}`)
+      .replace('{entryHigh}', `$${bullEntryHigh.toFixed(0)}`),
     entry:         `$${bullEntryLow.toFixed(0)}–$${bullEntryHigh.toFixed(0)}`,
     target1:       `$${resistance.toFixed(0)}`,
     target2:       `$${target.toFixed(0)}`,
     invalidation:  `$${bullStop.toFixed(0)}`,
-    aiExplanation: `Bullish momentum active above $${support.toFixed(0)}. Buy pullbacks to $${bullEntryLow.toFixed(0)}. First target $${resistance.toFixed(0)}, extended $${target.toFixed(0)}. Stop below $${bullStop.toFixed(0)} on daily close.`,
+    aiExplanation: t('gold.panel.scenarios.bullExplanation')
+      .replace('{support}', `$${support.toFixed(0)}`)
+      .replace('{entryLow}', `$${bullEntryLow.toFixed(0)}`)
+      .replace('{resistance}', `$${resistance.toFixed(0)}`)
+      .replace('{target}', `$${target.toFixed(0)}`)
+      .replace('{stop}', `$${bullStop.toFixed(0)}`),
     _entryNum: bullEntryLow, _t1Num: resistance, _stopNum: bullStop,
   }
   const bear = {
     probability:   bearProb,
-    condition:     `Price rejects $${resistance.toFixed(0)} resistance and breaks below $${bearEntryHigh.toFixed(0)}`,
-    entry:         `$${bearEntryHigh.toFixed(0)}–$${resistance.toFixed(0)} (short from resistance)`,
+    condition:     t('gold.panel.scenarios.bearCondition')
+      .replace('{resistance}', `$${resistance.toFixed(0)}`)
+      .replace('{entryHigh}', `$${bearEntryHigh.toFixed(0)}`),
+    entry:         `$${bearEntryHigh.toFixed(0)}–$${resistance.toFixed(0)} (${t('gold.panel.scenarios.bearEntryNote')})`,
     target1:       `$${support.toFixed(0)}`,
     target2:       `$${invalidation.toFixed(0)}`,
     invalidation:  `$${bearStop.toFixed(0)}`,
-    aiExplanation: `Bearish setup triggers on rejection at $${resistance.toFixed(0)}. Short between $${bearEntryHigh.toFixed(0)}–$${resistance.toFixed(0)}. Target $${support.toFixed(0)}, extended $${invalidation.toFixed(0)}. Stop above $${bearStop.toFixed(0)}.`,
+    aiExplanation: t('gold.panel.scenarios.bearExplanation')
+      .replace(/\{resistance\}/g, `$${resistance.toFixed(0)}`)
+      .replace('{entryLow}', `$${bearEntryHigh.toFixed(0)}`)
+      .replace('{support}', `$${support.toFixed(0)}`)
+      .replace('{invalidation}', `$${invalidation.toFixed(0)}`)
+      .replace('{stop}', `$${bearStop.toFixed(0)}`),
     _entryNum: bearEntryHigh, _t1Num: support, _stopNum: bearStop,
   }
   const neutral = scenarios.neutral
@@ -618,8 +633,8 @@ function ScenariosPanel() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
           <div>
             <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{t('gold.panel.scenarios.timesToAvoid')}</div>
-            {neutral.whenToAvoid.map((t, i) => (
-              <div key={i} style={{ fontSize: 11, color: 'var(--text-2)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>• {t}</div>
+            {[t('scenarios.avoidItem1'), t('scenarios.avoidItem2'), t('scenarios.avoidItem3'), t('scenarios.avoidItem4')].map((item, i) => (
+              <div key={i} style={{ fontSize: 11, color: 'var(--text-2)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>• {item}</div>
             ))}
           </div>
           <div>
@@ -630,8 +645,8 @@ function ScenariosPanel() {
           </div>
           <div>
             <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>{t('gold.panel.scenarios.waitFor')}</div>
-            {neutral.zonesToWait.map((z, i) => (
-              <div key={i} style={{ fontSize: 11, color: 'var(--text-2)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>✓ {z}</div>
+            {[t('scenarios.waitItem1'), t('scenarios.waitItem2'), t('scenarios.waitItem3')].map((item, i) => (
+              <div key={i} style={{ fontSize: 11, color: 'var(--text-2)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>✓ {item}</div>
             ))}
           </div>
         </div>
@@ -652,14 +667,14 @@ function LiquidityPanel() {
   const nearZone = (level) => Math.abs(livePrice - level) < dayRange * 0.1
 
   const buySide = [
-    { level: resistance,    label: 'Resistance / EQH (sweep target)', likely: 'High' },
-    { level: liquidityZone, label: 'Liquidity Zone (buy-side pool)',   likely: 'Medium' },
-    { level: target,        label: 'Target Zone / Equal Highs',        likely: 'High' },
+    { level: resistance,    label: t('gold.panel.liquidity.buySide1'), likely: 'High' },
+    { level: liquidityZone, label: t('gold.panel.liquidity.buySide2'), likely: 'Medium' },
+    { level: target,        label: t('gold.panel.liquidity.buySide3'), likely: 'High' },
   ]
   const sellSide = [
-    { level: asianLow, label: 'Day Low (manipulation zone)',  likely: 'Medium' },
-    { level: support,  label: 'Support / EQL (sell-side)',    likely: 'High' },
-    { level: invalidation, label: 'Invalidation Level',       likely: 'Low' },
+    { level: asianLow,    label: t('gold.panel.liquidity.sellSide1'), likely: 'Medium' },
+    { level: support,     label: t('gold.panel.liquidity.sellSide2'), likely: 'High' },
+    { level: invalidation, label: t('gold.panel.liquidity.sellSide3'), likely: 'Low' },
   ]
 
   return (
@@ -694,7 +709,7 @@ function LiquidityPanel() {
           <div>
             <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 3 }}>{t('gold.panel.liquidity.contrarian')}</div>
             <div style={{ fontSize: 18, fontWeight: 900, color: '#34d399' }}>{t('gold.panel.liquidity.divergenceBullish')}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 4 }}>Retail is {rt.short}% SHORT while Smart Money is {sm.long}% LONG. Historical accuracy of this setup: ~73%. Bias: BUY DIPS.</div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 4 }}>{t('gold.panel.liquidity.divergenceText').replace('{rtShort}', rt.short).replace('{smLong}', sm.long)}</div>
           </div>
         </div>
       </div>
@@ -761,10 +776,10 @@ function SessionsPanel() {
     : 'none'
 
   const sessRows = [
-    { id: 'asian',   label: 'Asian',           open: 23, close: 8,  color: '#8B5CF6', desc: 'Range-bound. Gold establishes daily range. Low volatility. Sweep of London / NY levels common.', strat: 'Wait for range to form. Trade the breakout at London open.', best: 'Range scalp or avoid' },
-    { id: 'london',  label: 'London',          open: 8,  close: 17, color: '#3b82f6', desc: 'Most active Gold session. Major moves begin. Asian range swept. Institutional orders filled.', strat: 'Look for Asian high/low sweep then follow the breakout direction.', best: 'Breakout & trend trades' },
-    { id: 'overlap', label: 'London / NY Overlap', open: 13, close: 17, color: '#34d399', desc: 'Peak liquidity. Highest volatility window. CPI, NFP, FOMC all drop at 14:30–20:00 UTC.', strat: 'Beware of news spikes. Trade with confirmation only. Best for large moves.', best: 'News trades / strong trends' },
-    { id: 'newYork', label: 'New York',        open: 17, close: 22, color: '#f59e0b', desc: 'Continues or reverses London move. Gold often makes final push or reversal here.', strat: 'Trade the London continuation or NY reversal from key levels.', best: 'Reversals & continuation' },
+    { id: 'asian',   label: 'Asian',               open: 23, close: 8,  color: '#8B5CF6', desc: t('gold.panel.sessions.asian.desc'),   strat: t('gold.panel.sessions.asian.strat'),   best: t('gold.panel.sessions.asian.best') },
+    { id: 'london',  label: 'London',              open: 8,  close: 17, color: '#3b82f6', desc: t('gold.panel.sessions.london.desc'),  strat: t('gold.panel.sessions.london.strat'),  best: t('gold.panel.sessions.london.best') },
+    { id: 'overlap', label: 'London / NY Overlap', open: 13, close: 17, color: '#34d399', desc: t('gold.panel.sessions.overlap.desc'), strat: t('gold.panel.sessions.overlap.strat'), best: t('gold.panel.sessions.overlap.best') },
+    { id: 'newYork', label: 'New York',            open: 17, close: 22, color: '#f59e0b', desc: t('gold.panel.sessions.newYork.desc'), strat: t('gold.panel.sessions.newYork.strat'), best: t('gold.panel.sessions.newYork.best') },
   ]
 
   return (
@@ -805,10 +820,10 @@ function SessionsPanel() {
         </div>
         <div style={{ display: 'flex', gap: 14, marginTop: 10, flexWrap: 'wrap' }}>
           {[
-            { color: '#8B5CF6', label: 'Asian (23:00–08:00)' },
-            { color: '#3b82f6', label: 'London (08:00–17:00)' },
-            { color: '#34d399', label: 'Overlap (13:00–17:00)' },
-            { color: '#f59e0b', label: 'New York (17:00–22:00)' },
+            { color: '#8B5CF6', label: t('gold.panel.sessions.legendAsian') },
+            { color: '#3b82f6', label: t('gold.panel.sessions.legendLondon') },
+            { color: '#34d399', label: t('gold.panel.sessions.legendOverlap') },
+            { color: '#f59e0b', label: t('gold.panel.sessions.legendNewYork') },
           ].map(l => (
             <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{ width: 10, height: 10, borderRadius: 2, background: l.color, opacity: 0.8 }} />
@@ -984,24 +999,30 @@ function AIPanel({ navigate }) {
   const sm = sentiment.smartMoney
 
   const bullProb = bias === 'BULLISH' ? 70 : bias === 'BEARISH' ? 30 : 50
-  const dxyDir = (liveDXY?.changePct ?? -0.1) < 0 ? 'weakening (bullish gold)' : 'strengthening (headwind)'
+  const dxyDir = (liveDXY?.changePct ?? -0.1) < 0 ? t('gold.panel.ai.dxyWeakening') : t('gold.panel.ai.dxyStrengthening')
   const dxyStr = liveDXY
     ? `${liveDXY.price.toFixed(2)} (${liveDXY.changePct >= 0 ? '+' : ''}${liveDXY.changePct.toFixed(2)}%) — ${dxyDir}`
-    : 'DXY weakening — gold positive'
-  const btcDir = (liveBTC?.changePct ?? 0) > 0 ? 'risk-on confirms dollar weakness' : 'mixed signal'
+    : t('gold.panel.ai.dxyFallback')
+  const btcDir = (liveBTC?.changePct ?? 0) > 0 ? t('gold.panel.ai.btcRiskOn') : t('gold.panel.ai.btcMixed')
   const btcStr = liveBTC
     ? `BTC $${Math.round(liveBTC.price).toLocaleString()} (${liveBTC.changePct >= 0 ? '+' : ''}${liveBTC.changePct.toFixed(2)}%) — ${btcDir}`
-    : `${bullProb}% bullish — Target ${resistance.toFixed(0)} / ${target.toFixed(0)}`
+    : t('gold.panel.ai.btcFallback').replace('{prob}', bullProb).replace('{res}', resistance.toFixed(0)).replace('{tgt}', target.toFixed(0))
 
-  const aiSummaryText = `Gold (XAUUSD) is trading at $${goldPrice.toFixed(2)}, ${goldChange >= 0 ? 'up' : 'down'} ${Math.abs(goldChange).toFixed(2)}% on the session. ${bias === 'BULLISH' ? `Momentum is positive with price holding above the ${support.toFixed(0)} support zone. Institutional flow and DXY weakness continue to favour the bull case. Watch for a breakout above ${resistance.toFixed(0)} targeting ${target.toFixed(0)}.` : bias === 'BEARISH' ? `Bearish pressure is building with price failing to sustain above ${resistance.toFixed(0)}. Risk of a deeper pullback toward ${support.toFixed(0)}–${invalidation.toFixed(0)} if sellers maintain control.` : `Price is consolidating between ${support.toFixed(0)} and ${resistance.toFixed(0)}. Wait for a decisive break before committing directionally. Range-bound conditions favour scalp strategies with tight stops.`} A daily close below ${invalidation.toFixed(0)} would flip the bias bearish.`
+  const aiSumDir = goldChange >= 0 ? t('gold.aiSumUp') : t('gold.aiSumDown')
+  const aiSumMid = bias === 'BULLISH'
+    ? t('gold.aiSumBull').replace('{support}', support.toFixed(0)).replace('{resistance}', resistance.toFixed(0)).replace('{target}', target.toFixed(0))
+    : bias === 'BEARISH'
+    ? t('gold.aiSumBear').replace('{resistance}', resistance.toFixed(0)).replace('{support}', support.toFixed(0)).replace('{invalidation}', invalidation.toFixed(0))
+    : t('gold.aiSumNeutral').replace('{support}', support.toFixed(0)).replace('{resistance}', resistance.toFixed(0))
+  const aiSummaryText = `${t('gold.aiSumPrefix').replace('{price}', `$${goldPrice.toFixed(2)}`).replace('{dir}', aiSumDir).replace('{pct}', Math.abs(goldChange).toFixed(2))} ${aiSumMid} ${t('gold.aiSumSuffix').replace('{invalidation}', invalidation.toFixed(0))}`
 
   const pillars = [
-    { icon: '📈', title: t('gold.panel.ai.trendAlignment'), value: `${bias} bias — price ${goldChange >= 0 ? 'above' : 'below'} key levels`, color: biasColor, pos: bias !== 'BEARISH' },
-    { icon: '🏦', title: t('gold.panel.ai.smartMoney'), value: `${sm.long}% institutional long positioning`, color: '#8B5CF6', pos: true },
+    { icon: '📈', title: t('gold.panel.ai.trendAlignment'), value: (goldChange >= 0 ? t('gold.panel.ai.trendAbove') : t('gold.panel.ai.trendBelow')).replace('{bias}', bias), color: biasColor, pos: bias !== 'BEARISH' },
+    { icon: '🏦', title: t('gold.panel.ai.smartMoney'), value: t('gold.panel.ai.smValue').replace('{long}', sm.long), color: '#8B5CF6', pos: true },
     { icon: '📉', title: t('gold.panel.ai.dxy'), value: dxyStr, color: (liveDXY?.changePct ?? -0.3) < 0 ? '#34d399' : '#ef4444', pos: (liveDXY?.changePct ?? -0.3) < 0 },
-    { icon: '⚠️', title: t('gold.panel.ai.eventRisk'), value: 'Watch economic calendar — reduce size near releases', color: '#f59e0b', pos: false },
+    { icon: '⚠️', title: t('gold.panel.ai.eventRisk'), value: t('gold.panel.ai.eventRiskValue'), color: '#f59e0b', pos: false },
     { icon: '🎯', title: t('gold.panel.ai.btcCorrelation'), value: btcStr, color: '#34d399', pos: true },
-    { icon: '🐻', title: t('gold.panel.ai.bearTrigger'), value: `Break below ${invalidation.toFixed(0)} flips bias bearish`, color: '#ef4444', pos: false },
+    { icon: '🐻', title: t('gold.panel.ai.bearTrigger'), value: t('gold.panel.ai.bearTriggerValue').replace('{level}', invalidation.toFixed(0)), color: '#ef4444', pos: false },
   ]
 
   return (
@@ -1136,7 +1157,7 @@ function CorrelationPanel() {
       change: liveDxyCh != null ? `${liveDxyCh >= 0 ? '+' : ''}${liveDxyCh.toFixed(2)}%` : '—',
       trend: liveDxyCh != null ? (liveDxyCh < 0 ? 'Bearish' : 'Bullish') : '—',
       corr: t('gold.panel.correlation.inverse').toUpperCase(), corrNum: -0.92,
-      impact: 'DXY bearish = Gold bullish. This is the #1 driver of Gold.',
+      impact: t('gold.panel.correlation.dxyImpact'),
       signal: liveDxyCh != null ? (liveDxyCh < 0 ? '↑ Gold' : '↓ Gold') : '—',
       signalColor: liveDxyCh != null ? (liveDxyCh < 0 ? '#34d399' : '#ef4444') : '#94a3b8',
       color: '#ef4444',
@@ -1148,8 +1169,10 @@ function CorrelationPanel() {
       trend: liveUs10y != null ? (liveUs10y.changePct > 0 ? 'Rising' : 'Falling') : '—',
       corr: t('gold.panel.correlation.inverse').toUpperCase(), corrNum: -0.78,
       impact: liveUs10y != null
-        ? `Higher yields increase opportunity cost of Gold. Current yield at ${liveUs10y.price.toFixed(2)}% — ${liveUs10y.changePct > 0 ? 'mild headwind' : 'easing pressure'}.`
-        : 'Higher yields increase opportunity cost of Gold.',
+        ? t('gold.panel.correlation.yieldImpactBase')
+            .replace('{yield}', liveUs10y.price.toFixed(2))
+            .replace('{direction}', liveUs10y.changePct > 0 ? t('gold.panel.correlation.yieldHeadwind') : t('gold.panel.correlation.yieldEasing'))
+        : t('gold.panel.correlation.yieldImpactFallback'),
       signal: liveUs10y != null ? (liveUs10y.changePct > 0 ? '↓ Pressure' : '↑ Easing') : '—',
       signalColor: liveUs10y != null ? (liveUs10y.changePct > 0 ? '#f59e0b' : '#34d399') : '#94a3b8',
       color: '#f59e0b',
@@ -1160,7 +1183,7 @@ function CorrelationPanel() {
       change: liveBtcCh != null ? `${liveBtcCh >= 0 ? '+' : ''}${liveBtcCh.toFixed(2)}%` : '—',
       trend: liveBtcCh != null ? (liveBtcCh > 0 ? 'Bullish' : 'Bearish') : '—',
       corr: t('gold.panel.correlation.moderate').toUpperCase(), corrNum: 0.44,
-      impact: 'BTC and Gold both rising together signals dollar weakness and inflation hedge demand.',
+      impact: t('gold.panel.correlation.btcImpact'),
       signal: liveBtcCh != null ? (liveBtcCh > 0 ? '↑ Neutral' : '↓ Neutral') : '—',
       signalColor: '#94a3b8',
       color: '#f59e0b',
@@ -1171,7 +1194,7 @@ function CorrelationPanel() {
       change: liveSilverCh != null ? `${liveSilverCh >= 0 ? '+' : ''}${liveSilverCh.toFixed(2)}%` : '—',
       trend: liveSilverCh != null ? (liveSilverCh > 0 ? 'Bullish' : 'Bearish') : '—',
       corr: t('gold.panel.correlation.strong').toUpperCase(), corrNum: 0.87,
-      impact: 'Silver moves with Gold but amplified. Co-movement confirms metals rally direction.',
+      impact: t('gold.panel.correlation.silverImpact'),
       signal: liveSilverCh != null ? (liveSilverCh > 0 ? '↑ Confirms' : '↓ Weakens') : '—',
       signalColor: liveSilverCh != null ? (liveSilverCh > 0 ? '#34d399' : '#ef4444') : '#94a3b8',
       color: '#3b82f6',
@@ -1232,12 +1255,12 @@ function CorrelationPanel() {
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>📊 {t('gold.panel.correlation.macroSummary')}</div>
         <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.7 }}>
           {liveDxyCh != null
-            ? <>DXY is <b style={{ color: liveDxyCh < 0 ? '#34d399' : '#ef4444' }}>{liveDxyCh < 0 ? 'weakening' : 'strengthening'}</b> ({liveDxyCh >= 0 ? '+' : ''}{liveDxyCh.toFixed(2)}%) → {liveDxyCh < 0 ? <b style={{ color: '#34d399' }}>bullish</b> : <b style={{ color: '#ef4444' }}>bearish</b>} for Gold.</>
-            : `DXY ${t('gold.panel.correlation.loading')}.`}{' '}
-          {liveSilverCh != null ? `Silver ${liveSilverCh > 0 ? 'is up confirming the metals rally' : 'is down — mixed signal for metals'}.` : 'Silver loading.'}{' '}
-          Treasury yields {liveUs10y != null ? `at ${liveUs10y.price.toFixed(2)}%` : '(loading)'} create mild headwinds but are secondary to dollar direction.{' '}
-          {liveBtcCh != null ? `BTC ${liveBtcCh > 0 ? 'rising with Gold signals broad dollar weakness' : 'falling adds mixed signal'}.` : 'BTC loading.'}{' '}
-          Net macro read: <b style={{ color: liveDxyCh != null && liveDxyCh < 0 && liveSilverCh != null && liveSilverCh > 0 ? '#34d399' : '#f59e0b' }}>{liveDxyCh != null && liveDxyCh < 0 && liveSilverCh != null && liveSilverCh > 0 ? 'BULLISH GOLD' : 'CAUTIOUSLY BULLISH'}</b>.
+            ? <>DXY {t('gold.panel.correlation.macroIs')} <b style={{ color: liveDxyCh < 0 ? '#34d399' : '#ef4444' }}>{liveDxyCh < 0 ? t('gold.panel.correlation.macroWeakening') : t('gold.panel.correlation.macroStrengthening')}</b> ({liveDxyCh >= 0 ? '+' : ''}{liveDxyCh.toFixed(2)}%) → {liveDxyCh < 0 ? <b style={{ color: '#34d399' }}>{t('gold.panel.correlation.macroBullish')}</b> : <b style={{ color: '#ef4444' }}>{t('gold.panel.correlation.macroBearish')}</b>} {t('gold.panel.correlation.macroForGold')}</>
+            : t('gold.panel.correlation.dxyFallbackLoading')}{' '}
+          {liveSilverCh != null ? (liveSilverCh > 0 ? t('gold.panel.correlation.macroSilverUp') : t('gold.panel.correlation.macroSilverDown')) : t('gold.panel.correlation.macroSilverFallback')}{' '}
+          {t('gold.panel.correlation.macroYieldNote').replace('{yield}', liveUs10y != null ? liveUs10y.price.toFixed(2) + '%' : '(loading)')}{' '}
+          {liveBtcCh != null ? (liveBtcCh > 0 ? t('gold.panel.correlation.macroBtcRising') : t('gold.panel.correlation.macroBtcFalling')) : t('gold.panel.correlation.macroBtcFallback')}{' '}
+          {t('gold.panel.correlation.macroNetRead')} <b style={{ color: liveDxyCh != null && liveDxyCh < 0 && liveSilverCh != null && liveSilverCh > 0 ? '#34d399' : '#f59e0b' }}>{liveDxyCh != null && liveDxyCh < 0 && liveSilverCh != null && liveSilverCh > 0 ? t('gold.panel.correlation.netBullish') : t('gold.panel.correlation.netCautious')}</b>.
         </div>
       </div>
     </div>
@@ -1250,7 +1273,7 @@ function SentimentPanel() {
   const { market, status } = useLiveMarket()
   const liveG = market?.gold
   const liveChangePct = liveG?.changePct ?? 0
-  const momentumLabel = liveChangePct > 0.5 ? 'STRONG BULLISH' : liveChangePct > 0 ? 'MILD BULLISH' : liveChangePct < -0.5 ? 'STRONG BEARISH' : 'MILD BEARISH'
+  const momentumLabel = liveChangePct > 0.5 ? t('gold.panel.sentiment.momentumStrBull') : liveChangePct > 0 ? t('gold.panel.sentiment.momentumMildBull') : liveChangePct < -0.5 ? t('gold.panel.sentiment.momentumStrBear') : t('gold.panel.sentiment.momentumMildBear')
   const momentumColor = liveChangePct > 0 ? '#34d399' : '#ef4444'
   const sm = sentiment.smartMoney
   const rt = sentiment.retail
@@ -1307,10 +1330,7 @@ function SentimentPanel() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 900, color: '#34d399', marginBottom: 5 }}>{t('gold.panel.sentiment.contrarian')}</div>
             <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>
-              When retail traders are {rt.short}% SHORT and Smart Money is {sm.long}% LONG,
-              the market typically follows institutional positioning. This divergence historically
-              resolves with a move <b style={{ color: '#34d399' }}>UP</b> as retail shorts get squeezed.
-              Historical win rate of this setup: <b style={{ color: 'var(--gold)' }}>~73%</b>.
+              {t('gold.panel.sentiment.divergenceText').replace('{rtShort}', rt.short).replace('{smLong}', sm.long)}
             </div>
           </div>
         </div>
@@ -1501,7 +1521,7 @@ export default function Gold() {
         {goldData.tradingWarning && (
           <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8, display: 'flex', gap: 10, alignItems: 'center' }}>
             <span style={{ fontSize: 14, flexShrink: 0 }}>⚠️</span>
-            <span style={{ fontSize: 12, color: 'var(--amber)' }}>{goldData.tradingWarning}</span>
+            <span style={{ fontSize: 12, color: 'var(--amber)' }}>{t('gold.tradingWarningText')}</span>
           </div>
         )}
 

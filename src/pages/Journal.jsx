@@ -146,7 +146,9 @@ export default function Journal() {
               <div className="section-label" style={{ marginBottom: 0 }}>{t('journal.aiReview')}</div>
             </div>
             <p style={{ fontSize: 14, color: 'var(--text-1)', lineHeight: 1.7 }}>
-              "{journalStats.commonMistake.includes('news') ? `Your biggest mistake this month is ${journalStats.commonMistake}. This has cost you 2 losing trades and reduced your win rate by approximately 8%. Consider disabling your trading platform 30 minutes before major news releases.` : `Your performance this month is solid. Keep maintaining your ${journalStats.winRate}% win rate and ${journalStats.profitFactor} profit factor.`}"
+              "{journalStats.commonMistake.includes('news')
+                ? t('journal.aiReviewNewsText').replace('{commonMistake}', t('journal.commonMistakeValue'))
+                : t('journal.aiReviewSolidText').replace('{winRate}', journalStats.winRate).replace('{profitFactor}', journalStats.profitFactor)}"
             </p>
             <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-3)' }}>{t('journal.aiReviewBased')} {journalStats.totalTrades} {t('journal.aiReviewLoggedTrades')} · {t('journal.aiReviewDemo')}</div>
           </div>
@@ -213,11 +215,11 @@ export default function Journal() {
                       <td colSpan={9} style={{ background: 'rgba(139,92,246,0.04)', padding: '12px 16px' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 8 }}>
                           {[
-                            { label: 'Entry', val: tr.entry.toLocaleString(), color: 'var(--text-1)' },
-                            { label: 'SL', val: tr.sl.toLocaleString(), color: 'var(--red)' },
-                            { label: 'TP', val: tr.tp.toLocaleString(), color: 'var(--green)' },
-                            { label: 'R:R', val: tr.rr, color: 'var(--gold)' },
-                            { label: 'Emotion', val: tr.emotions, color: 'var(--text-2)' },
+                            { label: t('journal.expandLabels.entry'), val: tr.entry.toLocaleString(), color: 'var(--text-1)' },
+                            { label: t('journal.expandLabels.sl'), val: tr.sl.toLocaleString(), color: 'var(--red)' },
+                            { label: t('journal.expandLabels.tp'), val: tr.tp.toLocaleString(), color: 'var(--green)' },
+                            { label: t('journal.expandLabels.rr'), val: tr.rr, color: 'var(--gold)' },
+                            { label: t('journal.expandLabels.emotion'), val: tr.emotions, color: 'var(--text-2)' },
                           ].map(({ label, val, color }) => (
                             <div key={label}>
                               <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>
@@ -248,9 +250,9 @@ export default function Journal() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {[
-                  { label: 'Profit Factor', value: journalStats.profitFactor, color: 'var(--blue)' },
-                  { label: 'Avg R:R', value: journalStats.avgR, color: 'var(--gold)' },
-                  { label: 'Net Profit', value: journalStats.netProfit, color: 'var(--green)' },
+                  { label: t('journal.statsPanel.profitFactor'), value: journalStats.profitFactor, color: 'var(--blue)' },
+                  { label: t('journal.statsPanel.avgR'), value: journalStats.avgR, color: 'var(--gold)' },
+                  { label: t('journal.statsPanel.netProfit'), value: journalStats.netProfit, color: 'var(--green)' },
                 ].map(({ label, value, color }) => (
                   <div key={label}>
                     <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>{label}</div>
@@ -285,14 +287,14 @@ export default function Journal() {
                     <div style={{ width: `${(wins / total) * 100}%`, background: 'var(--green)', boxShadow: '0 0 10px rgba(0,212,160,0.5)', borderRadius: '0 6px 6px 0' }} />
                   </div>
                   <div style={{ textAlign: 'center', marginTop: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 600, letterSpacing: '0.06em' }}>{total} trades</span>
+                    <span style={{ fontSize: 11, color: 'var(--gold)', fontFamily: 'Orbitron, monospace', fontWeight: 600, letterSpacing: '0.06em' }}>{total} {t('journal.tradesSuffix')}</span>
                   </div>
                 </div>
               )
             })()}
             <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(139,92,246,0.06)', border: '1px solid var(--gold-border)', borderRadius: 8 }}>
               <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>{t('journal.mostCommonMistake')}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{journalStats.commonMistake}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-1)' }}>{t('journal.commonMistakeValue')}</div>
             </div>
           </div>
         </div>

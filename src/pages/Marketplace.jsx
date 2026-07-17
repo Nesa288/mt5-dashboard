@@ -43,7 +43,7 @@ function ProductCard({ product }) {
       </div>
 
       {/* Description */}
-      <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6, flex: 1 }}>{product.desc}</p>
+      <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6, flex: 1 }}>{t(`marketplace.products.p${product.id}.desc`)}</p>
 
       {/* Rating */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

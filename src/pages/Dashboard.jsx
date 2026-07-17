@@ -1,11 +1,9 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { useLiveMarket } from '../context/LiveMarketContext'
 import { useLiveLevels } from '../hooks/useLiveLevels'
-import { calendarEvents, scenarios, sentiment } from '../data/mockData'
+import { sentiment } from '../data/mockData'
 import { GoldMiniChart } from '../components/TradingViewWidget'
-import { IcoArrowUp, IcoArrowDown, IcoAlert, IcoInfo, IcoChevronRight, IcoTarget, IcoShield } from '../components/Icons'
+import { IcoArrowUp, IcoArrowDown, IcoInfo, IcoTarget, IcoShield } from '../components/Icons'
 import AIDailyBrief from '../components/AIDailyBrief'
 
 
@@ -61,8 +59,7 @@ function SessionBlock({ name, color, isActive, label }) {
 
 export default function Dashboard() {
   const { t } = useLanguage()
-  const navigate = useNavigate()
-  const { market, status: liveStatus, news: liveNews } = useLiveMarket()
+  const { market, status: liveStatus } = useLiveMarket()
   const lvls = useLiveLevels()
   const liveG = market?.gold
   const goldPrice      = liveG?.price
@@ -70,8 +67,6 @@ export default function Dashboard() {
   const goldChangePct  = liveG?.changePct
   const goldHigh       = liveG?.high
   const goldLow        = liveG?.low
-  const todayNews   = (liveNews ?? []).slice(0, 3)
-  const todayEvents = calendarEvents.filter(e => e.date === 'today').slice(0, 4)
 
   const nowH = new Date().getUTCHours()
   const sessions = {
@@ -144,8 +139,8 @@ export default function Dashboard() {
             {[
               { label: t('dashboard.hero.aiOutlook'), value: lvls.bias, color: 'var(--gold)' },
               { label: t('dashboard.hero.trend'), value: lvls.trendStatus, color: lvls.biasColor },
-              { label: t('dashboard.hero.targetZone'), value: `$${lvls.target.toLocaleString()}`, color: 'var(--green)' },
-              { label: t('dashboard.hero.invalidation'), value: `$${lvls.invalidation.toLocaleString()}`, color: 'var(--red)' },
+              { label: t('dashboard.hero.targetZone'), value: lvls.target != null ? `$${lvls.target.toLocaleString()}` : '—', color: 'var(--green)' },
+              { label: t('dashboard.hero.invalidation'), value: lvls.invalidation != null ? `$${lvls.invalidation.toLocaleString()}` : '—', color: 'var(--red)' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>{label}</div>
@@ -241,11 +236,11 @@ export default function Dashboard() {
           </div>
           <div className="g-2" style={{ gap: 10 }}>
             {[
-              { label: t('dashboard.keyLevels.support'), value: `$${lvls.support.toLocaleString()}`, color: 'var(--green)', Icon: IcoShield },
-              { label: t('dashboard.keyLevels.resistance'), value: `$${lvls.resistance.toLocaleString()}`, color: 'var(--red)', Icon: IcoTarget },
-              { label: t('dashboard.keyLevels.liquidity'), value: `$${lvls.liquidityZone.toLocaleString()}`, color: 'var(--amber)', Icon: IcoInfo },
-              { label: t('dashboard.keyLevels.asianHigh'), value: `$${lvls.asianHigh.toLocaleString()}`, color: 'var(--blue)', Icon: IcoArrowUp },
-              { label: t('dashboard.keyLevels.asianLow'), value: `$${lvls.asianLow.toLocaleString()}`, color: 'var(--purple)', Icon: IcoArrowDown },
+              { label: t('dashboard.keyLevels.support'),    value: lvls.support      != null ? `$${lvls.support.toLocaleString()}`      : '—', color: 'var(--green)',  Icon: IcoShield },
+              { label: t('dashboard.keyLevels.resistance'), value: lvls.resistance   != null ? `$${lvls.resistance.toLocaleString()}`   : '—', color: 'var(--red)',    Icon: IcoTarget },
+              { label: t('dashboard.keyLevels.liquidity'),  value: lvls.liquidityZone != null ? `$${lvls.liquidityZone.toLocaleString()}` : '—', color: 'var(--amber)', Icon: IcoInfo },
+              { label: t('dashboard.keyLevels.asianHigh'),  value: lvls.asianHigh    != null ? `$${lvls.asianHigh.toLocaleString()}`    : '—', color: 'var(--blue)',   Icon: IcoArrowUp },
+              { label: t('dashboard.keyLevels.asianLow'),   value: lvls.asianLow     != null ? `$${lvls.asianLow.toLocaleString()}`     : '—', color: 'var(--purple)', Icon: IcoArrowDown },
             ].map(({ label, value, color, Icon }) => (
               <div key={label} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -264,134 +259,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Row 3: News + Calendar */}
-      <div className="g-2">
-        {/* Today's News */}
-        <div className="glass p-4">
-          <div className="section-label">{t('dashboard.news.title')}</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {todayNews.map(item => (
-              <div key={item.id} style={{
-                padding: '12px 14px',
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 10,
-                border: `1px solid var(--border)`,
-                borderLeft: `3px solid ${item.sentiment === 'bullish' ? 'var(--green)' : item.sentiment === 'bearish' ? 'var(--red)' : 'var(--amber)'}`,
-              }}>
-                <div className="flex items-center justify-between mb-1" style={{ gap: 8 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)', lineHeight: 1.3 }}>{item.title}</div>
-                  <ImpactDots impact={item.impact === 'high' ? 5 : item.impact === 'medium' ? 3 : 1} />
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--gold)', marginTop: 6, lineHeight: 1.4 }}>
-                  🤖 {item.aiSummary.substring(0, 80)}...
-                </div>
-                <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 4 }}>{item.time} · {item.source}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Economic Calendar Preview */}
-        <div className="glass p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="section-label" style={{ marginBottom: 0 }}>{t('dashboard.calendar.title')}</div>
-            <button className="btn btn-ghost btn-xs" onClick={() => navigate('/calendar')}>
-              {t('dashboard.calendar.viewFull')} <IcoChevronRight size={11} />
-            </button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {todayEvents.map(ev => (
-              <div key={ev.id} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '9px 12px',
-                background: 'rgba(255,255,255,0.03)',
-                borderRadius: 8, border: '1px solid var(--border)',
-              }}>
-                <span style={{ fontSize: 11, color: 'var(--text-2)', fontFamily: 'Orbitron, monospace', minWidth: 40 }}>{ev.time}</span>
-                <span style={{
-                  width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: ev.currency === 'USD' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.08)',
-                  fontSize: 10, fontWeight: 700,
-                  color: ev.currency === 'USD' ? 'var(--blue)' : 'var(--text-2)',
-                  flexShrink: 0,
-                }}>
-                  {ev.currency}
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-1)', flex: 1 }}>{ev.event}</span>
-                <ImpactDots impact={ev.impact} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Row 4: Trading Scenarios */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="section-label" style={{ marginBottom: 0 }}>{t('dashboard.scenarios.title')}</div>
-        </div>
-        <div className="g-2">
-          {/* Bullish */}
-          <div className="glass-green p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--green)' }}>🟢 {t('dashboard.scenarios.bullish')}</div>
-              <div style={{
-                padding: '4px 12px', borderRadius: 20,
-                background: 'rgba(0,212,160,0.2)',
-                fontSize: 13, fontWeight: 700, color: 'var(--green)',
-              }}>
-                {scenarios.bullish.probability}%
-              </div>
-            </div>
-            <div className="g-2" style={{ gap: 8 }}>
-              {[
-                { l: t('dashboard.scenarios.entry'),       v: lvls.support     != null ? `$${Math.round(lvls.support + (lvls.dayRange ?? 0) * 0.1).toLocaleString()}` : '—' },
-                { l: t('dashboard.scenarios.target1'),     v: lvls.resistance  != null ? `$${Math.round(lvls.resistance).toLocaleString()}` : '—' },
-                { l: t('dashboard.scenarios.target2'),     v: lvls.target      != null ? `$${Math.round(lvls.target).toLocaleString()}` : '—' },
-                { l: t('dashboard.scenarios.invalidation'),v: lvls.invalidation != null ? `$${Math.round(lvls.invalidation).toLocaleString()}` : '—' },
-              ].map(({ l, v }) => (
-                <div key={l}>
-                  <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{l}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{v}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5, borderTop: '1px solid rgba(0,212,160,0.15)', paddingTop: 10 }}>
-              {t('dashboard.scenarios.condition')}: <span style={{ color: 'var(--green)' }}>{scenarios.bullish.condition.substring(0, 70)}...</span>
-            </div>
-          </div>
-
-          {/* Bearish */}
-          <div className="glass-red p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--red)' }}>🔴 {t('dashboard.scenarios.bearish')}</div>
-              <div style={{
-                padding: '4px 12px', borderRadius: 20,
-                background: 'rgba(239,68,68,0.2)',
-                fontSize: 13, fontWeight: 700, color: 'var(--red)',
-              }}>
-                {scenarios.bearish.probability}%
-              </div>
-            </div>
-            <div className="g-2" style={{ gap: 8 }}>
-              {[
-                { l: t('dashboard.scenarios.entry'),       v: lvls.resistance  != null ? `$${Math.round(lvls.resistance).toLocaleString()}` : '—' },
-                { l: t('dashboard.scenarios.target1'),     v: lvls.support     != null ? `$${Math.round(lvls.support).toLocaleString()}` : '—' },
-                { l: t('dashboard.scenarios.target2'),     v: lvls.invalidation != null ? `$${Math.round(lvls.invalidation).toLocaleString()}` : '—' },
-                { l: t('dashboard.scenarios.invalidation'),v: lvls.resistance  != null ? `$${Math.round(lvls.resistance + (lvls.dayRange ?? 0) * 0.3).toLocaleString()}` : '—' },
-              ].map(({ l, v }) => (
-                <div key={l}>
-                  <div style={{ fontSize: 9, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{l}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>{v}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-2)', lineHeight: 1.5, borderTop: '1px solid rgba(239,68,68,0.15)', paddingTop: 10 }}>
-              {t('dashboard.scenarios.condition')}: <span style={{ color: 'var(--red)' }}>{scenarios.bearish.condition.substring(0, 70)}...</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

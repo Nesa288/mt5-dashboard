@@ -17,15 +17,20 @@ export default function AIDailyBrief() {
   const dxyPrice = lvls.liveDXY?.price
   const dxyPct   = lvls.liveDXY?.changePct
 
+  const sup = lvls.support    != null ? `$${lvls.support.toLocaleString()}`      : '—'
+  const res = lvls.resistance != null ? `$${lvls.resistance.toLocaleString()}`   : '—'
+  const liq = lvls.liquidityZone != null ? `$${lvls.liquidityZone.toLocaleString()}` : '—'
+  const prc = lvls.price      != null ? `$${Math.round(lvls.price).toLocaleString()}` : '—'
+
   const bullets = [
     {
       label: 'Gold',
       color: '#f59e0b',
       text: lvls.bias === 'BULLISH'
-        ? `${t('aiDailyBrief.bullishAbove')} $${lvls.support.toLocaleString()}. ${t('aiDailyBrief.momentumToward')} $${lvls.liquidityZone.toLocaleString()} ${t('aiDailyBrief.liquidityZoneSuffix')}.`
+        ? `${t('aiDailyBrief.bullishAbove')} ${sup}. ${t('aiDailyBrief.momentumToward')} ${liq} ${t('aiDailyBrief.liquidityZoneSuffix')}.`
         : lvls.bias === 'BEARISH'
-        ? `${t('aiDailyBrief.bearishBelow')} $${lvls.resistance.toLocaleString()}. ${t('aiDailyBrief.watchingKey')} $${lvls.support.toLocaleString()} ${t('aiDailyBrief.keyDefence')}`
-        : `${t('aiDailyBrief.neutralNear')} $${Math.round(lvls.price).toLocaleString()}. ${t('aiDailyBrief.range')} $${lvls.support.toLocaleString()}–$${lvls.resistance.toLocaleString()}. ${t('aiDailyBrief.wait')}`,
+        ? `${t('aiDailyBrief.bearishBelow')} ${res}. ${t('aiDailyBrief.watchingKey')} ${sup} ${t('aiDailyBrief.keyDefence')}`
+        : `${t('aiDailyBrief.neutralNear')} ${prc}. ${t('aiDailyBrief.range')} ${sup}–${res}. ${t('aiDailyBrief.wait')}`,
     },
     {
       label: 'DXY',
@@ -42,7 +47,7 @@ export default function AIDailyBrief() {
     {
       label: 'Liquidity',
       color: '#a78bfa',
-      text: `${t('aiDailyBrief.poolsAbove')} $${lvls.resistance.toLocaleString()} ${t('aiDailyBrief.andBelow')} $${lvls.support.toLocaleString()}. ${t('aiDailyBrief.liquidityPools')}`,
+      text: `${t('aiDailyBrief.poolsAbove')} ${res} ${t('aiDailyBrief.andBelow')} ${sup}. ${t('aiDailyBrief.liquidityPools')}`,
     },
   ]
 

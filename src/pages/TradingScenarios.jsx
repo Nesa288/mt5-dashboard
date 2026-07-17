@@ -59,7 +59,7 @@ export default function TradingScenarios() {
 
   const bearEntryLow  = Math.round((lvls.resistance - lvls.dayRange * 0.05) / 5) * 5
   const bearEntryHigh = Math.round((lvls.resistance + lvls.dayRange * 0.15) / 5) * 5
-  const bearEntry = `$${bearEntryLow.toLocaleString()} – $${bearEntryHigh.toLocaleString()} (short from resistance)`
+  const bearEntry = `$${bearEntryLow.toLocaleString()} – $${bearEntryHigh.toLocaleString()} (${t('scenarios.bearEntryNote')})`
   const bearT1    = `$${Math.round((lvls.support + lvls.dayRange * 0.3) / 5) * 5}`
   const bearT2    = `$${Math.round((lvls.support - lvls.dayRange * 0.1) / 5) * 5}`
   const bearInv   = `$${lvls.target.toLocaleString()}`
@@ -85,16 +85,16 @@ export default function TradingScenarios() {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap' }}>
             <div style={{ padding: '6px 16px', background: 'rgba(0,212,160,0.15)', border: '1px solid rgba(0,212,160,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--green)' }}>
-              🟢 Target Zone: {bullT1} – {bullT2}
+              🟢 {t('scenarios.chartTargetZone')} {bullT1} – {bullT2}
             </div>
             <div style={{ padding: '6px 16px', background: 'rgba(139,92,246,0.1)', border: '1px solid var(--gold-border)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--gold)' }}>
-              🟡 Entry Zone: {bullEntry}
+              🟡 {t('scenarios.chartEntryZone')} {bullEntry}
             </div>
             <div style={{ padding: '6px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, color: 'var(--red)' }}>
-              🔴 Invalidation: {bullInv}
+              🔴 {t('scenarios.chartInvalidation')} {bullInv}
             </div>
           </div>
-          <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-3)' }}>📊 Chart zones shown are DEMO — connect live backend for real analysis</div>
+
         </div>
       </div>
 
@@ -106,14 +106,14 @@ export default function TradingScenarios() {
             <ScenarioProbabilityArc value={scenarios.bullish.probability} color="var(--green)" />
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--green)' }}>🟢 {t('scenarios.bullish')}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>Active • Preferred setup</div>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>{t('scenarios.activePreferred')}</div>
             </div>
           </div>
 
           <div>
             <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(0,212,160,0.08)', borderRadius: 8, border: '1px solid rgba(0,212,160,0.2)' }}>
               <div style={{ fontSize: 9, color: 'var(--green)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{t('scenarios.condition')}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.5 }}>{scenarios.bullish.condition}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.5 }}>{t('scenarios.bullishCondition')}</div>
             </div>
             <ScenarioRow label={t('scenarios.entryZone')} value={bullEntry} color="var(--gold)" />
             <ScenarioRow label={t('scenarios.target1')} value={bullT1} color="var(--green)" />
@@ -123,7 +123,7 @@ export default function TradingScenarios() {
 
           <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(0,0,0,0.2)', borderRadius: 10, border: '1px solid rgba(0,212,160,0.15)' }}>
             <div style={{ fontSize: 9, color: 'var(--green)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>🤖 {t('scenarios.aiExplanation')}</div>
-            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>{scenarios.bullish.aiExplanation}</p>
+            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>{t('scenarios.bullishExplanation')}</p>
           </div>
         </div>
 
@@ -133,14 +133,14 @@ export default function TradingScenarios() {
             <ScenarioProbabilityArc value={scenarios.bearish.probability} color="var(--red)" />
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--red)' }}>🔴 {t('scenarios.bearish')}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>Inactive • If {bullInv} breaks</div>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 2 }}>{t('scenarios.inactiveIf').replace('{inv}', bullInv)}</div>
             </div>
           </div>
 
           <div>
             <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)' }}>
               <div style={{ fontSize: 9, color: 'var(--red)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>{t('scenarios.condition')}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.5 }}>{scenarios.bearish.condition}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-1)', lineHeight: 1.5 }}>{t('scenarios.bearishCondition')}</div>
             </div>
             <ScenarioRow label={t('scenarios.entryZone')} value={bearEntry} color="var(--gold)" />
             <ScenarioRow label={t('scenarios.target1')} value={bearT1} color="var(--red)" />
@@ -150,7 +150,7 @@ export default function TradingScenarios() {
 
           <div style={{ marginTop: 14, padding: '12px 14px', background: 'rgba(0,0,0,0.2)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.15)' }}>
             <div style={{ fontSize: 9, color: 'var(--red)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>🤖 {t('scenarios.aiExplanation')}</div>
-            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>{scenarios.bearish.aiExplanation}</p>
+            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>{t('scenarios.bearishExplanation')}</p>
           </div>
         </div>
       </div>
@@ -161,14 +161,14 @@ export default function TradingScenarios() {
           <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(148,163,184,0.15)', border: '1px solid rgba(148,163,184,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⚪</div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-2)' }}>{t('scenarios.neutral')}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Conditions when you should stay out</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{t('scenarios.stayOut')}</div>
           </div>
         </div>
 
         <div className="g-3" style={{ gap: 16 }}>
           <div>
             <div className="section-label mb-2">{t('scenarios.whenToAvoid')}</div>
-            {scenarios.neutral.whenToAvoid.map((item, i) => (
+            {[t('scenarios.avoidItem1'), t('scenarios.avoidItem2'), t('scenarios.avoidItem3'), t('scenarios.avoidItem4')].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
                 <span style={{ color: 'var(--red)', fontSize: 13, flexShrink: 0 }}>⛔</span>
                 <span style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>{item}</span>
@@ -186,7 +186,7 @@ export default function TradingScenarios() {
           </div>
           <div>
             <div className="section-label mb-2">{t('scenarios.zonesToWait')}</div>
-            {scenarios.neutral.zonesToWait.map((item, i) => (
+            {[t('scenarios.waitItem1'), t('scenarios.waitItem2'), t('scenarios.waitItem3')].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
                 <span style={{ color: 'var(--green)', fontSize: 13, flexShrink: 0 }}>✅</span>
                 <span style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>{item}</span>
